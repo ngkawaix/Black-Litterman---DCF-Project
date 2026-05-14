@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────
+# requirements.txt
+# DCF × Black-Litterman Streamlit App
+#
+# Streamlit Cloud reads this file automatically and pip-installs
+# everything listed before launching app.py.
+#
+# Pin versions where you know they work; leave unpinned
+# for libraries you want to track latest.
+# ─────────────────────────────────────────────────────────
+
+# Core Streamlit
+streamlit>=1.35.0
+
+# Data & numerics
+numpy>=1.26.0
+pandas>=2.2.0
+scipy>=1.13.0
+
+# Market data
+yfinance>=0.2.40
+pandas-datareader>=0.10.0
+
+# Visualisation (Plotly renders natively in Streamlit — no extra config needed)
+plotly>=5.22.0
+
+# Note: edhec_risk_kit_final.py is a LOCAL module.
+# Do NOT add it here — just make sure the file sits
+# in the same GitHub repo folder as app.py.
