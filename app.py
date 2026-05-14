@@ -87,21 +87,14 @@ STRESS_PERIODS = {
 # ─────────────────────────────────────────────────────────────────────────────
 # DATA LOADING  (cached so Streamlit doesn't re-download on every interaction)
 # ─────────────────────────────────────────────────────────────────────────────
-@st.cache_data(show_spinner="Fetching market data from Yahoo Finance…", ttl=3600)
+@st.cache_data(show_spinner="Fetching market data from Yahoo Finance…")
 def load_market_data(tickers, start="2000-01-01"):
-    data = yf.download(tickers, start=start, interval="1d",
-                       auto_adjust=True, progress=False)
+    data = yf.download(tickers, start=start, interval="1d", auto_adjust=True, progress=False)
     price_data = data["Close"]
     price_data.index = price_data.index.tz_localize(None)
     price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
-
-    # drop tickers that completely failed to download
-    bad_cols = price_data.columns[price_data.isna().mean() > 0.5].tolist()
-    if bad_cols:
-        price_data = price_data.drop(columns=bad_cols)
-
-    tick_rets = price_data.pct_change().dropna()
-    return price_data, tick_rets, bad_cols
+    tick_rets  = price_data.pct_change().dropna()
+    return price_data, tick_rets
 
 
 @st.cache_data(show_spinner="Building market-cap weights…")
@@ -145,6 +138,58 @@ def load_rf():
     except Exception:
         return 0.04
 
+@st.cache_data(show_spinner="Loading analyst consensus & earnings dates…", ttl=86400)
+def load_consensus_and_earnings(tickers):
+    """
+    For each ticker fetches:
+      - targetMeanPrice and numberOfAnalystOpinions from yf.info
+      - whether the most recent earnings date fell within the last 30 days
+        (using yf.Ticker.calendar -- fails gracefully if unavailable)
+
+    Results are cached for 24 h (ttl=86400) so the sidebar doesn't
+    re-fetch on every widget interaction.
+    """
+    today   = pd.Timestamp.today().normalize()
+    cutoff  = today - pd.Timedelta(days=30)
+
+    consensus       = {}
+    recent_earnings = {}
+
+    for ticker in tickers:
+        # ── Consensus price target ────────────────────────────────────────────
+        try:
+            info = yf.Ticker(ticker).info
+            consensus[ticker] = {
+                "mean":       info.get("targetMeanPrice",        None),
+                "n_analysts": info.get("numberOfAnalystOpinions", None),
+            }
+        except Exception:
+            consensus[ticker] = {"mean": None, "n_analysts": None}
+
+        # ── Recent earnings flag ──────────────────────────────────────────────
+        try:
+            cal = yf.Ticker(ticker).calendar
+            dates = []
+            if isinstance(cal, dict):
+                raw = cal.get("Earnings Date", [])
+                dates = raw if isinstance(raw, list) else [raw]
+            elif isinstance(cal, pd.DataFrame) and not cal.empty:
+                if "Earnings Date" in cal.columns:
+                    dates = cal["Earnings Date"].dropna().tolist()
+                elif not cal.empty:
+                    dates = cal.iloc[0].dropna().tolist()
+
+            flagged = any(
+                cutoff <= pd.Timestamp(d).normalize() <= today
+                for d in dates
+                if d is not None
+            )
+            recent_earnings[ticker] = flagged
+        except Exception:
+            recent_earnings[ticker] = False
+
+    return consensus, recent_earnings
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BLACK-LITTERMAN HELPERS
@@ -163,6 +208,11 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     cw_w       : pd.Series   -- cap weights used as the market prior
     sigma      : pd.DataFrame -- annualised covariance (shrinkage)
     """
+    current_prices = price_targets.index.map(
+        lambda t: tick_rets.shape   # placeholder -- resolved below
+    )
+    # This is cleaner:
+    price_data_last = tick_rets   # we only need the index here; prices come from outside
 
     # Total return view and excess return view Q
     # (price_targets already passed in as a Series indexed by ticker)
@@ -195,7 +245,7 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     )
     return mu_bl, sigma_bl, pi, Q, cw_w, sigma
 
-# Portfolio Optimiser for Long Only
+
 def bl_msr_longonly(sigma, mu, riskfree_rate):
     """Max-Sharpe optimisation with long-only constraint."""
     n = mu.shape[0]
@@ -215,6 +265,7 @@ def bl_msr_longonly(sigma, mu, riskfree_rate):
         constraints=constraints,
     )
     return pd.Series(result.x, index=mu.index)
+
 
 def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1, steps=252):
     """
@@ -239,14 +290,20 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
     port_paths = (all_paths * w).sum(axis=2)
     return all_paths, port_paths
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
+# Load consensus data before entering the sidebar block so it's available
+# when rendering per-ticker inputs.  TTL=24 h keeps it fresh without
+# hammering the API on every widget interaction.
+consensus_data, recent_earnings = load_consensus_and_earnings(TICKERS)
+
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
     # --- Scenario selector ---
-    st.subheader("1. DCF Scenario -- to be incorporated soon!")
+    st.subheader("1. DCF Scenario")
     st.caption(
         "Bear / Base / Bull cases map to conservative, central, and optimistic "
         "DCF price targets. These drive the views (Q) fed into Black-Litterman."
@@ -282,58 +339,68 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "Expand each ticker to override the scenario default. "
-        "**Confidence** (Idzorek method) is how strongly you weight your view "
-        "vs. the market-implied equilibrium -- 0 = ignore your view, 1 = full conviction."
+        "**How these are set:** Base targets are personal estimates derived from "
+        "DCF work (May 2025) and updated as new information arrives. "
+        "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
+        "may lag recent revisions — treat as directional reference only. "
+        "**Confidence** (Idzorek method) weights your view vs. the market-implied "
+        "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
+    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days — consensus may have been revised.")
 
     user_targets    = {}
     user_confidence = {}
 
-    for ticker in TICKERS:
-        with st.expander(ticker):
-            user_targets[ticker] = st.number_input(
-                f"{ticker} Price Target ($)",
-                min_value=0.01,
-                value=float(active_targets_default[ticker]),
-                step=1.0,
-                key=f"pt_{ticker}",
-            )
-            user_confidence[ticker] = st.slider(
-                f"{ticker} Confidence",
-                min_value=0.0,
-                max_value=1.0,
-                value=float(BASE_CONFIDENCE[ticker]),
-                step=0.05,
-                key=f"conf_{ticker}",
-            )
+    for i in range(0, len(TICKERS), 2):
+        col_a, col_b = st.columns(2)
+        for col, ticker in zip([col_a, col_b], TICKERS[i:i + 2]):
+            with col:
+                # Ticker label + earnings recency flag
+                flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
+                st.markdown(f"**{ticker}**{flag}")
+
+                # Consensus reference line
+                cons   = consensus_data.get(ticker, {})
+                mean_t = cons.get("mean", None)
+                n_ana  = cons.get("n_analysts", None)
+                if mean_t:
+                    n_str = f" · {int(n_ana)}a" if n_ana else ""
+                    st.caption(f"Consensus: ${mean_t:,.0f}{n_str}")
+                else:
+                    st.caption("Consensus: N/A")
+
+                user_targets[ticker] = st.number_input(
+                    "Price target ($)",
+                    min_value=0.01,
+                    value=float(active_targets_default[ticker]),
+                    step=1.0,
+                    key=f"pt_{ticker}",
+                )
+                user_confidence[ticker] = st.slider(
+                    "Confidence",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=float(BASE_CONFIDENCE[ticker]),
+                    step=0.05,
+                    key=f"conf_{ticker}",
+                )
 
     st.divider()
     st.caption(
-        "🔮 **DCF integration coming soon**"
+        "🔮 **DCF integration coming soon** -- once your Wall Street Prep models "
+        "are finalised, xlwings will pull targets directly from Excel into the "
+        "views matrix above."
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA
 # ─────────────────────────────────────────────────────────────────────────────
-price_data, tick_rets, bad_cols = load_market_data(TICKERS)
-
-# Pass only the *successful* tickers to mcap loading
-if bad_cols:
-    st.warning(
-        f"⚠️ Yahoo Finance returned no data for: **{', '.join(bad_cols)}**. "
-        "Excluding from this run."
-    )
-
-active_tickers = list(tick_rets.columns)
-tick_capweights = load_mcap_weights(price_data, active_tickers)
-RF              = load_rf()
+price_data, tick_rets   = load_market_data(TICKERS)
 tick_capweights         = load_mcap_weights(price_data, TICKERS)
 RF                      = load_rf()
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
-tick_rets_original = tick_rets.copy()
 tick_rets       = tick_rets.loc[common_index]
 tick_capweights = tick_capweights.loc[common_index]
 
@@ -368,8 +435,7 @@ st.caption(
     f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
-    f"Data retrieved: **{tick_rets.index[0].date()} to {tick_rets.index[-1].date()}**"
-    f"Dates dropped: {len(tick_rets_original) - len(tick_rets)}"
+    f"Data through: **{tick_rets.index[-1].date()}**"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -377,7 +443,7 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📋 Views & Returns",
-    "⚖️ BL Optimal Weights",
+    "⚖️ BL Weights",
     "📈 Monte Carlo",
     "💥 Stress Tests",
     "🔀 Strategy Comparison",
@@ -388,12 +454,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1 -- Views & Returns Decomposition
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.subheader("Decomposition of Returns")
+    st.subheader("Return Decomposition")
     st.caption(
-        "This table shows how returns are decomposed: "
+        "This table shows how each input layer stacks up. "
         "**Q** is the excess-return view you feed in via your price target. "
-        "**π (pi)** is what market *implied* returns given cap weights and risk aversion. "
-        "**BL Posterior** is the blended result (aka how much views shifts the equilibrium)."
+        "**π (pi)** is what the market *implies* given cap weights and risk aversion. "
+        "**BL Posterior** is the blended result -- how much your view shifts the equilibrium."
     )
 
     view_df = pd.DataFrame({
@@ -580,12 +646,12 @@ with tab3:
     fig_mc.add_trace(go.Scatter(
         x=x_axis, y=np.percentile(port_paths, 5, axis=1),
         mode="lines", name="5th pct",
-        line=dict(color="red", width=1.5, dash="dash"),
+        line=dict(color="#C44E52", width=1.5, dash="dash"),
     ))
     fig_mc.add_trace(go.Scatter(
         x=x_axis, y=np.percentile(port_paths, 95, axis=1),
         mode="lines", name="95th pct",
-        line=dict(color="green", width=1.5, dash="dash"),
+        line=dict(color="#55A868", width=1.5, dash="dash"),
     ))
     fig_mc.update_layout(
         title="Correlated GBM -- Portfolio Value Paths (starting $1)",
@@ -602,9 +668,9 @@ with tab3:
         marker_color="steelblue", opacity=0.8, name="Final Value",
     ))
     for pct, colour, label in [
-        (5,  "red",   "5th pct"),
-        (50, "black", "Median"),
-        (95, "green", "95th pct"),
+        (5,  "#C44E52", "5th pct"),
+        (50, "#404040",  "Median"),
+        (95, "#55A868",  "95th pct"),
     ]:
         fig_hist.add_vline(
             x=np.percentile(final_values, pct),
@@ -666,7 +732,7 @@ with tab4:
         name="Period Return",
         x=list(stress_rows.keys()),
         y=[v["Period Return"] for v in stress_rows.values()],
-        marker_color=["green" if v["Period Return"] >= 0 else "red"
+        marker_color=["#55A868" if v["Period Return"] >= 0 else "#C44E52"
                       for v in stress_rows.values()],
     ))
     fig_stress.update_layout(
@@ -676,6 +742,73 @@ with tab4:
         xaxis_tickangle=-20,
     )
     st.plotly_chart(fig_stress, use_container_width=True)
+
+    # ── Per-stock drawdown traceback ──────────────────────────────────────────
+    st.subheader("Per-Stock Max Drawdown Traceback")
+    st.caption(
+        "Maximum drawdown for each individual stock during each stress period. "
+        "Rows sorted by average drawdown across all events — worst offenders at the top. "
+        "Helps you see which holdings were the main drag and which held up as relative "
+        "safe havens within the portfolio."
+    )
+
+    dd_matrix = {}
+    for name, (start, end) in STRESS_PERIODS.items():
+        period_rets_s = tick_rets.loc[start:end]
+        if period_rets_s.empty:
+            continue
+        stock_dd = {}
+        for ticker in tick_rets.columns:
+            sr  = period_rets_s[ticker]
+            cp  = (1 + sr).cumprod()
+            stock_dd[ticker] = (cp / cp.cummax() - 1).min()
+        dd_matrix[name] = stock_dd
+
+    dd_df = pd.DataFrame(dd_matrix)   # index = tickers, columns = stress periods
+    dd_df["Avg MDD"] = dd_df.mean(axis=1)
+    dd_df = dd_df.sort_values("Avg MDD")          # worst drawdown at top
+
+    # Separate the summary column for distinct formatting
+    period_cols = [c for c in dd_df.columns if c != "Avg MDD"]
+
+    st.dataframe(
+        dd_df.style
+            .format("{:.1%}")
+            .background_gradient(cmap="RdYlGn", subset=period_cols, axis=None)
+            .background_gradient(cmap="RdYlGn", subset=["Avg MDD"], axis=None),
+        use_container_width=True,
+        height=700,
+    )
+
+    # ── BL-weighted drawdown contribution ────────────────────────────────────
+    st.subheader("Weighted Drawdown Contribution")
+    st.caption(
+        "Each cell = stock's max drawdown × its BL portfolio weight. "
+        "This tells you *how much of the portfolio-level pain* each holding was responsible for. "
+        "A stock with a large drawdown but tiny weight barely hurts you; one with moderate "
+        "drawdown and a large allocation is the real culprit."
+    )
+
+    bl_weights_aligned = bl_w_series.reindex(tick_rets.columns).fillna(0)
+
+    contrib_matrix = {}
+    for col in period_cols:
+        contrib_matrix[col] = dd_df[col] * bl_weights_aligned
+
+    contrib_df = pd.DataFrame(contrib_matrix)
+    contrib_df["Total Contribution"] = contrib_df.sum(axis=1)
+    contrib_df = contrib_df.sort_values("Total Contribution")
+
+    contrib_period_cols = [c for c in contrib_df.columns if c != "Total Contribution"]
+
+    st.dataframe(
+        contrib_df.style
+            .format("{:.2%}")
+            .background_gradient(cmap="RdYlGn", subset=contrib_period_cols, axis=None)
+            .background_gradient(cmap="RdYlGn", subset=["Total Contribution"], axis=None),
+        use_container_width=True,
+        height=700,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
