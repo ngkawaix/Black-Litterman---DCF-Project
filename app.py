@@ -885,8 +885,7 @@ with tab1:
     styled = view_df.style \
         .format("{:.2%}", subset=pct_cols) \
         .format("${:,.2f}", subset=dollar_cols) \
-        .background_gradient(subset=["BL Posterior Return"], cmap="RdYlGn") \
-        .background_gradient(subset=["Excess Return View (Q)"], cmap="RdYlGn")
+        .background_gradient(subset=["BL Posterior Return"], cmap="RdYlGn")
 
     st.dataframe(styled, use_container_width=True)
 
