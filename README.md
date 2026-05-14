@@ -1,4 +1,7 @@
 [README.md](https://github.com/user-attachments/files/27754818/README.md)
+
+*Work in progress — updating as the Wall Street Prep course progresses.*
+
 # Black-Litterman × DCF Portfolio Optimiser
 
 A personal portfolio research tool that combines **Discounted Cash Flow (DCF) analysis** with the **Black-Litterman model** to build scenario-driven, optimally-weighted stock portfolios.
@@ -53,5 +56,3 @@ The app lets you stress-test three scenarios — Bear, Base, and Bull — and im
 - EDHEC Risk Institute portfolio analytics toolkit
 
 ---
-
-*Work in progress — updating as the Wall Street Prep course progresses.*
