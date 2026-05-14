@@ -382,7 +382,7 @@ with st.sidebar:
                 mean_t = cons.get("mean", None)
                 n_ana  = cons.get("n_analysts", None)
                 if mean_t:
-                    n_str = f" · {int(n_ana)}a" if n_ana else ""
+                    n_str = f" · {int(n_ana)} analysts" if n_ana else ""
                     st.caption(f"Consensus: ${mean_t:,.0f}{n_str}")
                 else:
                     st.caption("Consensus: N/A")
