@@ -3,6 +3,7 @@ numpy
 pandas
 scipy
 yfinance
-pandas-datareader
 plotly
 lxml
+setuptools
+requests
