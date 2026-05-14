@@ -1,9 +1,16 @@
-“””
+# “””
 DCF + Black-Litterman Portfolio Optimiser
 
 A Streamlit app that lets you set Bear / Base / Bull price targets per stock
 (derived from your DCF work) and see how each scenario shifts the Black-Litterman
 optimal portfolio weights, Monte Carlo distribution, and stress-test results.
+
+How to run locally:
+streamlit run app.py
+
+Deployment note:
+edhec_risk_kit_final.py  <– must sit in the same folder as this file
+requirements.txt         <– must also be in the repo root
 “””
 
 import warnings
