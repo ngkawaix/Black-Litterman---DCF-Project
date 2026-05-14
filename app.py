@@ -419,7 +419,6 @@ RF                      = load_rf()
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
-tick_rets_original = tick_rets.copy()
 tick_rets       = tick_rets.loc[common_index]
 tick_capweights = tick_capweights.loc[common_index]
 
@@ -454,8 +453,7 @@ st.caption(
     f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
-    f"Data range: **{tick_rets.index[0].date()} to {tick_rets.index[-1].date()}**  |  "
-    f"Dates dropped: **{len(tick_rets_original) - len(tick_rets)}**"
+    f"Data through: **{tick_rets.index[-1].date()}**"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -763,79 +761,117 @@ with tab4:
     )
     st.plotly_chart(fig_stress, use_container_width=True)
 
-    # ── Per-stock drawdown traceback ──────────────────────────────────────────
-    st.subheader("Per-Stock Max Drawdown Traceback")
-    st.caption(
-        "Maximum drawdown for each individual stock during each stress period. "
-        "Rows sorted by average drawdown across all events — worst offenders at the top. "
-        "Helps you see which holdings were the main drag and which held up as relative "
-        "safe havens within the portfolio."
-    )
-
-    dd_matrix = {}
-    for name, (start, end) in STRESS_PERIODS.items():
-        period_rets_s = tick_rets.loc[start:end]
-        if period_rets_s.empty:
-            continue
-        stock_dd = {}
-        for ticker in tick_rets.columns:
-            sr  = period_rets_s[ticker]
-            cp  = (1 + sr).cumprod()
-            stock_dd[ticker] = (cp / cp.cummax() - 1).min()
-        dd_matrix[name] = stock_dd
-
-    dd_df = pd.DataFrame(dd_matrix)   # index = tickers, columns = stress periods
-    dd_df["Avg MDD"] = dd_df.mean(axis=1)
-    dd_df = dd_df.sort_values("Avg MDD")          # worst drawdown at top
-
-    # Separate the summary column for distinct formatting
-    period_cols = [c for c in dd_df.columns if c != "Avg MDD"]
-
-    st.dataframe(
-        dd_df.style
-            .format("{:.1%}")
-            .background_gradient(cmap="RdYlGn", subset=period_cols, axis=None)
-            .background_gradient(cmap="RdYlGn", subset=["Avg MDD"], axis=None),
-        use_container_width=True,
-        height=700,
-    )
-
-    # ── BL-weighted drawdown contribution ────────────────────────────────────
-    st.subheader("Weighted Drawdown Contribution")
-    st.caption(
-        "Each cell = stock's max drawdown × its BL portfolio weight. "
-        "This tells you *how much of the portfolio-level pain* each holding was responsible for. "
-        "A stock with a large drawdown but tiny weight barely hurts you; one with moderate "
-        "drawdown and a large allocation is the real culprit."
-    )
-
-    bl_weights_aligned = bl_w_series.reindex(tick_rets.columns).fillna(0)
-
-    contrib_matrix = {}
-    for col in period_cols:
-        contrib_matrix[col] = dd_df[col] * bl_weights_aligned
-
-    contrib_df = pd.DataFrame(contrib_matrix)
-    contrib_df["Total Contribution"] = contrib_df.sum(axis=1)
-    contrib_df = contrib_df.sort_values("Total Contribution")
-
-    contrib_period_cols = [c for c in contrib_df.columns if c != "Total Contribution"]
-
-    st.dataframe(
-        contrib_df.style
-            .format("{:.2%}")
-            .background_gradient(cmap="RdYlGn", subset=contrib_period_cols, axis=None)
-            .background_gradient(cmap="RdYlGn", subset=["Total Contribution"], axis=None),
-        use_container_width=True,
-        height=700,
-    )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
 with tab5:
-    st.subheader("Forward Distribution -- Strategy Comparison (Monte Carlo)")
+    # ── Section 1: Backtested Wealth Index ───────────────────────────────────
+    st.subheader("Historical Wealth Index — Strategy Comparison")
+    st.caption(
+        "Rolling backtest using a 2-year estimation window to rebalance weights at each step. "
+        "EW, Cap-Weighted, GMV, and Risk Parity are properly rolled — weights are re-estimated "
+        "each period using only data available at that point in time, so there is no look-ahead. "
+        "**Black-Litterman** is shown as a static allocation using the current scenario's optimal "
+        "weights applied to the full history. This is a simplification: true BL weights would "
+        "require a fresh set of views at every rebalance date. The chart is therefore best read "
+        "as 'how would this portfolio have held up' rather than a like-for-like backtest."
+    )
+
+    estimation_window = 2 * 252   # 2-year rolling window, matching the screenshot
+
+    with st.spinner("Running rolling backtests…"):
+        ew_r  = erk.backtest_ws(
+            tick_rets, estimation_window=estimation_window,
+            weighting=erk.weight_ew,
+        )
+        cw_r  = erk.backtest_ws(
+            tick_rets, estimation_window=estimation_window,
+            weighting=erk.weight_cw, cap_weights=tick_capweights,
+        )
+        gmv_r = erk.backtest_ws(
+            tick_rets, estimation_window=estimation_window,
+            weighting=erk.weight_gmv,
+            cov_estimator=erk.shrinkage_cov, delta=0.7,
+        )
+        erc_r = erk.backtest_ws(
+            tick_rets, estimation_window=estimation_window,
+            weighting=erk.weight_erc,
+            cov_estimator=erk.shrinkage_cov, delta=0.7,
+        )
+
+    # BL: static weights applied to full history, aligned to rolling start date
+    bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
+    bl_r        = (tick_rets * bl_static_w.values).sum(axis=1).loc[ew_r.index[0]:]
+
+    btr = pd.DataFrame({
+        "Equal-Weighted":          ew_r,
+        "Cap-Weighted":            cw_r,
+        "GMV (Shrinkage)":         gmv_r,
+        "Risk Parity":             erc_r,
+        f"BL — {scenario} (static)": bl_r,
+    }).dropna()
+
+    wealth = (1 + btr).cumprod()
+
+    # Colour palette: BL stands out, others are muted
+    palette = {
+        "Equal-Weighted":          ("steelblue",    1.2, "dot"),
+        "Cap-Weighted":            ("slategray",    1.2, "dot"),
+        "GMV (Shrinkage)":         ("darkorange",   1.2, "dot"),
+        "Risk Parity":             ("mediumpurple", 1.2, "dot"),
+        f"BL — {scenario} (static)": ("seagreen",  2.5, "solid"),
+    }
+
+    fig_wealth = go.Figure()
+    for col, (colour, width, dash) in palette.items():
+        if col not in wealth.columns:
+            continue
+        fig_wealth.add_trace(go.Scatter(
+            x=wealth.index, y=wealth[col],
+            mode="lines", name=col,
+            line=dict(color=colour, width=width, dash=dash),
+        ))
+    fig_wealth.update_layout(
+        title="Wealth Index — $1 invested at backtest start",
+        xaxis_title="Date",
+        yaxis_title="Portfolio Value ($)",
+        height=460,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    )
+    st.plotly_chart(fig_wealth, use_container_width=True)
+
+    # Summary stats
+    summary_rows = {}
+    for col in btr.columns:
+        r      = btr[col].dropna()
+        ann_r  = erk.annualize_rets(r, periods_per_year=252)
+        ann_v  = erk.annualize_vol(r, periods_per_year=252)
+        sharpe = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
+        cp     = (1 + r).cumprod()
+        mdd    = (cp / cp.cummax() - 1).min()
+        summary_rows[col] = {
+            "Ann. Return":  ann_r,
+            "Ann. Vol":     ann_v,
+            "Sharpe Ratio": sharpe,
+            "Max Drawdown": mdd,
+        }
+
+    summary_df = pd.DataFrame(summary_rows).T
+    st.dataframe(
+        summary_df.style
+            .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown"])
+            .format("{:.2f}", subset=["Sharpe Ratio"])
+            .background_gradient(subset=["Ann. Return"],  cmap="RdYlGn")
+            .background_gradient(subset=["Sharpe Ratio"], cmap="RdYlGn")
+            .background_gradient(subset=["Max Drawdown"], cmap="RdYlGn_r"),
+        use_container_width=True,
+    )
+
+    st.divider()
+
+    # ── Section 2: Forward Distribution (Monte Carlo) ─────────────────────────
+    st.subheader("Forward Distribution — Strategy Comparison (Monte Carlo)")
     st.caption(
         "Uses the same correlated GBM paths from Tab 3 but applied to each "
         "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
