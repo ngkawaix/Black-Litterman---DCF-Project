@@ -795,7 +795,8 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4 = st.tabs([
+tab0, tab1, tab2, tab3, tab4 = st.tabs([
+    "📖 Introduction",
     "📋 Views & Returns",
     "⚖️ BL Weights",
     "📈 Simulation & Stress Tests",
@@ -804,36 +805,37 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 -- Views & Returns Decomposition
 # ══════════════════════════════════════════════════════════════════════════════
-with tab1:
+# TAB 0 -- Introduction
+# ══════════════════════════════════════════════════════════════════════════════
+with tab0:
+
+    st.markdown("#### About this Project")
     st.markdown(
         """
-        **Introduction to the App**
+        This app implements skills acquired from EDHEC's Advanced Portfolio
+        Construction and Wall Street Prep's DCF modelling course. It answers the
+        following question: after calculating the fair value of a stock through DCF
+        analysis, how does one translate that knowledge into portfolio sizing?
 
-        I built this app to implement the skills I acquired from EDHEC's Advanced
-        Portfolio Construction and Wall Street Prep's DCF modelling course. It answers the
-        following question: After calculating the fair value of a stock price through DCF
-        analysis, how does one implement this knowledge to size their portfolios?
-        
-        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity 
-        are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        Black-Litterman is different: it takes a forward-looking view on what each stock is worth 
-        and asks how much conviction you should act on, relative to the market implied returns. 
-        The app lets you build that allocation, stress-test it against real market crashes,  
-        and benchmark it against the simpler strategies. 
-        
-        This project is still a work in progress and I plan to incorporate more 
-        robust DCF assumption as inputs to experiment with the resulting allocations.
+        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity
+        are purely backward-looking — they optimise on historical data and assume the
+        past repeats. Black-Litterman is different: it takes a forward-looking view on
+        what each stock is worth and asks how much conviction to act on, relative to
+        what the market itself implies. The app builds that allocation, stress-tests it
+        against real market crashes, and benchmarks it against simpler strategies.
+
+        This project is a work in progress. The next step is incorporating more robust
+        DCF assumptions directly as model inputs once the Wall Street Prep models are
+        finalised.
         """
     )
 
     st.divider()
 
+    st.markdown("#### Stock Universe & Selection Criteria")
     st.markdown(
         """
-        **Stock universe**
-
         The 17 stocks in this portfolio were selected through a systematic
         fundamental screen: 5-year average ROIC above 15%, debt-to-equity
         below 1, consecutive revenue growth over 5 years, and a minimum
@@ -856,17 +858,17 @@ with tab1:
 
     st.divider()
 
-    st.subheader("How Black-Litterman Works")
+    st.markdown("#### How Black-Litterman Works")
     st.markdown(
         """
         Most portfolio optimisers have a fundamental problem: feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
-        unstable allocations — 80% in one stock, zero in everything else. They treat every
-        input as gospel and optimise aggressively on noise.
+        unstable allocations — 80% in one stock, zero in everything else. They treat
+        every input as gospel and optimise aggressively on noise.
 
-        **Black-Litterman solves this by never letting your view stand alone.**
+        **Black-Litterman solves this by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
-        how much should your view actually shift the allocation?*
+        how much should a view actually shift the allocation?*
 
         The model has two inputs:
 
@@ -875,26 +877,17 @@ with tab1:
           portfolio, what expected returns would justify current prices and weights?
           This is the baseline the model starts from.
 
-        - **Your views (Q)** — the excess return implied by each DCF price target
-          (total return minus the risk-free rate). This is the analyst judgment layer.
+        - **Analyst views (Q)** — the excess return implied by each DCF price target
+          (total return minus the risk-free rate). This is the forward-looking judgment layer.
 
-        It then blends them using a precision-weighted average — the formula below.
-        *Precision* is just inverse uncertainty: the more confident you are, the more
-        weight your view gets. The less confident, the more the model falls back to
-        what the market implies.
+        It then blends them using a precision-weighted average. *Precision* is inverse
+        uncertainty: the higher the confidence, the more weight a view receives. The
+        lower the confidence, the more the model falls back to the market equilibrium.
         """
     )
 
-    st.markdown(
-        r"""
-        $$
-        \mu_{BL} =
-        \left[ (	au\Sigma)^{-1} + P^	op \Omega^{-1} P 
-ight]^{-1}
-        \left[ (	au\Sigma)^{-1} \pi + P^	op \Omega^{-1} Q 
-ight]
-        $$
-        """
+    st.latex(
+        r"\mu_{BL} = \left[(\tau\Sigma)^{-1} + P^\top\Omega^{-1}P\right]^{-1}\left[(\tau\Sigma)^{-1}\pi + P^\top\Omega^{-1}Q\right]"
     )
 
     st.markdown(
@@ -908,24 +901,26 @@ ight]
         | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
         | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together — captures correlation risk |
         | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
-        | **P** | View matrix | Maps each view to the stocks it applies to; here it is an identity matrix — one view per stock |
-        | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders using the Idzorek method |
+        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix — one view per stock |
+        | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
 
         **The intuition:** The formula is a tug-of-war between π and Q, refereed by
         uncertainty. When confidence is high, Ω is small, its inverse is large, and Q
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
-        its inverse shrinks, and the posterior barely moves from the market equilibrium.
-        The covariance Σ ensures that stocks with shared risk exposures influence each
-        other — a high-conviction view on NVDA will nudge the posterior for TSM too,
-        because they co-move.
-
-        The table below shows this blending in action for every stock in the portfolio.
+        its inverse shrinks, and the posterior barely moves from equilibrium. The
+        covariance Σ ensures that stocks with shared risk exposures influence each
+        other — a high-conviction view on NVDA nudges the posterior for TSM too,
+        because they co-move. The table in the next tab shows this blending in action.
         """
     )
 
-    st.divider()
 
-    st.subheader("Return Decomposition")
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 1 -- Views & Returns Decomposition
+# ══════════════════════════════════════════════════════════════════════════════
+with tab1:
+
+    st.markdown("#### Return Decomposition")
     st.caption(
         "Each column is one layer of the BL process. "
         "**Total Return View** is the raw DCF-implied return. "
@@ -934,71 +929,11 @@ ight]
         "**BL Posterior** is the blended output — the return the optimiser actually uses."
     )
 
-    view_df = pd.DataFrame({
-        "Current Price ($)":          current_prices,
-        "Price Target ($)":           targets_series,
-        "Total Return View":          total_return_views,
-        "Risk-Free Rate (rf)":        RF,
-        "Excess Return View (Q)":     total_return_views - RF,
-        "Market-Implied Return (π)":  pi,
-        "BL Posterior Return":        mu_bl,
-        "Confidence":                 pd.Series(user_confidence).reindex(tick_rets.columns),
-    }).sort_values("Excess Return View (Q)", ascending=False)
-
-    pct_cols = [
-        "Total Return View", "Risk-Free Rate (rf)",
-        "Excess Return View (Q)", "Market-Implied Return (π)", "BL Posterior Return",
-        "Confidence",
-    ]
-    dollar_cols = ["Current Price ($)", "Price Target ($)"]
-
-    styled = view_df.style \
-        .format("{:.2%}", subset=pct_cols) \
-        .format("${:,.2f}", subset=dollar_cols) \
-        .background_gradient(subset=["BL Posterior Return"], cmap="RdYlGn")
-
-    st.dataframe(styled, use_container_width=True)
-
-    # Bar chart: Q vs pi vs BL
-    fig = go.Figure()
-    sorted_tickers = view_df.index.tolist()
-
-    fig.add_trace(go.Bar(
-        name="Market-Implied (π)",
-        x=sorted_tickers,
-        y=pi.reindex(sorted_tickers).values,
-        marker_color="steelblue",
-        opacity=0.7,
-    ))
-    fig.add_trace(go.Bar(
-        name="View (Q)",
-        x=sorted_tickers,
-        y=(total_return_views - RF).reindex(sorted_tickers).values,
-        marker_color="orange",
-        opacity=0.7,
-    ))
-    fig.add_trace(go.Bar(
-        name="BL Posterior",
-        x=sorted_tickers,
-        y=mu_bl.reindex(sorted_tickers).values,
-        marker_color="seagreen",
-        opacity=0.9,
-    ))
-    fig.update_layout(
-        barmode="group",
-        title="π  vs  View (Q)  vs  BL Posterior Return",
-        yaxis_tickformat=".1%",
-        height=420,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 -- BL Portfolio Weights
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
-    st.subheader("Black-Litterman Optimal Weights (Long-Only Max Sharpe)")
+    st.markdown("#### Black-Litterman Optimal Weights (Long-Only Max Sharpe)")
     st.caption(
         "Weights are from a long-only max-Sharpe optimisation using the BL "
         "posterior covariance and expected returns. Zero weights mean the "
@@ -1069,7 +1004,7 @@ with tab2:
 # TAB 3 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
-    st.subheader("Correlated GBM Monte Carlo (BL Drift)")
+    st.markdown("#### Correlated GBM Monte Carlo (BL Drift)")
     st.caption(
         "This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, and (2) a historic stress test to backtest against historical shocks. "
         "For the GBM, each path simulates one year of daily returns. "
@@ -1176,7 +1111,7 @@ with tab3:
     st.divider()
 
     # ── Historical Stress Tests ───────────────────────────────────────────────
-    st.subheader("Historical Stress Test — BL Weights")
+    st.markdown("#### Historical Stress Test — BL Weights")
     st.caption(
         "Applies the BL optimal weights to *actual* historical returns during "
         "known market shocks. This shows how this allocation *would* have "
@@ -1235,7 +1170,7 @@ with tab3:
 # ══════════════════════════════════════════════════════════════════════════════
 with tab4:
     # ── Section 1: Backtested Wealth Index ───────────────────────────────────
-    st.subheader("Historical Wealth Index — Strategy Comparison")
+    st.markdown("#### Historical Wealth Index — Strategy Comparison")
     st.caption(
         f"Rolling backtest using a **{estimation_window_yrs}-year** estimation window to rebalance weights at each step. "
         "EW, Cap-Weighted, GMV, and Risk Parity are properly rolled — weights are re-estimated "
@@ -1333,7 +1268,7 @@ with tab4:
     st.divider()
 
     # ── Section 2: Forward Distribution (Monte Carlo) ─────────────────────────
-    st.subheader("Forward Distribution — Strategy Comparison (Monte Carlo)")
+    st.markdown("#### Forward Distribution — Strategy Comparison (Monte Carlo)")
     st.caption(
         "Uses the same correlated GBM paths from Tab 3 but applied to each "
         "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
