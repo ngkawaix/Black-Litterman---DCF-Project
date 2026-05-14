@@ -86,7 +86,21 @@ def load_market_data(tickers, start="2000-01-01"):
     price_data = data["Close"]
     price_data.index = price_data.index.tz_localize(None)
     price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
-    tick_rets  = price_data.pct_change().dropna()
+
+    # Drop tickers whose entire column is NaN (failed/rate-limited downloads).
+    failed = price_data.columns[price_data.isna().all()].tolist()
+    if failed:
+        st.warning(
+            f"⚠️ Could not download price data for: **{', '.join(failed)}**. "
+            "These tickers have been excluded from this run. "
+            "This is usually a Yahoo Finance rate-limit — refresh in a minute to retry.",
+        )
+        price_data = price_data.drop(columns=failed)
+
+    # Forward-fill intra-series gaps, then use dropna(how="all") so a single
+    # missing ticker on one day does not wipe out the entire returns history.
+    price_data = price_data.ffill()
+    tick_rets  = price_data.pct_change().dropna(how="all")
     return price_data, tick_rets
 
 
@@ -254,7 +268,14 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     sigma_daily = erk.shrinkage_cov(tick_rets, delta=0.5)
     sigma       = sigma_daily * 252               # annualised covariance
 
-    cw_w = tick_capweights.reindex(columns=tick_rets.columns).iloc[-1]
+    cap_aligned = tick_capweights.reindex(columns=tick_rets.columns)
+    if cap_aligned.empty:
+        raise RuntimeError(
+            "Cap-weight DataFrame is empty after alignment. "
+            "This usually means all price data failed to download due to a "
+            "Yahoo Finance rate-limit. Please wait a moment and refresh the page."
+        )
+    cw_w = cap_aligned.iloc[-1]
     cw_w = cw_w / cw_w.sum()
 
     pi = erk.implied_returns(delta=delta, sigma=sigma, w=cw_w)
@@ -326,6 +347,15 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 # can use it to build cap-weight DataFrames in the same pass.
 price_data, tick_rets = load_market_data(TICKERS)
 tick_capweights, consensus_data, recent_earnings = load_ticker_metadata(price_data, TICKERS)
+
+# Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
+if tick_rets.empty:
+    st.error(
+        "❌ **All price data downloads failed.** "
+        "Yahoo Finance is likely rate-limiting the Streamlit Cloud shared IP. "
+        "Wait 60 seconds and refresh the page."
+    )
+    st.stop()
 
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
