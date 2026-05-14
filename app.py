@@ -246,7 +246,7 @@ with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
     # --- Scenario selector ---
-    st.subheader("1. DCF Scenario")
+    st.subheader("1. DCF Scenario -- Feature to be added soon!")
     st.caption(
         "Bear / Base / Bull cases map to conservative, central, and optimistic "
         "DCF price targets. These drive the views (Q) fed into Black-Litterman."
@@ -266,14 +266,15 @@ with st.sidebar:
     # --- BL parameters ---
     st.subheader("2. Black-Litterman Parameters")
     st.caption(
+        "Cap Weights are taken to be the market prior"
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
-        "Standard value is 2.5. Higher --> market expects more return per unit of risk."
+        "Standard value is 2.5. Higher δ means market expects more return per unit of risk."
     )
     delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
 
     st.caption(
         "**τ (tau)** = uncertainty in the prior (equilibrium) returns. "
-        "Smaller τ means you trust the market prior more over your own views."
+        "Standard value is 0.2. Higher τ means you trust the market prior more over your own views."
     )
     tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
@@ -322,8 +323,7 @@ price_data, tick_rets, bad_cols = load_market_data(TICKERS)
 if bad_cols:
     st.warning(
         f"⚠️ Yahoo Finance returned no data for: **{', '.join(bad_cols)}**. "
-        "Excluding from this run. This is usually a transient rate-limit — "
-        "wait a few minutes and click ‘Rerun’ (or clear cache) to retry."
+        "Excluding from this run."
     )
 
 active_tickers = list(tick_rets.columns)
