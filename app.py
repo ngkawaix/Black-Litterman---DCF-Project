@@ -454,7 +454,7 @@ st.caption(
     f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
-    f"Data range: **{tick_rets.index[0]} to {tick_rets.index[-1]}.date()}**  |  "
+    f"Data range: **{tick_rets.index[0].date()} to {tick_rets.index[-1].date()}**  |  "
     f"Dates dropped: **{len(tick_rets_original) - len(tick_rets)}**"
 )
 
