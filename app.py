@@ -474,7 +474,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(
         """
-        I built this to answer a question that nagged me through two courses — EDHEC's Advanced
+        I built this app to answer a question that nagged me through two courses — EDHEC's Advanced
         Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
         a stock is worth, how do you actually size the position? Most backtested strategies like
         Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
@@ -482,8 +482,8 @@ with tab1:
         forward-looking view on what each stock is worth and asks how much conviction you should
         actually act on, relative to what the market already implies. The app lets you build that
         allocation, stress-test it against real market crashes, and benchmark it against the simpler
-        strategies. It's a work in progress, but one I've found genuinely useful — and hopefully
-        others will too.
+        strategies. It's still a work in progress and I plan to incoporate more robust DCF assumption
+        as inputs to experiment with the resulting allocation.
         """
     )
 
@@ -635,7 +635,8 @@ with tab2:
 with tab3:
     st.subheader("Correlated GBM Monte Carlo (BL Drift)")
     st.caption(
-        "Each path simulates one year of daily returns. "
+        "This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, and (2) a historic stress test to backtest against historical shocks. "
+        "For the GBM, each path simulates one year of daily returns. "
         "Drift comes from the **BL posterior returns**. "
         "Correlations are preserved via Cholesky decomposition of the sample covariance. "
         "Starting value is normalised to $1."
@@ -730,9 +731,9 @@ with tab3:
         What it cannot capture is the clustering of extreme events: in real markets, crashes
         are not randomly distributed. Volatility spikes, correlations break down, and losses
         arrive in sequences that a Gaussian model systematically understates. The simulation
-        above is best read as a baseline of what *typical* uncertainty looks like — not as a
-        statement about tail risk. The stress tests below ground that picture in what actually
-        happened.
+        above is best read as a baseline of what *typical* uncertainty looks like and not as a
+        statement about tail risk. The historic stress tests below ground that picture in what actually
+        happened had you held the BL portfolio.
         """
     )
 
