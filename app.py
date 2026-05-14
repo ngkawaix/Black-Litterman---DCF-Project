@@ -87,14 +87,21 @@ STRESS_PERIODS = {
 # ─────────────────────────────────────────────────────────────────────────────
 # DATA LOADING  (cached so Streamlit doesn't re-download on every interaction)
 # ─────────────────────────────────────────────────────────────────────────────
-@st.cache_data(show_spinner="Fetching market data from Yahoo Finance…")
+@st.cache_data(show_spinner="Fetching market data from Yahoo Finance…", ttl=3600)
 def load_market_data(tickers, start="2000-01-01"):
-    data = yf.download(tickers, start=start, interval="1d", auto_adjust=True, progress=False)
+    data = yf.download(tickers, start=start, interval="1d",
+                       auto_adjust=True, progress=False)
     price_data = data["Close"]
     price_data.index = price_data.index.tz_localize(None)
     price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
-    tick_rets  = price_data.pct_change().dropna()
-    return price_data, tick_rets
+
+    # drop tickers that completely failed to download
+    bad_cols = price_data.columns[price_data.isna().mean() > 0.5].tolist()
+    if bad_cols:
+        price_data = price_data.drop(columns=bad_cols)
+
+    tick_rets = price_data.pct_change().dropna()
+    return price_data, tick_rets, bad_cols
 
 
 @st.cache_data(show_spinner="Building market-cap weights…")
@@ -156,11 +163,6 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     cw_w       : pd.Series   -- cap weights used as the market prior
     sigma      : pd.DataFrame -- annualised covariance (shrinkage)
     """
-    current_prices = price_targets.index.map(
-        lambda t: tick_rets.shape   # placeholder -- resolved below
-    )
-    # This is cleaner:
-    price_data_last = tick_rets   # we only need the index here; prices come from outside
 
     # Total return view and excess return view Q
     # (price_targets already passed in as a Series indexed by ticker)
@@ -193,7 +195,7 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     )
     return mu_bl, sigma_bl, pi, Q, cw_w, sigma
 
-
+# Portfolio Optimiser for Long Only
 def bl_msr_longonly(sigma, mu, riskfree_rate):
     """Max-Sharpe optimisation with long-only constraint."""
     n = mu.shape[0]
@@ -213,7 +215,6 @@ def bl_msr_longonly(sigma, mu, riskfree_rate):
         constraints=constraints,
     )
     return pd.Series(result.x, index=mu.index)
-
 
 def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1, steps=252):
     """
@@ -237,7 +238,6 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
     w         = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     port_paths = (all_paths * w).sum(axis=2)
     return all_paths, port_paths
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
@@ -318,7 +318,19 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA
 # ─────────────────────────────────────────────────────────────────────────────
-price_data, tick_rets   = load_market_data(TICKERS)
+price_data, tick_rets, bad_cols = load_market_data(TICKERS)
+
+# Pass only the *successful* tickers to mcap loading
+if bad_cols:
+    st.warning(
+        f"⚠️ Yahoo Finance returned no data for: **{', '.join(bad_cols)}**. "
+        "Excluding from this run. This is usually a transient rate-limit — "
+        "wait a few minutes and click ‘Rerun’ (or clear cache) to retry."
+    )
+
+active_tickers = list(tick_rets.columns)
+tick_capweights = load_mcap_weights(price_data, active_tickers)
+RF              = load_rf()
 tick_capweights         = load_mcap_weights(price_data, TICKERS)
 RF                      = load_rf()
 
