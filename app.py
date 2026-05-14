@@ -473,7 +473,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(
         """
-        I built this to answer a question that nagged me through two courses — EDHEC's Advanced
+        I built this app to answer a question that nagged me through two courses — EDHEC's Advanced
         Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
         a stock is worth, how do you actually size the position? Most backtested strategies like
         Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
@@ -483,6 +483,8 @@ with tab1:
         allocation, stress-test it against real market crashes, and benchmark it against the simpler
         strategies. It's a work in progress, but one I've found genuinely useful — and hopefully
         others will too.
+
+        *Built in Python with the assistance of Claude (Anthropic) as a coding and structuring tool — all modelling decisions, assumptions, and views are my own.*
         """
     )
 
