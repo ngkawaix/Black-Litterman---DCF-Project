@@ -157,14 +157,32 @@ def load_consensus_and_earnings(tickers):
 
     for ticker in tickers:
         # ── Consensus price target ────────────────────────────────────────────
+        # yfinance 0.2.x moved analyst targets out of .info into a dedicated
+        # property.  Try that first, then fall back to the legacy .info path.
+        mean_t     = None
+        n_analysts = None
         try:
-            info = yf.Ticker(ticker).info
-            consensus[ticker] = {
-                "mean":       info.get("targetMeanPrice",        None),
-                "n_analysts": info.get("numberOfAnalystOpinions", None),
-            }
+            apt    = yf.Ticker(ticker).analyst_price_targets
+            mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
         except Exception:
-            consensus[ticker] = {"mean": None, "n_analysts": None}
+            pass
+
+        if mean_t is None:
+            try:
+                info       = yf.Ticker(ticker).info
+                mean_t     = info.get("targetMeanPrice", None)
+                n_analysts = info.get("numberOfAnalystOpinions", None)
+            except Exception:
+                pass
+
+        if n_analysts is None:
+            try:
+                info_n     = yf.Ticker(ticker).info
+                n_analysts = info_n.get("numberOfAnalystOpinions", None)
+            except Exception:
+                pass
+
+        consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
 
         # ── Recent earnings flag ──────────────────────────────────────────────
         try:
