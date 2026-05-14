@@ -292,10 +292,26 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     return mu_bl, sigma_bl, pi, Q, cw_w, sigma
 
 
-def bl_msr_longonly(sigma, mu, riskfree_rate):
-    """Max-Sharpe optimisation with long-only constraint."""
+def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
+    """
+    Max-Sharpe optimisation with long-only and position-size constraints.
+
+    Parameters
+    ----------
+    min_weight : float
+        Floor on any single position (e.g. 0.02 = 2%).
+        Set to 0 to allow zero-weight (unconstrained floor).
+    max_weight : float
+        Ceiling on any single position (e.g. 0.15 = 15%).
+    """
     n = mu.shape[0]
-    bounds      = ((0.0, 1.0),) * n
+
+    # Feasibility check: n * min_weight must not exceed 1
+    # If the floor is too tight for the universe size, relax it silently.
+    if n * min_weight > 1.0:
+        min_weight = 1.0 / n
+
+    bounds      = ((min_weight, max_weight),) * n
     constraints = {"type": "eq", "fun": lambda w: np.sum(w) - 1}
 
     def neg_sharpe(w):
@@ -305,7 +321,7 @@ def bl_msr_longonly(sigma, mu, riskfree_rate):
 
     result = minimize(
         neg_sharpe,
-        np.repeat(1 / n, n),
+        np.repeat(1 / n, n),   # equal-weight warm start (always feasible)
         method="SLSQP",
         bounds=bounds,
         constraints=constraints,
@@ -373,6 +389,32 @@ with st.sidebar:
         "Smaller τ means you trust the market prior more over your own views."
     )
     tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
+
+    st.divider()
+
+    # --- Position size constraints ---
+    st.subheader("2. Position Size Constraints")
+    st.caption(
+        "**Max position** caps the optimiser from piling into a single stock — "
+        "a common failure mode of unconstrained mean-variance. "
+        "Industry standard for concentrated active funds is **5–15%**; "
+        "diversified funds typically use **3–5%**. "
+        "**Min position** prevents the optimiser assigning noise-level weights "
+        "that would be uneconomic to trade — **1–2%** is typical. "
+        "Set min to 0 to allow zero-weight positions."
+    )
+    min_w_pct = st.slider(
+        "Min position size (%)",
+        min_value=0, max_value=10, value=1, step=1,
+        help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
+    )
+    max_w_pct = st.slider(
+        "Max position size (%)",
+        min_value=5, max_value=100, value=15, step=1,
+        help="Ceiling on any single stock weight. 15% is a reasonable starting point for a 17-stock portfolio.",
+    )
+    min_weight = min_w_pct / 100
+    max_weight = max_w_pct / 100
 
     st.divider()
 
@@ -462,7 +504,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
         tau              = tau,
         rf               = RF,
     )
-    bl_w = bl_msr_longonly(sigma=sigma_bl, mu=mu_bl, riskfree_rate=RF)
+    bl_w = bl_msr_longonly(sigma=sigma_bl, mu=mu_bl, riskfree_rate=RF, min_weight=min_weight, max_weight=max_weight)
     bl_w_series = bl_w   # pd.Series indexed by ticker
 
 # ─────────────────────────────────────────────────────────────────────────────
