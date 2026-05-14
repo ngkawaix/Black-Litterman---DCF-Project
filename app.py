@@ -1,8 +1,8 @@
 """
 DCF + Black-Litterman Portfolio Optimiser
 ==========================================
-A Streamlit app that lets you set Bear / Base / Bull price targets per stock
-(derived from your DCF work) and see how each scenario shifts the Black-Litterman
+A Streamlit app for setting Bear / Base / Bull price targets per stock
+(derived from DCF work) and seeing how each scenario shifts the Black-Litterman
 optimal portfolio weights, Monte Carlo distribution, and stress-test results.
 
 How to run locally:
@@ -418,8 +418,10 @@ with st.sidebar:
 
     st.divider()
 
+    st.divider()
+
     # --- Per-stock price targets ---
-    st.subheader("2. Price Targets & Confidence")
+    st.subheader("3. Price Targets & Confidence")
     st.caption(
         "**How these are set:** Base targets are personal estimates derived from "
         "DCF work (May 2025) and updated as new information arrives. "
@@ -468,8 +470,29 @@ with st.sidebar:
                 )
 
     st.divider()
+
+    # --- Backtest estimation window ---
+    st.subheader("4. Backtest Estimation Window")
     st.caption(
-        "🔮 **DCF integration coming soon** -- once your Wall Street Prep models "
+        "Controls how many years of historical data are used to estimate "
+        "covariance and weights at each rolling rebalance step. "
+        "**2 years** is responsive but noisy. "
+        "**3 years** captures a full market cycle and is the recommended default. "
+        "**5 years** is most stable but may be stale for a sector that re-priced "
+        "structurally in 2023. Note: a longer window delays the backtest start date "
+        "by the same amount — the first rebalance can only happen once a full "
+        "window of data is available."
+    )
+    estimation_window_yrs = st.slider(
+        "Estimation window (years)",
+        min_value=1, max_value=7, value=3, step=1,
+        help="1 year = 252 trading days. Feeds into EW, CW, GMV, and Risk Parity rolling backtests.",
+    )
+    estimation_window = estimation_window_yrs * 252
+
+    st.divider()
+    st.caption(
+        "🔮 **DCF integration coming soon** -- once the Wall Street Prep models "
         "are finalised, xlwings will pull targets directly from Excel into the "
         "views matrix above."
     )
@@ -544,7 +567,7 @@ with tab1:
         Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity 
         are purely backward-looking, optimising on historical data and assuming the past repeats. 
         Black-Litterman is different: it takes a forward-looking view on what each stock is worth 
-        and asks how much conviction you should actually act on, relative to the market implied returns. 
+        and asks how much conviction you should act on, relative to the market implied returns. 
         The app lets you build that allocation, stress-test it against real market crashes,  
         and benchmark it against the simpler strategies. 
         
@@ -584,7 +607,7 @@ with tab1:
     st.subheader("Return Decomposition")
     st.caption(
         "This table shows how each input layer stacks up. "
-        "**Q** is the excess-return view you feed in via your price target. "
+        "**Q** is the excess-return view implied by your price target. "
         "**π (pi)** is what the market *implies* given cap weights and risk aversion. "
         "**BL Posterior** is the blended result -- how much your view shifts the equilibrium."
     )
@@ -825,7 +848,7 @@ with tab3:
         arrive in sequences that a Gaussian model systematically understates. The simulation
         above is best read as a baseline of what *typical* uncertainty looks like and not as a
         statement about tail risk. The historic stress tests below ground that picture in what actually
-        happened had you held the BL portfolio.
+        happened holding the BL portfolio.
         """
     )
 
@@ -834,7 +857,7 @@ with tab3:
     # ── Historical Stress Tests ───────────────────────────────────────────────
     st.subheader("Historical Stress Test — BL Weights")
     st.caption(
-        "Applies your BL optimal weights to *actual* historical returns during "
+        "Applies the BL optimal weights to *actual* historical returns during "
         "known market shocks. This shows how this allocation *would* have "
         "performed -- not a forecast."
     )
@@ -893,7 +916,7 @@ with tab4:
     # ── Section 1: Backtested Wealth Index ───────────────────────────────────
     st.subheader("Historical Wealth Index — Strategy Comparison")
     st.caption(
-        "Rolling backtest using a 2-year estimation window to rebalance weights at each step. "
+        f"Rolling backtest using a **{estimation_window_yrs}-year** estimation window to rebalance weights at each step. "
         "EW, Cap-Weighted, GMV, and Risk Parity are properly rolled — weights are re-estimated "
         "each period using only data available at that point in time, so there is no look-ahead. "
         "**Black-Litterman** is shown as a static allocation using the current optimal "
@@ -901,8 +924,6 @@ with tab4:
         "require a fresh set of views at every rebalance date. The chart is therefore best read "
         "as 'how would this portfolio have held up' rather than a like-for-like backtest."
     )
-
-    estimation_window = 2 * 252
 
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
         tick_rets, tick_capweights, estimation_window
@@ -932,7 +953,7 @@ with tab4:
     )
     c2.caption(
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
-        f"Starts 2 years after data begins — the minimum needed for the first rolling estimate."
+        f"Starts {estimation_window_yrs} year(s) after data begins — the minimum needed for the first rolling estimate."
     )
 
     wealth = (1 + btr).cumprod() * 10_000
