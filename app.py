@@ -310,9 +310,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "🔮 **DCF integration coming soon** -- once your Wall Street Prep models "
-        "are finalised, xlwings will pull targets directly from Excel into the "
-        "views matrix above."
+        "🔮 **DCF integration coming soon**"
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -389,12 +387,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1 -- Views & Returns Decomposition
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.subheader("Return Decomposition")
+    st.subheader("Decomposition of Returns")
     st.caption(
-        "This table shows how each input layer stacks up. "
+        "This table shows how returns are decomposed: "
         "**Q** is the excess-return view you feed in via your price target. "
-        "**π (pi)** is what the market *implies* given cap weights and risk aversion. "
-        "**BL Posterior** is the blended result -- how much your view shifts the equilibrium."
+        "**π (pi)** is what market *implied* returns given cap weights and risk aversion. "
+        "**BL Posterior** is the blended result (aka how much views shifts the equilibrium)."
     )
 
     view_df = pd.DataFrame({
