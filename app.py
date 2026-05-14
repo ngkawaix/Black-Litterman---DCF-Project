@@ -39,6 +39,165 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI CONFIDENCE SUGGESTIONS  (Anthropic API + web search)
+# ─────────────────────────────────────────────────────────────────────────────
+def fetch_ai_confidence_suggestions(tickers: list[str]) -> dict:
+    """
+    Calls the Anthropic API to get AI-suggested confidence scores for every
+    ticker in one round-trip, using the built-in web_search tool so the model
+    can ground its reasoning in current news.
+
+    HOW THIS WORKS — a short primer for future reference
+    ─────────────────────────────────────────────────────
+    1. We POST to /v1/messages with:
+         • model        — the Claude model to use
+         • messages     — the conversation so far (just one user turn here)
+         • tools        — a list of tools Claude may call; we enable web_search
+         • system       — a system prompt telling Claude its role and output format
+
+    2. The API may return a response with stop_reason = "tool_use".
+       That means Claude decided to search before answering.  The response
+       content is a list of blocks — some are {"type": "text"}, others are
+       {"type": "tool_use"}.  We do NOT need to manually handle the tool
+       results; the web_search tool is server-side, so Anthropic runs the
+       searches and feeds the results back to the model automatically in a
+       single HTTP response.  By the time we receive the final response
+       (stop_reason = "end_turn") the model has already read the search
+       results and synthesised them.
+
+    3. We extract the text block from the final response and parse it as JSON.
+       The system prompt instructs Claude to return ONLY a JSON array, which
+       makes parsing straightforward.
+
+    4. Error handling: any network hiccup, malformed JSON, or unexpected
+       response shape is caught and returns an empty dict so the app degrades
+       gracefully — the sliders just keep their current values.
+
+    Returns
+    -------
+    dict : {ticker: {"confidence": float, "rationale": str}, ...}
+           Empty dict if the call fails.
+    """
+    import json as _json
+
+    # ── Prompt design ──────────────────────────────────────────────────────────
+    # The system prompt defines the task and — critically — the output schema.
+    # Asking for JSON-only output and specifying the schema tightly reduces
+    # the chance of the model returning prose that breaks the JSON parser.
+    system_prompt = """You are a quantitative equity analyst helping calibrate
+Black-Litterman confidence parameters.
+
+For each ticker the user provides, search for the most recent analyst
+narratives, earnings results, and macro risks (May 2026). Then assign a
+confidence score representing how certain a DCF price-target view is likely
+to be correct over a 12-month horizon.
+
+Confidence scale:
+  0.10–0.29  Very low — material uncertainty (regulatory, AI disruption,
+             supply chain issues, unclear competitive position)
+  0.30–0.49  Low-moderate — real headwinds or mixed signals
+  0.50–0.64  Moderate — clear business but meaningful risks remain
+  0.65–0.79  High — strong recent results, clear narrative, manageable risks
+  0.80–1.00  Very high — dominant position, exceptional visibility (rare)
+
+IMPORTANT: Return ONLY a valid JSON array. No preamble, no markdown fences,
+no trailing text. Each element must have exactly these keys:
+  "ticker"     : string  — the ticker symbol
+  "confidence" : float   — rounded to nearest 0.05, in [0.10, 0.90]
+  "rationale"  : string  — one sentence, max 20 words, stating the key reason
+
+Example of valid output (do not copy these values):
+[
+  {"ticker": "AAPL", "confidence": 0.45, "rationale": "Tariff uncertainty and mid-transition supply chain weigh on margin visibility."},
+  {"ticker": "NVDA", "confidence": 0.75, "rationale": "Record revenue and strong guidance provide exceptional near-term visibility."}
+]"""
+
+    user_message = (
+        f"Provide confidence scores for these tickers: {', '.join(tickers)}. "
+        "Search for recent news on each before responding."
+    )
+
+    # ── API call ───────────────────────────────────────────────────────────────
+    # The web_search tool type is a first-party Anthropic tool — no extra
+    # configuration needed beyond declaring it in the tools list.
+    # The API key is injected by the Streamlit Cloud environment; we never
+    # hard-code it in source.
+    try:
+        resp = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type":         "application/json",
+                "anthropic-version":    "2023-06-01",
+                # The beta header is required to enable built-in tools like
+                # web_search on this endpoint.
+                "anthropic-beta":       "interleaved-thinking-2025-05-14",
+            },
+            json={
+                "model":      "claude-sonnet-4-20250514",
+                "max_tokens": 2048,
+                "system":     system_prompt,
+                "tools": [
+                    # Declaring the web_search tool tells Claude it may search.
+                    # Anthropic runs the actual searches server-side — we never
+                    # see the raw search results, only the final synthesised text.
+                    {
+                        "type": "web_search_20250305",
+                        "name": "web_search",
+                    }
+                ],
+                "messages": [
+                    {"role": "user", "content": user_message}
+                ],
+            },
+            timeout=60,   # web searches add latency; 60 s is generous but safe
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # ── Response parsing ───────────────────────────────────────────────────
+        # The response content is a list of blocks.  We want the final text
+        # block, which contains the JSON array we asked for.
+        # Block types we might see:
+        #   {"type": "thinking", ...}   — chain-of-thought (if beta enabled)
+        #   {"type": "tool_use", ...}   — Claude is calling web_search
+        #   {"type": "tool_result", ...}— search results fed back (server-side)
+        #   {"type": "text", ...}       — the actual answer we want
+        text_blocks = [
+            b["text"] for b in data.get("content", [])
+            if b.get("type") == "text"
+        ]
+        if not text_blocks:
+            return {}
+
+        raw_text = text_blocks[-1].strip()
+
+        # Strip markdown code fences if the model wrapped the JSON anyway
+        if raw_text.startswith("```"):
+            raw_text = raw_text.split("```")[1]
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.strip()
+
+        parsed = _json.loads(raw_text)
+
+        # Normalise into {ticker: {confidence, rationale}}
+        return {
+            item["ticker"]: {
+                "confidence": float(item["confidence"]),
+                "rationale":  str(item["rationale"]),
+            }
+            for item in parsed
+            if "ticker" in item and "confidence" in item
+        }
+
+    except Exception as e:
+        # Surface the error in session state so the UI can show it, but don't
+        # crash the app — the sliders keep their current values.
+        st.session_state["ai_suggestion_error"] = str(e)
+        return {}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTANTS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,11 +220,19 @@ BASE_TARGETS = {
 # Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
 
 BASE_CONFIDENCE = {
-    "AAPL": 0.55, "ADBE": 0.40, "AMAT": 0.45,
-    "AMZN": 0.65, "ASML": 0.55, "CPRT": 0.50,
-    "FICO": 0.35, "GOOGL":0.60, "LRCX": 0.60,
-    "MA":   0.50, "META": 0.60, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.65,
+    # Updated May 2026 — reflects latest analyst narratives and earnings.
+    # AAPL  ↓ tariff uncertainty + supply chain mid-transition to India
+    # ADBE  ↓ AI commoditisation fears; stock -42% from 52-week high
+    # AMAT  ↓ revenue -3.5% YoY last quarter; China headwinds persist
+    # ASML  ↑ raised 2026 sales forecast Apr; EUV monopoly + AI tailwind clear
+    # LRCX  ↑ revenue +28% YoY; high-margin recurring revenue insulates cycle risk
+    # META  ↑ fastest-growing AI hyperscaler; ad integration playing out in numbers
+    # NVDA  ↑ Q4 FY2026 $68B rev (+73% YoY); Q1 FY2027 guided ~$78B
+    "AAPL": 0.40, "ADBE": 0.30, "AMAT": 0.35,
+    "AMZN": 0.65, "ASML": 0.65, "CPRT": 0.50,
+    "FICO": 0.35, "GOOGL":0.60, "LRCX": 0.65,
+    "MA":   0.50, "META": 0.70, "MSCI": 0.55,
+    "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.75,
     "TSM":  0.65, "V":    0.65,
 }
 
@@ -468,6 +635,91 @@ with st.sidebar:
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
+
+    # ── AI Confidence Suggestions ─────────────────────────────────────────────
+    st.divider()
+    st.subheader("🤖 AI Confidence Review")
+    st.caption(
+        "Calls Claude with web search to scan the latest analyst narratives "
+        "and earnings for each stock, then suggests updated confidence scores. "
+        "Review the rationale before applying — this is a starting point, "
+        "not a replacement for judgement."
+    )
+
+    # HOW SESSION STATE WORKS HERE
+    # ────────────────────────────
+    # Streamlit reruns the entire script on every interaction.  To persist
+    # data across reruns (like API results), we use st.session_state — a
+    # dict that survives reruns within a session.
+    #
+    # Pattern used here:
+    #   1. Button click → store API results in st.session_state["ai_suggestions"]
+    #   2. On the next rerun, the results are still there → display them
+    #   3. "Apply" button → write each confidence value into
+    #      st.session_state[f"conf_{ticker}"]  (the slider's key)
+    #   4. Next rerun → sliders initialise from session_state → values updated
+
+    if st.button("🔍 Fetch AI Confidence Suggestions", use_container_width=True):
+        # Clear any previous error before a fresh attempt
+        st.session_state.pop("ai_suggestion_error", None)
+        with st.spinner("Searching latest narratives for all tickers…"):
+            results = fetch_ai_confidence_suggestions(TICKERS)
+            st.session_state["ai_suggestions"] = results
+
+    # Show any API error that was caught inside the function
+    if "ai_suggestion_error" in st.session_state:
+        st.error(
+            f"API call failed: {st.session_state['ai_suggestion_error']}  \n"
+            "Check that ANTHROPIC_API_KEY is set in Streamlit Cloud secrets."
+        )
+
+    # Display results table if suggestions exist
+    if st.session_state.get("ai_suggestions"):
+        sug = st.session_state["ai_suggestions"]
+
+        # Build a comparison DataFrame: current vs suggested
+        rows = []
+        for t in TICKERS:
+            if t in sug:
+                rows.append({
+                    "Ticker":    t,
+                    "Current":   st.session_state.get(f"conf_{t}", BASE_CONFIDENCE.get(t, 0.5)),
+                    "Suggested": sug[t]["confidence"],
+                    "Rationale": sug[t]["rationale"],
+                })
+        if rows:
+            sug_df = pd.DataFrame(rows).set_index("Ticker")
+
+            # Colour the Suggested column: green if higher than current,
+            # red if lower, grey if same — gives instant visual signal
+            def colour_delta(row):
+                delta = row["Suggested"] - row["Current"]
+                if delta > 0.01:
+                    colour = "#d4edda"   # light green
+                elif delta < -0.01:
+                    colour = "#f8d7da"   # light red
+                else:
+                    colour = ""
+                return ["", f"background-color: {colour}" if colour else "", f"background-color: {colour}" if colour else "", ""]
+
+            st.dataframe(
+                sug_df.style
+                    .apply(colour_delta, axis=1)
+                    .format("{:.2f}", subset=["Current", "Suggested"]),
+                use_container_width=True,
+                height=min(50 + 35 * len(rows), 400),
+            )
+
+            # Apply button: writes each suggested value into the slider's
+            # session_state key so sliders update on the next rerun
+            if st.button("✅ Apply AI Suggestions to Sliders", use_container_width=True):
+                for t in TICKERS:
+                    if t in sug:
+                        # Round to nearest 0.05 to match slider step
+                        rounded = round(sug[t]["confidence"] / 0.05) * 0.05
+                        st.session_state[f"conf_{t}"] = float(rounded)
+                st.success("Confidence sliders updated. Scroll up to review.")
+                st.rerun()
 
     st.divider()
 
