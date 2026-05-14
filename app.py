@@ -310,9 +310,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "🔮 **DCF integration coming soon** -- once your Wall Street Prep models "
-        "are finalised, xlwings will pull targets directly from Excel into the "
-        "views matrix above."
+        "🔮 **DCF integration coming soon**"
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
