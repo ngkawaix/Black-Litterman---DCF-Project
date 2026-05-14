@@ -929,6 +929,66 @@ with tab1:
         "**BL Posterior** is the blended output — the return the optimiser actually uses."
     )
 
+    view_df = pd.DataFrame({
+        "Current Price ($)":          current_prices,
+        "Price Target ($)":           targets_series,
+        "Total Return View":          total_return_views,
+        "Risk-Free Rate (rf)":        RF,
+        "Excess Return View (Q)":     total_return_views - RF,
+        "Market-Implied Return (π)":  pi,
+        "BL Posterior Return":        mu_bl,
+        "Confidence":                 pd.Series(user_confidence).reindex(tick_rets.columns),
+    }).sort_values("Excess Return View (Q)", ascending=False)
+
+    pct_cols = [
+        "Total Return View", "Risk-Free Rate (rf)",
+        "Excess Return View (Q)", "Market-Implied Return (π)", "BL Posterior Return",
+        "Confidence",
+    ]
+    dollar_cols = ["Current Price ($)", "Price Target ($)"]
+
+    styled = view_df.style \
+        .format("{:.2%}", subset=pct_cols) \
+        .format("${:,.2f}", subset=dollar_cols) \
+        .background_gradient(subset=["BL Posterior Return"], cmap="RdYlGn")
+
+    st.dataframe(styled, use_container_width=True)
+
+    # Bar chart: Q vs pi vs BL posterior
+    fig = go.Figure()
+    sorted_tickers = view_df.index.tolist()
+
+    fig.add_trace(go.Bar(
+        name="Market-Implied (π)",
+        x=sorted_tickers,
+        y=pi.reindex(sorted_tickers).values,
+        marker_color="steelblue",
+        opacity=0.7,
+    ))
+    fig.add_trace(go.Bar(
+        name="View (Q)",
+        x=sorted_tickers,
+        y=(total_return_views - RF).reindex(sorted_tickers).values,
+        marker_color="orange",
+        opacity=0.7,
+    ))
+    fig.add_trace(go.Bar(
+        name="BL Posterior",
+        x=sorted_tickers,
+        y=mu_bl.reindex(sorted_tickers).values,
+        marker_color="seagreen",
+        opacity=0.9,
+    ))
+    fig.update_layout(
+        barmode="group",
+        title="π  vs  View (Q)  vs  BL Posterior Return",
+        yaxis_tickformat=".1%",
+        height=420,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 -- BL Portfolio Weights
 # ══════════════════════════════════════════════════════════════════════════════
