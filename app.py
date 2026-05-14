@@ -369,7 +369,7 @@ st.caption(
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
     f"Data retrieved: **{tick_rets.index[0].date()} to {tick_rets.index[-1].date()}**"
-    f"Dates dropped due to NA retrievals from yfinance": {len(tick_rets_original) - len(tick_rets)}"
+    f"Dates dropped due to NA retrievals from yfinance: {len(tick_rets_original) - len(tick_rets)}"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
