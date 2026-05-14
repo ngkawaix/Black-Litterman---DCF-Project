@@ -61,9 +61,8 @@ BASE_TARGETS = {
     "V":    394.00, "WDC":  415.00,
 }
 
-# Bear = 20 % below base;  Bull = 25 % above base  (sensible defaults -- override in sidebar)
-BEAR_TARGETS  = {k: round(v * 0.80, 2) for k, v in BASE_TARGETS.items()}
-BULL_TARGETS  = {k: round(v * 1.25, 2) for k, v in BASE_TARGETS.items()}
+# Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
+# BEAR_TARGETS and BULL_TARGETS will be reintroduced once per-stock DCF models are complete.
 
 BASE_CONFIDENCE = {
     "AAPL": 0.55, "ADBE": 0.40, "AMAT": 0.45, "AMD":  0.60,
@@ -209,6 +208,37 @@ def load_consensus_and_earnings(tickers):
     return consensus, recent_earnings
 
 
+@st.cache_data(show_spinner="Running rolling backtests…")
+def run_backtests(_tick_rets, _tick_capweights, estimation_window):
+    """
+    Runs all four rolling-window backtests and returns a returns DataFrame.
+    Results are cached against the price data hash, so re-running only happens
+    when new market data is fetched — not on every slider or input interaction.
+
+    Underscore-prefixed args tell Streamlit to hash by object identity rather
+    than value (DataFrames are not directly hashable).
+    """
+    ew_r  = erk.backtest_ws(
+        _tick_rets, estimation_window=estimation_window,
+        weighting=erk.weight_ew,
+    )
+    cw_r  = erk.backtest_ws(
+        _tick_rets, estimation_window=estimation_window,
+        weighting=erk.weight_cw, cap_weights=_tick_capweights,
+    )
+    gmv_r = erk.backtest_ws(
+        _tick_rets, estimation_window=estimation_window,
+        weighting=erk.weight_gmv,
+        cov_estimator=erk.shrinkage_cov, delta=0.7,
+    )
+    erc_r = erk.backtest_ws(
+        _tick_rets, estimation_window=estimation_window,
+        weighting=erk.weight_erc,
+        cov_estimator=erk.shrinkage_cov, delta=0.7,
+    )
+    return ew_r, cw_r, gmv_r, erc_r
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # BLACK-LITTERMAN HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -320,26 +350,8 @@ consensus_data, recent_earnings = load_consensus_and_earnings(TICKERS)
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
-    # --- Scenario selector ---
-    st.subheader("1. DCF Scenario")
-    st.caption(
-        "Bear / Base / Bull cases map to conservative, central, and optimistic "
-        "DCF price targets. These drive the views (Q) fed into Black-Litterman."
-    )
-    scenario = st.radio(
-        "Active scenario",
-        options=["Bear 🐻", "Base 📊", "Bull 🐂"],
-        index=1,
-        horizontal=True,
-    )
-
-    scenario_map = {"Bear 🐻": BEAR_TARGETS, "Base 📊": BASE_TARGETS, "Bull 🐂": BULL_TARGETS}
-    active_targets_default = scenario_map[scenario]
-
-    st.divider()
-
     # --- BL parameters ---
-    st.subheader("2. Black-Litterman Parameters")
+    st.subheader("1. Black-Litterman Parameters")
     st.caption(
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
         "Standard value is 2.5. Higher --> market expects more return per unit of risk."
@@ -355,7 +367,7 @@ with st.sidebar:
     st.divider()
 
     # --- Per-stock price targets ---
-    st.subheader("3. Price Targets & Confidence")
+    st.subheader("2. Price Targets & Confidence")
     st.caption(
         "**How these are set:** Base targets are personal estimates derived from "
         "DCF work (May 2025) and updated as new information arrives. "
@@ -390,7 +402,7 @@ with st.sidebar:
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
-                    value=float(active_targets_default[ticker]),
+                    value=float(BASE_TARGETS[ticker]),
                     step=1.0,
                     key=f"pt_{ticker}",
                 )
@@ -450,7 +462,6 @@ with st.spinner("Running Black-Litterman optimisation…"):
 # ─────────────────────────────────────────────────────────────────────────────
 st.title("📊 DCF × Black-Litterman Portfolio Optimiser")
 st.caption(
-    f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
@@ -473,18 +484,16 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(
         """
-        I built this app to answer a question that nagged me through two courses — EDHEC's Advanced
-        Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
+        I built this app to answer a question that nagged me as I undertook two courses by EDHEC's Advanced
+        Portfolio Construction and Wall Street Prep's DCF modeling course: once you have a view on what
         a stock is worth, how do you actually size the position? Most backtested strategies like
-        Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
+        Global Minimum Variance or Risk Parity are purely backward-looking; they optimise on
         historical data and assume the past repeats. Black-Litterman is different: it takes a
         forward-looking view on what each stock is worth and asks how much conviction you should
         actually act on, relative to what the market already implies. The app lets you build that
         allocation, stress-test it against real market crashes, and benchmark it against the simpler
-        strategies. It's a work in progress, but one I've found genuinely useful — and hopefully
-        others will too.
-
-        *Built in Python with the assistance of Claude (Anthropic) as a coding and structuring tool — all modelling decisions, assumptions, and views are my own.*
+        strategies - all by simply keying in your views on certain stocks and the price target of those stocks. 
+        It's a work in progress, but one I've found genuinely useful — and hopefully others will too.
         """
     )
 
@@ -599,7 +608,7 @@ with tab2:
         nonzero,
         path=["Ticker"],
         values="BL Optimised",
-        title=f"BL Weight Allocation -- {scenario}",
+        title=f"BL Weight Allocation",
         color="BL Optimised",
         color_continuous_scale="Blues",
     )
@@ -804,33 +813,17 @@ with tab4:
         "Rolling backtest using a 2-year estimation window to rebalance weights at each step. "
         "EW, Cap-Weighted, GMV, and Risk Parity are properly rolled — weights are re-estimated "
         "each period using only data available at that point in time, so there is no look-ahead. "
-        "**Black-Litterman** is shown as a static allocation using the current scenario's optimal "
+        "**Black-Litterman** is shown as a static allocation using the current optimal "
         "weights applied to the full history. This is a simplification: true BL weights would "
         "require a fresh set of views at every rebalance date. The chart is therefore best read "
         "as 'how would this portfolio have held up' rather than a like-for-like backtest."
     )
 
-    estimation_window = 2 * 252   # 2-year rolling window, matching the screenshot
+    estimation_window = 2 * 252
 
-    with st.spinner("Running rolling backtests…"):
-        ew_r  = erk.backtest_ws(
-            tick_rets, estimation_window=estimation_window,
-            weighting=erk.weight_ew,
-        )
-        cw_r  = erk.backtest_ws(
-            tick_rets, estimation_window=estimation_window,
-            weighting=erk.weight_cw, cap_weights=tick_capweights,
-        )
-        gmv_r = erk.backtest_ws(
-            tick_rets, estimation_window=estimation_window,
-            weighting=erk.weight_gmv,
-            cov_estimator=erk.shrinkage_cov, delta=0.7,
-        )
-        erc_r = erk.backtest_ws(
-            tick_rets, estimation_window=estimation_window,
-            weighting=erk.weight_erc,
-            cov_estimator=erk.shrinkage_cov, delta=0.7,
-        )
+    ew_r, cw_r, gmv_r, erc_r = run_backtests(
+        tick_rets, tick_capweights, estimation_window
+    )
 
     # BL: static weights applied to full history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
@@ -841,7 +834,7 @@ with tab4:
         "Cap-Weighted":            cw_r,
         "GMV (Shrinkage)":         gmv_r,
         "Risk Parity":             erc_r,
-        f"BL — {scenario} (static)": bl_r,
+        "BL (static)": bl_r,
     }).dropna()
 
     bl_estimation_start = tick_rets.index[0].date()
@@ -867,7 +860,7 @@ with tab4:
         "Cap-Weighted":            ("slategray",    1.2, "dot"),
         "GMV (Shrinkage)":         ("darkorange",   1.2, "dot"),
         "Risk Parity":             ("mediumpurple", 1.2, "dot"),
-        f"BL — {scenario} (static)": ("seagreen",  2.5, "solid"),
+        "BL (static)":             ("seagreen",  2.5, "solid"),
     }
 
     fig_wealth = go.Figure()
@@ -929,7 +922,7 @@ with tab4:
         "Cap-Weighted":     cw_w_s,
         "GMV (Shrinkage)":  pd.Series(gmv_w, index=tick_rets.columns),
         "Risk Parity":      pd.Series(erc_w, index=tick_rets.columns),
-        f"Black-Litterman ({scenario})": bl_w_series,
+        "Black-Litterman":      bl_w_series,
     }
 
     comparison = {}
