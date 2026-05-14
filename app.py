@@ -96,116 +96,105 @@ def load_market_data(tickers, start="2000-01-01"):
     return price_data, tick_rets
 
 
-@st.cache_data(show_spinner="Building market-cap weights…")
-def load_mcap_weights(_price_data, tickers):
+@st.cache_data(show_spinner="Fetching ticker metadata (mcap, consensus, earnings)…", ttl=86400)
+def load_ticker_metadata(_price_data, tickers):
     """
-    Fetches current market cap for each ticker and returns a weight Series
-    broadcast into a DataFrame matching price_data's index.
-    Falls back to equal weights for any missing tickers.
-    """
-    mcap = {}
-    for ticker in tickers:
-        try:
-            info = yf.Ticker(ticker).info
-            mcap[ticker] = info.get("marketCap", None)
-        except Exception:
-            mcap[ticker] = None
+    Single-pass fetch for all per-ticker metadata: market cap, analyst
+    consensus target, analyst count, and recent-earnings flag.
 
+    Replaces the previous separate load_mcap_weights and
+    load_consensus_and_earnings functions, halving the number of API calls
+    (one .info + one .calendar per ticker instead of up to three .info calls).
+    A 0.2 s sleep between tickers keeps Yahoo Finance from rate-limiting
+    the Streamlit Cloud shared IP.
+
+    Returns
+    -------
+    mcap_weights_df : pd.DataFrame  -- cap-weight matrix matching price_data index
+    consensus       : dict          -- {ticker: {"mean": float|None, "n_analysts": int|None}}
+    recent_earnings : dict          -- {ticker: bool}
+    """
+    import time
+
+    today  = pd.Timestamp.today().normalize()
+    cutoff = today - pd.Timedelta(days=30)
+
+    mcap            = {}
+    consensus       = {}
+    recent_earnings = {}
+
+    for ticker in tickers:
+        t = yf.Ticker(ticker)
+
+        # ── Single .info call — covers mcap, consensus fallback, analyst count ─
+        info = {}
+        try:
+            info = t.info
+        except Exception:
+            pass
+
+        mcap[ticker] = info.get("marketCap", None)
+
+        # Consensus: try dedicated property first (yfinance 0.2.x), fall back to info
+        mean_t     = None
+        n_analysts = info.get("numberOfAnalystOpinions", None)
+        try:
+            apt    = t.analyst_price_targets
+            mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
+        except Exception:
+            pass
+        if mean_t is None:
+            mean_t = info.get("targetMeanPrice", None)
+
+        consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
+
+        # ── Calendar call for earnings recency flag ───────────────────────────
+        flagged = False
+        try:
+            cal   = t.calendar
+            dates = []
+            if isinstance(cal, dict):
+                raw   = cal.get("Earnings Date", [])
+                dates = raw if isinstance(raw, list) else [raw]
+            elif isinstance(cal, pd.DataFrame) and not cal.empty:
+                col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
+                dates    = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
+            flagged = any(
+                cutoff <= pd.Timestamp(d).normalize() <= today
+                for d in dates if d is not None
+            )
+        except Exception:
+            pass
+        recent_earnings[ticker] = flagged
+
+        time.sleep(0.2)   # stay well within Yahoo Finance's rate limit
+
+    # Build cap-weight DataFrame
     mcap_series = pd.Series(mcap)
-    missing = mcap_series[mcap_series.isna()].index.tolist()
+    missing     = mcap_series[mcap_series.isna()].index.tolist()
     if missing:
         avg = mcap_series.dropna().mean()
         mcap_series[missing] = avg if pd.notna(avg) and avg > 0 else 1.0
-
     weights = mcap_series / mcap_series.sum()
-    idx = _price_data.index
-    return pd.DataFrame(
+    idx     = _price_data.index
+    mcap_weights_df = pd.DataFrame(
         [weights.reindex(tickers).values] * len(idx),
-        index=idx,
-        columns=tickers,
+        index=idx, columns=tickers,
     )
+
+    return mcap_weights_df, consensus, recent_earnings
 
 
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
     try:
-        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS3MO"
-        df  = pd.read_csv(url, parse_dates=["DATE"])
-        df  = df[df["DGS3MO"] != "."]
+        url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS3MO"
+        df   = pd.read_csv(url, parse_dates=["DATE"])
+        df   = df[df["DGS3MO"] != "."]
         rate = float(df["DGS3MO"].iloc[-1]) / 100
         return rate
     except Exception:
         return 0.04
-
-@st.cache_data(show_spinner="Loading analyst consensus & earnings dates…", ttl=86400)
-def load_consensus_and_earnings(tickers):
-    """
-    For each ticker fetches:
-      - targetMeanPrice and numberOfAnalystOpinions from yf.info
-      - whether the most recent earnings date fell within the last 30 days
-        (using yf.Ticker.calendar -- fails gracefully if unavailable)
-
-    Results are cached for 24 h (ttl=86400) so the sidebar doesn't
-    re-fetch on every widget interaction.
-    """
-    today   = pd.Timestamp.today().normalize()
-    cutoff  = today - pd.Timedelta(days=30)
-
-    consensus       = {}
-    recent_earnings = {}
-
-    for ticker in tickers:
-        # ── Consensus price target ────────────────────────────────────────────
-        # yfinance 0.2.x moved analyst targets out of .info into a dedicated
-        # property.  Try that first, then fall back to the legacy .info path.
-        mean_t     = None
-        n_analysts = None
-        try:
-            apt    = yf.Ticker(ticker).analyst_price_targets
-            mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
-        except Exception:
-            pass
-
-        if mean_t is None:
-            try:
-                info       = yf.Ticker(ticker).info
-                mean_t     = info.get("targetMeanPrice", None)
-                n_analysts = info.get("numberOfAnalystOpinions", None)
-            except Exception:
-                pass
-
-        if n_analysts is None:
-            try:
-                info_n     = yf.Ticker(ticker).info
-                n_analysts = info_n.get("numberOfAnalystOpinions", None)
-            except Exception:
-                pass
-
-        consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
-
-        # ── Recent earnings flag ──────────────────────────────────────────────
-        try:
-            cal = yf.Ticker(ticker).calendar
-            dates = []
-            if isinstance(cal, dict):
-                raw = cal.get("Earnings Date", [])
-                dates = raw if isinstance(raw, list) else [raw]
-            elif isinstance(cal, pd.DataFrame) and not cal.empty:
-                if "Earnings Date" in cal.columns:
-                    dates = cal["Earnings Date"].dropna().tolist()
-                elif not cal.empty:
-                    dates = cal.iloc[0].dropna().tolist()
-
-            flagged = any(
-                cutoff <= pd.Timestamp(d).normalize() <= today
-                for d in dates
-                if d is not None
-            )
-            recent_earnings[ticker] = flagged
-        except Exception:
-            recent_earnings[ticker] = False
-
-    return consensus, recent_earnings
 
 
 @st.cache_data(show_spinner="Running rolling backtests…")
@@ -345,7 +334,10 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 # Load consensus data before entering the sidebar block so it's available
 # when rendering per-ticker inputs.  TTL=24 h keeps it fresh without
 # hammering the API on every widget interaction.
-consensus_data, recent_earnings = load_consensus_and_earnings(TICKERS)
+# Price data is loaded here (before the sidebar) so load_ticker_metadata
+# can use it to build cap-weight DataFrames in the same pass.
+price_data, tick_rets = load_market_data(TICKERS)
+tick_capweights, consensus_data, recent_earnings = load_ticker_metadata(price_data, TICKERS)
 
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
@@ -423,11 +415,9 @@ with st.sidebar:
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOAD DATA
+# LOAD DATA  (price data and metadata already fetched before the sidebar)
 # ─────────────────────────────────────────────────────────────────────────────
-price_data, tick_rets   = load_market_data(TICKERS)
-tick_capweights         = load_mcap_weights(price_data, TICKERS)
-RF                      = load_rf()
+RF = load_rf()
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
@@ -484,16 +474,16 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(
         """
-        I built this app to answer a question that nagged me as I undertook two courses by EDHEC's Advanced
-        Portfolio Construction and Wall Street Prep's DCF modeling course: once you have a view on what
+        I built this to answer a question that nagged me through two courses — EDHEC's Advanced
+        Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
         a stock is worth, how do you actually size the position? Most backtested strategies like
-        Global Minimum Variance or Risk Parity are purely backward-looking; they optimise on
+        Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
         historical data and assume the past repeats. Black-Litterman is different: it takes a
         forward-looking view on what each stock is worth and asks how much conviction you should
         actually act on, relative to what the market already implies. The app lets you build that
         allocation, stress-test it against real market crashes, and benchmark it against the simpler
-        strategies - all by simply keying in your views on certain stocks and the price target of those stocks. 
-        It's a work in progress, but one I've found genuinely useful — and hopefully others will too.
+        strategies. It's a work in progress, but one I've found genuinely useful — and hopefully
+        others will too.
         """
     )
 
