@@ -815,15 +815,15 @@ with tab0:
         """
         I built this app to implement the skills I acquired from EDHEC's Advanced
         Portfolio Construction and Wall Street Prep's DCF modelling course. It answers the
-        following question: After calculating the fair value of a stock price through DCF
+        following question: after calculating the fair value of a stock price through DCF
         analysis, how does one implement this knowledge to size their portfolios?
 
         Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity
         are purely backward-looking, optimising on historical data and assuming the past repeats.
-        Black-Litterman is different: it takes a forward-looking view on what each stock is worth
+        The Black-Litterman Model is different. It takes a forward-looking view on what each stock is worth
         and asks how much conviction you should act on, relative to the market implied returns.
-        The app lets you build that allocation, stress-test it against real market crashes,
-        and benchmark it against the simpler strategies.
+        The app lets you build that allocation based on some modelling assumptions, stress-test 
+        those allocations against real market crashes, and benchmark it against other strategies.
 
         This project is still a work in progress and I plan to incorporate more
         robust DCF assumptions as inputs to experiment with the resulting allocations.
@@ -836,9 +836,9 @@ with tab0:
     st.markdown(
         """
         The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen: 5-year average ROIC above 15%, debt-to-equity
-        below 1, consecutive revenue growth over 5 years, and a minimum
-        market cap of $10 billion. ROIC was chosen as the primary quality
+        fundamental screen using four criterias: **(1) 5-year average ROIC above 15%**, (2) debt-to-equity
+        below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
+        market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
         into profit — sustained high ROIC over multiple years is one of the
         most reliable indicators of a durable competitive advantage.
@@ -862,8 +862,7 @@ with tab0:
         """
         Most portfolio optimisers have a fundamental problem: feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
-        unstable allocations — 80% in one stock, zero in everything else. They treat
-        every input as gospel and optimise aggressively on noise.
+        unstable allocations, prone to error maximisation - 80% in one stock, zero in everything else.
 
         **Black-Litterman solves this by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
