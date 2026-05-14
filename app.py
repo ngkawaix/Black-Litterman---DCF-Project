@@ -81,38 +81,38 @@ STRESS_PERIODS = {
 # ─────────────────────────────────────────────────────────────────────────────
 # DATA LOADING  (cached so Streamlit doesn't re-download on every interaction)
 # ─────────────────────────────────────────────────────────────────────────────
-@st.cache_data(show_spinner="Fetching market data from Yahoo Finance…")
-def load_market_data(tickers, start="2000-01-01"):
-    data = yf.download(tickers, start=start, interval="1d", auto_adjust=True, progress=False)
-    price_data = data["Close"]
-    price_data.index = price_data.index.tz_localize(None)
-    price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
-    tick_rets  = price_data.pct_change().dropna()
-    return price_data, tick_rets
-
-
-@st.cache_data(show_spinner="Building historical market-cap weights…")
+@st.cache_data(show_spinner="Building market-cap weights…")
 def load_mcap_weights(_price_data, tickers, start="2000-01-01"):
     """
-    Fetches share counts from yfinance and builds time-series market-cap weights.
-    The leading underscore on _price_data tells Streamlit not to hash that argument.
+    Builds a single-row market-cap weight Series using current market caps.
+    Falls back to equal weights if data is unavailable.
     """
-    mcap_df = pd.DataFrame(index=_price_data.index)
+    mcap = {}
     for ticker in tickers:
-        t_obj  = yf.Ticker(ticker)
-        shares = t_obj.get_shares_full(start=start)
-        if shares is not None and not shares.empty:
-            shares.index = shares.index.tz_localize(None)
-            shares = shares.loc[~shares.index.duplicated(keep="first")]
-            shares_daily = shares.reindex(_price_data.index, method="ffill")
-            mcap_df[ticker] = _price_data[ticker] * shares_daily
-        else:
-            current_shares = t_obj.info.get("sharesOutstanding", 0)
-            mcap_df[ticker] = _price_data[ticker] * current_shares
-    mcap_df /= 1e9
-    mcap_df  = mcap_df.dropna()
-    total    = mcap_df.sum(axis=1)
-    return mcap_df.divide(total, axis="rows")
+        try:
+            info = yf.Ticker(ticker).info
+            mcap[ticker] = info.get("marketCap", None)
+        except Exception:
+            mcap[ticker] = None
+
+    mcap_series = pd.Series(mcap)
+
+    # Fall back to equal weights for any missing tickers
+    missing = mcap_series[mcap_series.isna()].index.tolist()
+    if missing:
+        avg = mcap_series.dropna().mean()
+        mcap_series[missing] = avg if avg > 0 else 1.0
+
+    # Normalise to weights
+    weights = mcap_series / mcap_series.sum()
+
+    # Return as a single-row DataFrame so the rest of the app works unchanged
+    idx = _price_data.index
+    return pd.DataFrame(
+        [weights.reindex(tickers).values] * len(idx),
+        index=idx,
+        columns=tickers,
+    )
 
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
