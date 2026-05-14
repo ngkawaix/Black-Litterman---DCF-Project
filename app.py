@@ -453,17 +453,16 @@ st.caption(
     f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
-    f"Data through: **{tick_rets.index[-1].date()}**"
+    f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📋 Views & Returns",
     "⚖️ BL Weights",
-    "📈 Monte Carlo",
-    "💥 Stress Tests",
+    "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
 ])
 
@@ -472,6 +471,23 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1 -- Views & Returns Decomposition
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
+    st.markdown(
+        """
+        I built this to answer a question that nagged me through two courses — EDHEC's Advanced
+        Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
+        a stock is worth, how do you actually size the position? Most backtested strategies like
+        Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
+        historical data and assume the past repeats. Black-Litterman is different: it takes a
+        forward-looking view on what each stock is worth and asks how much conviction you should
+        actually act on, relative to what the market already implies. The app lets you build that
+        allocation, stress-test it against real market crashes, and benchmark it against the simpler
+        strategies. It's a work in progress, but one I've found genuinely useful — and hopefully
+        others will too.
+        """
+    )
+
+    st.divider()
+
     st.subheader("Return Decomposition")
     st.caption(
         "This table shows how each input layer stacks up. "
@@ -613,7 +629,7 @@ with tab2:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 -- Monte Carlo
+# TAB 3 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
     st.subheader("Correlated GBM Monte Carlo (BL Drift)")
@@ -704,11 +720,25 @@ with tab3:
     st.plotly_chart(fig_hist, use_container_width=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 -- Stress Tests
-# ══════════════════════════════════════════════════════════════════════════════
-with tab4:
-    st.subheader("Historical Stress Test -- BL Weights")
+    st.divider()
+
+    st.markdown(
+        """
+        A correlated GBM treats future returns as a random walk — each day's shock is drawn
+        independently, scaled by historical volatility and the correlations between stocks.
+        What it cannot capture is the clustering of extreme events: in real markets, crashes
+        are not randomly distributed. Volatility spikes, correlations break down, and losses
+        arrive in sequences that a Gaussian model systematically understates. The simulation
+        above is best read as a baseline of what *typical* uncertainty looks like — not as a
+        statement about tail risk. The stress tests below ground that picture in what actually
+        happened.
+        """
+    )
+
+    st.divider()
+
+    # ── Historical Stress Tests ───────────────────────────────────────────────
+    st.subheader("Historical Stress Test — BL Weights")
     st.caption(
         "Applies your BL optimal weights to *actual* historical returns during "
         "known market shocks. This shows how this allocation *would* have "
@@ -763,9 +793,9 @@ with tab4:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 -- Strategy Comparison
+# TAB 4 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
-with tab5:
+with tab4:
     # ── Section 1: Backtested Wealth Index ───────────────────────────────────
     st.subheader("Historical Wealth Index — Strategy Comparison")
     st.caption(
@@ -811,6 +841,21 @@ with tab5:
         "Risk Parity":             erc_r,
         f"BL — {scenario} (static)": bl_r,
     }).dropna()
+
+    bl_estimation_start = tick_rets.index[0].date()
+    bl_estimation_end   = tick_rets.index[-1].date()
+    backtest_start      = btr.index[0].date()
+    backtest_end        = btr.index[-1].date()
+
+    c1, c2 = st.columns(2)
+    c1.caption(
+        f"**BL estimation basis:** {bl_estimation_start} → {bl_estimation_end}  \n"
+        f"Covariance, market-implied returns, and posterior are estimated over this full window."
+    )
+    c2.caption(
+        f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
+        f"Starts 2 years after data begins — the minimum needed for the first rolling estimate."
+    )
 
     wealth = (1 + btr).cumprod()
 
