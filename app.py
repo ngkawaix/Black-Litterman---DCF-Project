@@ -419,6 +419,7 @@ RF                      = load_rf()
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
+tick_rets_original = tick_rets.copy()
 tick_rets       = tick_rets.loc[common_index]
 tick_capweights = tick_capweights.loc[common_index]
 
@@ -453,7 +454,8 @@ st.caption(
     f"**Scenario: {scenario}**  |  "
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
-    f"Data through: **{tick_rets.index[-1].date()}**"
+    f"Data range: **{tick_rets.index[0]} to {tick_rets.index[-1]}.date()}**  |  "
+    f"Dates dropped: **{len(tick_rets_original) - len(tick_rets)}**"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
