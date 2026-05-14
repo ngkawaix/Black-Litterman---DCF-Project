@@ -820,7 +820,8 @@ with tab1:
         are purely backward-looking, optimising on historical data and assuming the past repeats. 
         Black-Litterman is different: it takes a forward-looking view on what each stock is worth 
         and asks how much conviction you should act on, relative to the market implied returns. 
-        I wanted this app to lets you build that allocation, stress-test it against real market crashes, and benchmark it against the simpler strategies.
+        The app lets you build that allocation, stress-test it against real market crashes,  
+        and benchmark it against the simpler strategies. 
         
         This project is still a work in progress and I plan to incorporate more 
         robust DCF assumption as inputs to experiment with the resulting allocations.
@@ -834,8 +835,8 @@ with tab1:
         **Stock universe**
 
         The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen of four criterias: (1) 5-year average ROIC above 15%, (2) debt-to-equity
-        below 1, (3) consecutive revenue growth over 5 years, and (4) a minimum
+        fundamental screen: 5-year average ROIC above 15%, debt-to-equity
+        below 1, consecutive revenue growth over 5 years, and a minimum
         market cap of $10 billion. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
         into profit — sustained high ROIC over multiple years is one of the
@@ -855,12 +856,82 @@ with tab1:
 
     st.divider()
 
+    st.subheader("How Black-Litterman Works")
+    st.markdown(
+        """
+        Most portfolio optimisers have a fundamental problem: feed them expected returns
+        built purely from historical data or analyst targets, and they produce extreme,
+        unstable allocations — 80% in one stock, zero in everything else. They treat every
+        input as gospel and optimise aggressively on noise.
+
+        **Black-Litterman solves this by never letting your view stand alone.**
+        Instead, it always asks: *relative to what the market collectively believes,
+        how much should your view actually shift the allocation?*
+
+        The model has two inputs:
+
+        - **The market prior (π)** — what the market implies everyone should expect,
+          derived by reverse-engineering the CAPM: if every investor holds the market
+          portfolio, what expected returns would justify current prices and weights?
+          This is the baseline the model starts from.
+
+        - **Your views (Q)** — the excess return implied by each DCF price target
+          (total return minus the risk-free rate). This is the analyst judgment layer.
+
+        It then blends them using a precision-weighted average — the formula below.
+        *Precision* is just inverse uncertainty: the more confident you are, the more
+        weight your view gets. The less confident, the more the model falls back to
+        what the market implies.
+        """
+    )
+
+    st.markdown(
+        r"""
+        $$
+        \mu_{BL} =
+        \left[ (	au\Sigma)^{-1} + P^	op \Omega^{-1} P 
+ight]^{-1}
+        \left[ (	au\Sigma)^{-1} \pi + P^	op \Omega^{-1} Q 
+ight]
+        $$
+        """
+    )
+
+    st.markdown(
+        """
+        **Every term, in plain English:**
+
+        | Symbol | Name | What it means |
+        |--------|------|---------------|
+        | **μ_BL** | Posterior expected return | The model's final blended return estimate — what feeds into the optimiser |
+        | **π** (pi) | Market-implied equilibrium return | What the market collectively expects, derived from cap weights and risk aversion |
+        | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
+        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together — captures correlation risk |
+        | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
+        | **P** | View matrix | Maps each view to the stocks it applies to; here it is an identity matrix — one view per stock |
+        | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders using the Idzorek method |
+
+        **The intuition:** The formula is a tug-of-war between π and Q, refereed by
+        uncertainty. When confidence is high, Ω is small, its inverse is large, and Q
+        pulls the posterior strongly away from π. When confidence is low, Ω is large,
+        its inverse shrinks, and the posterior barely moves from the market equilibrium.
+        The covariance Σ ensures that stocks with shared risk exposures influence each
+        other — a high-conviction view on NVDA will nudge the posterior for TSM too,
+        because they co-move.
+
+        The table below shows this blending in action for every stock in the portfolio.
+        """
+    )
+
+    st.divider()
+
     st.subheader("Return Decomposition")
     st.caption(
-        "This table shows how each input layer stacks up. "
-        "**Q** is the excess-return view implied by your price target. "
-        "**π (pi)** is what the market *implies* given cap weights and risk aversion. "
-        "**BL Posterior** is the blended result -- how much your view shifts the equilibrium."
+        "Each column is one layer of the BL process. "
+        "**Total Return View** is the raw DCF-implied return. "
+        "**Q** subtracts the risk-free rate to get the excess return fed into the model. "
+        "**π** is the market equilibrium baseline. "
+        "**BL Posterior** is the blended output — the return the optimiser actually uses."
     )
 
     view_df = pd.DataFrame({
