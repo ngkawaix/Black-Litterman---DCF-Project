@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import yfinance as yf
-import pandas_datareader.data as web
+import requests
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
@@ -114,16 +114,16 @@ def load_mcap_weights(_price_data, tickers, start="2000-01-01"):
     total    = mcap_df.sum(axis=1)
     return mcap_df.divide(total, axis="rows")
 
-
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
     try:
-        tbill = web.DataReader("DGS3MO", "fred", start="2020-01-01", end=datetime.today())
-        rate  = tbill["DGS3MO"].dropna().iloc[-1] / 100
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS3MO"
+        df  = pd.read_csv(url, parse_dates=["DATE"])
+        df  = df[df["DGS3MO"] != "."]
+        rate = float(df["DGS3MO"].iloc[-1]) / 100
         return rate
     except Exception:
         return 0.04
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BLACK-LITTERMAN HELPERS
