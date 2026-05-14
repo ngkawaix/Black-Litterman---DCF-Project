@@ -245,28 +245,10 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
-    # --- Scenario selector ---
-    st.subheader("1. DCF Scenario -- Feature to be added soon!")
-    st.caption(
-        "Bear / Base / Bull cases map to conservative, central, and optimistic "
-        "DCF price targets. These drive the views (Q) fed into Black-Litterman."
-    )
-    scenario = st.radio(
-        "Active scenario",
-        options=["Bear 🐻", "Base 📊", "Bull 🐂"],
-        index=1,
-        horizontal=True,
-    )
-
-    scenario_map = {"Bear 🐻": BEAR_TARGETS, "Base 📊": BASE_TARGETS, "Bull 🐂": BULL_TARGETS}
-    active_targets_default = scenario_map[scenario]
-
-    st.divider()
-
     # --- BL parameters ---
-    st.subheader("2. Black-Litterman Parameters")
+    st.subheader("1. Black-Litterman Parameters")
     st.caption(
-        "Cap Weights are taken to be the market prior"
+        "**Cap Weights are taken to be the market prior** "
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
         "Standard value is 2.5. Higher δ means market expects more return per unit of risk."
     )
@@ -281,7 +263,7 @@ with st.sidebar:
     st.divider()
 
     # --- Per-stock price targets ---
-    st.subheader("3. Price Targets & Confidence")
+    st.subheader("2. Price Targets & Confidence")
     st.caption(
         "Expand each ticker to override the scenario default. "
         "**Confidence** (Idzorek method) is how strongly you weight your view "
@@ -313,6 +295,24 @@ with st.sidebar:
     st.caption(
         "🔮 **DCF integration coming soon**"
     )
+
+    # --- Scenario selector ---
+    st.subheader("3. DCF Scenario -- Feature to be added soon!")
+    st.caption(
+        "Bear / Base / Bull cases map to conservative, central, and optimistic "
+        "DCF price targets. These drive the views (Q) fed into Black-Litterman."
+    )
+    scenario = st.radio(
+        "Active scenario",
+        options=["Bear 🐻", "Base 📊", "Bull 🐂"],
+        index=1,
+        horizontal=True,
+    )
+
+    scenario_map = {"Bear 🐻": BEAR_TARGETS, "Base 📊": BASE_TARGETS, "Bull 🐂": BULL_TARGETS}
+    active_targets_default = scenario_map[scenario]
+
+    st.divider()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA
