@@ -785,7 +785,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 # ─────────────────────────────────────────────────────────────────────────────
 # HEADER
 # ─────────────────────────────────────────────────────────────────────────────
-st.title("📊 DCF × Black-Litterman Portfolio Optimiser")
+st.title("DCF × Black-Litterman Portfolio Optimiser")
 st.caption(
     f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
