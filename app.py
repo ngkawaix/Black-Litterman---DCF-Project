@@ -239,12 +239,6 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     cw_w       : pd.Series   -- cap weights used as the market prior
     sigma      : pd.DataFrame -- annualised covariance (shrinkage)
     """
-    current_prices = price_targets.index.map(
-        lambda t: tick_rets.shape   # placeholder -- resolved below
-    )
-    # This is cleaner:
-    price_data_last = tick_rets   # we only need the index here; prices come from outside
-
     # Total return view and excess return view Q
     # (price_targets already passed in as a Series indexed by ticker)
     total_return_views = pd.Series(price_targets)
@@ -472,7 +466,7 @@ with tab1:
 
         I built this app to implement the skills I acquired from EDHEC's Advanced
         Portfolio Construction and Wall Street Prep's DCF modelling course. It answers the
-        following question: After calculating the fair value fo a stock price through DCF
+        following question: After calculating the fair value of a stock price through DCF
         analysis, how does one implement this knowledge to size their portfolios?
         
         Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity 
@@ -482,14 +476,14 @@ with tab1:
         The app lets you build that allocation, stress-test it against real market crashes,  
         and benchmark it against the simpler strategies. 
         
-        This project is still a work in progress and I plan to incoporate more 
+        This project is still a work in progress and I plan to incorporate more 
         robust DCF assumption as inputs to experiment with the resulting allocations.
         """
     )
 
     st.divider()
-    
-        st.markdown(
+
+    st.markdown(
         """
         **Stock universe**
 
