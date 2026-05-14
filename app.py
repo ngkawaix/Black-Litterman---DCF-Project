@@ -245,25 +245,42 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
-    # --- BL parameters ---
-    st.subheader("1. Black-Litterman Parameters")
+    # --- Scenario selector ---
+    st.subheader("1. DCF Scenario -- to be incorporated soon!")
     st.caption(
-        "**Cap Weights are taken to be the market prior** "
+        "Bear / Base / Bull cases map to conservative, central, and optimistic "
+        "DCF price targets. These drive the views (Q) fed into Black-Litterman."
+    )
+    scenario = st.radio(
+        "Active scenario",
+        options=["Bear 🐻", "Base 📊", "Bull 🐂"],
+        index=1,
+        horizontal=True,
+    )
+
+    scenario_map = {"Bear 🐻": BEAR_TARGETS, "Base 📊": BASE_TARGETS, "Bull 🐂": BULL_TARGETS}
+    active_targets_default = scenario_map[scenario]
+
+    st.divider()
+
+    # --- BL parameters ---
+    st.subheader("2. Black-Litterman Parameters")
+    st.caption(
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
-        "Standard value is 2.5. Higher δ means market expects more return per unit of risk."
+        "Standard value is 2.5. Higher --> market expects more return per unit of risk."
     )
     delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
 
     st.caption(
         "**τ (tau)** = uncertainty in the prior (equilibrium) returns. "
-        "Standard value is 0.2. Higher τ means you trust the market prior more over your own views."
+        "Smaller τ means you trust the market prior more over your own views."
     )
     tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
     st.divider()
 
     # --- Per-stock price targets ---
-    st.subheader("2. Price Targets & Confidence")
+    st.subheader("3. Price Targets & Confidence")
     st.caption(
         "Expand each ticker to override the scenario default. "
         "**Confidence** (Idzorek method) is how strongly you weight your view "
@@ -293,26 +310,10 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "🔮 **DCF integration coming soon**"
+        "🔮 **DCF integration coming soon** -- once your Wall Street Prep models "
+        "are finalised, xlwings will pull targets directly from Excel into the "
+        "views matrix above."
     )
-
-    # --- Scenario selector ---
-    st.subheader("3. DCF Scenario -- Feature to be added soon!")
-    st.caption(
-        "Bear / Base / Bull cases map to conservative, central, and optimistic "
-        "DCF price targets. These drive the views (Q) fed into Black-Litterman."
-    )
-    scenario = st.radio(
-        "Active scenario",
-        options=["Bear 🐻", "Base 📊", "Bull 🐂"],
-        index=1,
-        horizontal=True,
-    )
-
-    scenario_map = {"Bear 🐻": BEAR_TARGETS, "Base 📊": BASE_TARGETS, "Bull 🐂": BULL_TARGETS}
-    active_targets_default = scenario_map[scenario]
-
-    st.divider()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA
@@ -376,7 +377,7 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📋 Views & Returns",
-    "⚖️ BL Weights",
+    "⚖️ BL Optimal Weights",
     "📈 Monte Carlo",
     "💥 Stress Tests",
     "🔀 Strategy Comparison",
