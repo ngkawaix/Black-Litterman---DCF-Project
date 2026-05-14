@@ -43,36 +43,30 @@ st.set_page_config(
 # CONSTANTS
 # ─────────────────────────────────────────────────────────────────────────────
 TICKERS = sorted([
-    "AAPL", "ADBE", "AMAT", "AMD",  "AMZN", "AVGO", "CLS",  "CPRT",
-    "DUOL", "FICO", "GE",   "GOOGL","IBM",  "IONQ", "LLY",  "LRCX",
-    "MA",   "MSCI", "MSFT", "MU",   "NFLX", "NOW",  "NVDA", "PANW",
-    "PYPL", "SOFI", "TSM",  "UBER", "V",    "WDC",
+    "AAPL", "ADBE", "AMAT", "AMZN", "ASML", "CPRT",
+    "FICO", "GOOGL","LRCX", "MA",   "META", "MSCI",
+    "MSFT", "NFLX", "NVDA", "TSM",  "V",
 ])
 
-# Your base (Base case) price targets from the notebook
+# My base case price targets
 BASE_TARGETS = {
-    "AAPL": 315.00, "ADBE": 380.00, "AMAT": 380.00, "AMD":  357.00,
-    "AMZN": 300.00, "AVGO": 467.00, "CLS":  447.00, "CPRT":  43.00,
-    "DUOL": 120.00, "FICO":1655.00, "GE":   352.00, "GOOGL":460.00,
-    "IBM":  260.00, "IONQ":  67.00, "LLY": 1254.00, "LRCX": 310.00,
-    "MA":   650.00, "MSCI": 700.00, "MSFT": 600.00, "MU":   455.00,
-    "NFLX": 117.00, "NOW":  140.00, "NVDA": 275.00, "PANW": 225.00,
-    "PYPL":  50.00, "SOFI":  20.00, "TSM":  465.00, "UBER": 107.00,
-    "V":    394.00, "WDC":  415.00,
+    "AAPL": 315.00, "ADBE": 380.00, "AMAT": 380.00,
+    "AMZN": 300.00, "ASML":1791.00, "CPRT":  43.00,
+    "FICO":1655.00, "GOOGL":460.00, "LRCX": 310.00,
+    "MA":   650.00, "META": 810.00, "MSCI": 700.00,
+    "MSFT": 600.00, "NFLX": 117.00, "NVDA": 275.00,
+    "TSM":  465.00, "V":    394.00,
 }
 
 # Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
-# BEAR_TARGETS and BULL_TARGETS will be reintroduced once per-stock DCF models are complete.
 
 BASE_CONFIDENCE = {
-    "AAPL": 0.55, "ADBE": 0.40, "AMAT": 0.45, "AMD":  0.60,
-    "AMZN": 0.65, "AVGO": 0.65, "CLS":  0.60, "CPRT": 0.50,
-    "DUOL": 0.35, "FICO": 0.35, "GE":   0.65, "GOOGL":0.60,
-    "IBM":  0.45, "IONQ": 0.20, "LLY":  0.55, "LRCX": 0.60,
-    "MA":   0.50, "MSCI": 0.55, "MSFT": 0.60, "MU":   0.40,
-    "NFLX": 0.60, "NOW":  0.60, "NVDA": 0.65, "PANW": 0.45,
-    "PYPL": 0.40, "SOFI": 0.35, "TSM":  0.65, "UBER": 0.65,
-    "V":    0.65, "WDC":  0.45,
+    "AAPL": 0.55, "ADBE": 0.40, "AMAT": 0.45,
+    "AMZN": 0.65, "ASML": 0.55, "CPRT": 0.50,
+    "FICO": 0.35, "GOOGL":0.60, "LRCX": 0.60,
+    "MA":   0.50, "META": 0.60, "MSCI": 0.55,
+    "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.65,
+    "TSM":  0.65, "V":    0.65,
 }
 
 STRESS_PERIODS = {
@@ -474,16 +468,48 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(
         """
-        I built this app to answer a question that nagged me through two courses — EDHEC's Advanced
-        Portfolio Construction and Wall Street Prep's DCF programme: once you have a view on what
-        a stock is worth, how do you actually size the position? Most backtested strategies like
-        Global Minimum Variance or Risk Parity are purely backward-looking — they optimise on
-        historical data and assume the past repeats. Black-Litterman is different: it takes a
-        forward-looking view on what each stock is worth and asks how much conviction you should
-        actually act on, relative to what the market already implies. The app lets you build that
-        allocation, stress-test it against real market crashes, and benchmark it against the simpler
-        strategies. It's still a work in progress and I plan to incoporate more robust DCF assumption
-        as inputs to experiment with the resulting allocation.
+        **Introduction to the App**
+
+        I built this app to implement the skills I acquired from EDHEC's Advanced
+        Portfolio Construction and Wall Street Prep's DCF modelling course. It answers the
+        following question: After calculating the fair value fo a stock price through DCF
+        analysis, how does one implement this knowledge to size their portfolios?
+        
+        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity 
+        are purely backward-looking, optimising on historical data and assuming the past repeats. 
+        Black-Litterman is different: it takes a forward-looking view on what each stock is worth 
+        and asks how much conviction you should actually act on, relative to the market implied returns. 
+        The app lets you build that allocation, stress-test it against real market crashes,  
+        and benchmark it against the simpler strategies. 
+        
+        This project is still a work in progress and I plan to incoporate more 
+        robust DCF assumption as inputs to experiment with the resulting allocations.
+        """
+    )
+
+    st.divider()
+    
+        st.markdown(
+        """
+        **Stock universe**
+
+        The 17 stocks in this portfolio were selected through a systematic
+        fundamental screen: 5-year average ROIC above 15%, debt-to-equity
+        below 1, consecutive revenue growth over 5 years, and a minimum
+        market cap of $10 billion. ROIC was chosen as the primary quality
+        filter because it measures how efficiently a company converts capital
+        into profit — sustained high ROIC over multiple years is one of the
+        most reliable indicators of a durable competitive advantage.
+
+        The resulting universe is concentrated in technology, semiconductors,
+        payments infrastructure, and financial data — sectors where
+        capital-light business models and high switching costs tend to produce
+        the kind of persistent ROIC that justifies long-term holding. Two names
+        warrant a note: FICO carries negative book equity due to sustained
+        buybacks rather than distress, which causes standard debt screens to
+        misread it; ASML is the sole supplier of extreme ultraviolet
+        lithography equipment to the global semiconductor industry, making it
+        structurally irreplaceable within the AI infrastructure stack.
         """
     )
 
