@@ -935,7 +935,7 @@ with tab4:
         f"Starts 2 years after data begins — the minimum needed for the first rolling estimate."
     )
 
-    wealth = (1 + btr).cumprod()
+    wealth = (1 + btr).cumprod() * 10_000
 
     # Colour palette: BL stands out, others are muted
     palette = {
@@ -956,7 +956,7 @@ with tab4:
             line=dict(color=colour, width=width, dash=dash),
         ))
     fig_wealth.update_layout(
-        title="Wealth Index — $1 invested at backtest start",
+        title="Wealth Index — $10,000 invested at backtest start",
         xaxis_title="Date",
         yaxis_title="Portfolio Value ($)",
         height=460,
@@ -984,10 +984,7 @@ with tab4:
     st.dataframe(
         summary_df.style
             .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown"])
-            .format("{:.2f}", subset=["Sharpe Ratio"])
-            .background_gradient(subset=["Ann. Return"],  cmap="RdYlGn")
-            .background_gradient(subset=["Sharpe Ratio"], cmap="RdYlGn")
-            .background_gradient(subset=["Max Drawdown"], cmap="RdYlGn_r"),
+            .format("{:.2f}", subset=["Sharpe Ratio"]),
         use_container_width=True,
     )
 
