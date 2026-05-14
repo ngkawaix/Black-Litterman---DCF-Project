@@ -813,21 +813,20 @@ with tab0:
     st.markdown("#### About this Project")
     st.markdown(
         """
-        This app implements skills acquired from EDHEC's Advanced Portfolio
-        Construction and Wall Street Prep's DCF modelling course. It answers the
-        following question: after calculating the fair value of a stock through DCF
-        analysis, how does one translate that knowledge into portfolio sizing?
+        I built this app to implement the skills I acquired from EDHEC's Advanced
+        Portfolio Construction and Wall Street Prep's DCF modelling course. It answers the
+        following question: After calculating the fair value of a stock price through DCF
+        analysis, how does one implement this knowledge to size their portfolios?
 
         Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity
-        are purely backward-looking — they optimise on historical data and assume the
-        past repeats. Black-Litterman is different: it takes a forward-looking view on
-        what each stock is worth and asks how much conviction to act on, relative to
-        what the market itself implies. The app builds that allocation, stress-tests it
-        against real market crashes, and benchmarks it against simpler strategies.
+        are purely backward-looking, optimising on historical data and assuming the past repeats.
+        Black-Litterman is different: it takes a forward-looking view on what each stock is worth
+        and asks how much conviction you should act on, relative to the market implied returns.
+        The app lets you build that allocation, stress-test it against real market crashes,
+        and benchmark it against the simpler strategies.
 
-        This project is a work in progress. The next step is incorporating more robust
-        DCF assumptions directly as model inputs once the Wall Street Prep models are
-        finalised.
+        This project is still a work in progress and I plan to incorporate more
+        robust DCF assumptions as inputs to experiment with the resulting allocations.
         """
     )
 
