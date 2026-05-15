@@ -897,7 +897,7 @@ with tab2:
 
     st.markdown(
         """
-        A correlated GBM treats future returns as a random walk — each day's shock is drawn
+        A correlated GBM treats future returns as a random walk - each day's shock is drawn
         independently, scaled by historical volatility and the correlations between stocks.
         What it cannot capture is the clustering of extreme events: in real markets, crashes
         are not randomly distributed. Volatility spikes, correlations break down, and losses
