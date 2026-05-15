@@ -691,7 +691,7 @@ with tab1:
     st.markdown("#### 1. Return Decomposition")
     st.caption(
         "Each column is one layer of the BL process. "
-        "**Total Return View** is the raw DCF-implied return. "
+        "**DCF-Implied Return** is the raw DCF-implied return. "
         "**Q** subtracts the risk-free rate to get the excess return fed into the model. "
         "**π** is the market equilibrium baseline. "
         "**BL Posterior** is the blended output — the return the optimiser actually uses."
@@ -708,7 +708,7 @@ with tab1:
         "Confidence":                 pd.Series(user_confidence).reindex(tick_rets.columns),
     }).sort_values("Excess Return View (Q)", ascending=False)
 
-    pct_cols    = ["Total Return View", "Risk-Free Rate (rf)", "Excess Return View (Q)",
+    pct_cols    = ["DCF-Implied Return", "Risk-Free Rate (rf)", "Excess Return View (Q)",
                    "Market-Implied Return (π)", "BL Posterior Return", "Confidence"]
     dollar_cols = ["Current Price ($)", "Price Target ($)"]
 
