@@ -896,7 +896,7 @@ with tab2:
     st.divider()
 
     st.markdown(
-        """ A correlated GBM treats future returns as a random walk - each day's shock is drawn independently, scaled by historical volatility and the correlations between stocks. What it cannot capture is the clustering of extreme events: in real markets, crashes are not randomly distributed. Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. The simulation above is best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. The historic stress tests below ground that picture in what actually happened holding the BL portfolio."""
+        """ A correlated GBM treats future returns as a random walk - each day shock is drawn independently, scaled by historical volatility and the correlations between stocks. What it cannot capture is the clustering of extreme events: in real markets, crashes are not randomly distributed. Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. The simulation above is best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. The historic stress tests below ground that picture in what actually happened holding the BL portfolio."""
     )
 
     st.divider()
