@@ -960,17 +960,22 @@ with tab2:
 # TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
-    # ── Section 1: Backtested Wealth Index ───────────────────────────────────
-    st.markdown("#### Historical Wealth Index — Strategy Comparison")
-    st.caption(
-        f"Rolling backtest using a **{estimation_window_yrs}-year** estimation window to rebalance weights at each step. "
-        "EW, Cap-Weighted, GMV, and Risk Parity are properly rolled — weights are re-estimated "
-        "each period using only data available at that point in time, so there is no look-ahead. "
-        "**Black-Litterman** is shown as a static allocation using the current optimal "
-        "weights applied to the full history. This is a simplification: true BL weights would "
-        "require a fresh set of views at every rebalance date. The chart is therefore best read "
-        "as 'how would this portfolio have held up' rather than a like-for-like backtest."
-    )
+    st.markdown(
+        """
+        **This section compares the BL Weights against other portfolio allocation strategies.**
+        It does this by using a rolling backtest using a **{estimation_window_yrs}-year** estimation window 
+        to rebalance weights at each step.EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
+        each period using only data available at that point in time, so there is no look-ahead bias.
+        The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
+        This is a gross simplification as true BL weights would require a fresh set of views at every rebalance date. 
+        The chart is therefore best read as 'how would this portfolio have held up' rather than a like-for-like backtest.
+
+        Hence, I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
+        I had used in the "Simulation and Stress-Tests" section. More robust techniques emoloying Machine Learning
+        for the simulated paths will be one way to improve this analysis, for which I hope to employ after taking
+        more courses on Machine Learning for Asset Management. 
+        
+    st.markdown("#### 1. Historical Wealth Index — Strategy Comparison")
 
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
         tick_rets, tick_capweights, estimation_window
@@ -1059,7 +1064,7 @@ with tab3:
     st.divider()
 
     # ── Section 2: Forward Distribution (Monte Carlo) ─────────────────────────
-    st.markdown("#### Forward Distribution — Strategy Comparison (Monte Carlo)")
+    st.markdown("#### 2. Forward Distribution — Strategy Comparison (Monte Carlo)")
     st.caption(
         "Uses the same correlated GBM paths from Tab 3 but applied to each "
         "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
@@ -1121,7 +1126,7 @@ with tab3:
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 4 -- CPPI Overlay
 # ══════════════════════════════════════════════════════════════════════════════
-with tab5:
+with tab4:
     st.markdown("#### CPPI Overlay on BL Portfolio")
     st.caption(
         "CPPI dynamically scales your exposure to the BL portfolio based on "
