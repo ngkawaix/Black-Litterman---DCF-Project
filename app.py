@@ -1116,6 +1116,7 @@ with tab3:
         }
 
     comp_df = pd.DataFrame(comparison).T
+    comp_df = comp_df.sort_values("Expected Return", ascending=False)
     st.dataframe(
         comp_df.style
             .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
