@@ -806,12 +806,12 @@ with tab2:
     st.markdown(
         """
         **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
-        and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk 
-        - each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
+        and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk; 
+        each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
         Correlations are preserved via Cholesky decomposition to better reflect the performance of correlated assets. 
         Since many of the stocks in the universe are in the tech field, this is the apporpriate approach.
 
-        What the correlated GBM simulations cannot capture is the clustering of extreme events. In real markets, crashes are not randomly distributed. 
+        **What the correlated GBM simulations cannot capture is the clustering of extreme events.** In real markets, crashes are not randomly distributed. 
         Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. 
         The GBM simulations are hence best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. 
         The historic stress tests ground that picture in what actually happened holding the BL portfolio. Together, they present a more complete
