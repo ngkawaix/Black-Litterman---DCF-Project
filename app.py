@@ -413,12 +413,12 @@ with st.sidebar:
     )
     min_w_pct = st.slider(
         "Min position size (%)",
-        min_value=0, max_value=10, value=1, step=0.5,
+        min_value=0.0, max_value=10.0, value=1.0, step=0.5,
         help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
     )
     max_w_pct = st.slider(
         "Max position size (%)",
-        min_value=5, max_value=100, value=15, step=0.5,
+        min_value=5.0, max_value=100.0, value=15.0, step=0.5,
         help="Ceiling on any single stock weight. 15% is a reasonable starting point for a 17-stock portfolio.",
     )
     min_weight = min_w_pct / 100
