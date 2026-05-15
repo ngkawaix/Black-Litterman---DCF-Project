@@ -765,7 +765,7 @@ with tab1:
         "BL Optimised":    bl_w_series,
         "Cap-Weighted":    cw_w_s,
         "Equal-Weighted":  ew_w,
-        "GMV": gmv_w,
+        "Global Mean Variance": gmv_w,
         "Risk Parity":     erc_w,
     }).sort_values("BL Optimised", ascending=False)
 
@@ -1015,7 +1015,7 @@ with tab3:
     palette = {
         "Equal-Weighted":          ("steelblue",    1.2, "solid"),
         "Cap-Weighted":            ("slategray",    1.2, "solid"),
-        "GMV (Shrinkage)":         ("darkorange",   1.2, "solid"),
+        "Global Mean Variance":         ("darkorange",   1.2, "solid"),
         "Risk Parity":             ("mediumpurple", 1.2, "solid"),
         "BL (static)":             ("seagreen",  2.5, "solid"),
     }
@@ -1099,7 +1099,7 @@ with tab3:
     strategy_weights = {
         "Equal-Weighted":   pd.Series(ew_w, index=tick_rets.columns),
         "Cap-Weighted":     cw_w_s,
-        "GMV (Shrinkage)":  pd.Series(gmv_w, index=tick_rets.columns),
+        "Global Mean Variance":  pd.Series(gmv_w, index=tick_rets.columns),
         "Risk Parity":      pd.Series(erc_w, index=tick_rets.columns),
         "Black-Litterman":      bl_w_series,
     }
