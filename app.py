@@ -819,7 +819,7 @@ with tab2:
         """
     )
 
-    st.markdown("#### Correlated GBM Monte Carlo Simulation")
+    st.markdown("#### Correlated GBM Simulation")
     col1, col2 = st.columns(2)
     n_scenarios = col1.slider("Number of scenarios", 100, 1000, 500, step=100)
     seed        = col2.number_input("Random seed (for reproducibility)", value=42, step=1)
@@ -902,7 +902,7 @@ with tab2:
     st.divider()
 
     # ── Historical Stress Tests ───────────────────────────────────────────────
-    st.markdown("#### Historical Stress Test — BL Weights")
+    st.markdown("#### Historical Stress Test")
     st.caption(
         "Applies the BL optimal weights to *actual* historical returns during "
         "known market shocks. This shows how this allocation *would* have "
