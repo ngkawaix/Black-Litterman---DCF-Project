@@ -746,7 +746,7 @@ with tab1:
     # ── Section 2: Optimised Weights ──────────────────────────────────────────
     st.markdown("#### 2. Optimised Portfolio Weights")
     st.caption(
-        "The BL posterior returns from Section 1 feed directly into a long-only (no shorting) "
+        "The BL posterior returns from Part 1 feed directly into a long-only (no shorting) "
         "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
         "correlation to the rest of the portfolio receive higher weights. "
         "The table also shows alternative weighting schemes for reference (bounded by min and max weights in the side bar."
@@ -967,9 +967,9 @@ with tab3:
         This is a gross simplification as true BL weights would require a fresh set of views at every rebalance date. 
         The chart is therefore best read as 'how would this portfolio have held up' rather than a like-for-like backtest.
 
-        Hence, I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
+        I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
         I had used in the "Simulation and Stress-Tests" section. The limitation of this analysis is that it assumes that
-        the portfolio weights follow a correlated GB< pathway, but more robust techniques employing Machine Learning
+        the portfolio weights follow a correlated GBM pathway, but more robust techniques employing Machine Learning
         exists. I plan to employ these techniques after taking more courses on Machine Learning for Asset Management. 
         """
     )
