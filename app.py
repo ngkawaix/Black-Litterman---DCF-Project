@@ -974,7 +974,7 @@ with tab3:
         """
     )
         
-    st.markdown("#### 1. Historical Wealth Index — Strategy Comparison")
+    st.markdown("#### 1. Historical Wealth Index")
 
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
         tick_rets, tick_capweights, estimation_window
@@ -1028,7 +1028,7 @@ with tab3:
             line=dict(color=colour, width=width, dash=dash),
         ))
     fig_wealth.update_layout(
-        title="Wealth Index — $10,000 invested at backtest start",
+        title="Wealth Index - $10,000 invested at backtest start",
         xaxis_title="Date",
         yaxis_title="Portfolio Value ($)",
         height=460,
