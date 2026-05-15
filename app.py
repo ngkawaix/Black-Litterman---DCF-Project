@@ -810,7 +810,8 @@ with tab2:
         This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
         and (2) a historic stress test to backtest against historical shocks. For the GBM, each path 
         simulates one year of daily returns. Drift comes from the BL posterior returns. Correlations are 
-        preserved via Cholesky decomposition of the sample covariance and Starting value is normalised to a $1 investment."
+        preserved via Cholesky decomposition of the sample covariance and Starting value is normalised to a $1 investment.
+        """
     )
 
     st.markdown("#### Correlated GBM Monte Carlo Simulation")
