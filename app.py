@@ -702,7 +702,7 @@ with tab1:
         "Market-Implied Return (π)":  pi,
         "BL Posterior Return":        mu_bl,
         "Confidence":                 pd.Series(user_confidence).reindex(tick_rets.columns),
-    }).sort_values("Excess Return View (Q)", ascending=False)
+    }).sort_values("BL Posterior Return", ascending=False)
 
     pct_cols    = ["DCF-Implied Return", "Risk-Free Rate (rf)", "Excess Return View (Q)",
                    "Market-Implied Return (π)", "BL Posterior Return", "Confidence"]
