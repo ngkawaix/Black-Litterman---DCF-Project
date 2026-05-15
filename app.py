@@ -1013,10 +1013,10 @@ with tab3:
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
-        "Equal-Weighted":          ("#64748b",    1.2, "solid"),
-        "Cap-Weighted":            ("#94a3b8",    1.2, "solid"),
-        "Global Mean Variance":         ("#334155",   1.2, "solid"),
-        "Risk Parity":             ("#475569", 1.2, "solid"),
+        "Equal-Weighted":          ("#94A3B8",    1.2, "solid"),
+        "Cap-Weighted":            (#CBD5E1",    1.2, "solid"),
+        "Global Mean Variance":         ("#0D9488",   1.2, "solid"),
+        "Risk Parity":             ("#6366F1", 1.2, "solid"),
         "BL (static)":             ("#002060",  2.5, "solid"),
     }
 
