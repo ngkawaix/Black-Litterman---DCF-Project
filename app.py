@@ -1013,10 +1013,10 @@ with tab3:
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
-        "Equal-Weighted":          ("steelblue",    1.2, "dot"),
-        "Cap-Weighted":            ("slategray",    1.2, "dot"),
-        "GMV (Shrinkage)":         ("darkorange",   1.2, "dot"),
-        "Risk Parity":             ("mediumpurple", 1.2, "dot"),
+        "Equal-Weighted":          ("steelblue",    1.2, "solid"),
+        "Cap-Weighted":            ("slategray",    1.2, "solid"),
+        "GMV (Shrinkage)":         ("darkorange",   1.2, "solid"),
+        "Risk Parity":             ("mediumpurple", 1.2, "solid"),
         "BL (static)":             ("seagreen",  2.5, "solid"),
     }
 
