@@ -714,7 +714,7 @@ with tab1:
     styled = view_df.style \
         .format("{:.2%}", subset=pct_cols) \
         .format("${:,.2f}", subset=dollar_cols) \
-        .background_gradient(subset=["BL Posterior Return"], cmap="RdYlGn")
+        .background_gradient(subset=["BL Posterior Return"], cmap="YlGnBu")
 
     st.dataframe(styled, use_container_width=True)
 
@@ -772,7 +772,7 @@ with tab1:
     st.dataframe(
         weight_df.style
             .format("{:.2%}")
-            .background_gradient(subset=["BL Optimised"], cmap="Blues"),
+            .background_gradient(subset=["BL Optimised"], cmap="YlGnBu"),
         use_container_width=True,
     )
 
