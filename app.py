@@ -974,6 +974,7 @@ with tab3:
         I had used in the "Simulation and Stress-Tests" section. More robust techniques emoloying Machine Learning
         for the simulated paths will be one way to improve this analysis, for which I hope to employ after taking
         more courses on Machine Learning for Asset Management. 
+        """
         
     st.markdown("#### 1. Historical Wealth Index — Strategy Comparison")
 
