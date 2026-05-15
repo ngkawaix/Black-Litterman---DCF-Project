@@ -572,10 +572,10 @@ with tab0:
 
         Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity
         are purely backward-looking, optimising on historical data and assuming the past repeats.
-        The Black-Litterman Model is different. It takes a forward-looking view on what each stock is worth
+        The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth
         and asks how much conviction you should act on, relative to the market implied returns.
-        The app lets you build that allocation based on some modelling assumptions, stress-test 
-        those allocations against real market crashes, and benchmark it against other strategies.
+        The app lets you build that allocation based on some modelling assumptions (in side-bar), 
+        stress-test those allocations against real market crashes, and benchmark it against other strategies.
 
         This project is still a work in progress and I plan to incorporate more
         robust DCF assumptions as inputs to experiment with the resulting allocations.
@@ -614,9 +614,9 @@ with tab0:
         """
         Most portfolio optimisers have a fundamental problem: feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
-        unstable allocations, prone to error maximisation - 80% in one stock, zero in everything else.
+        unstable allocations (i.e. prone to error maximisation - 80% in one stock, zero in everything else).
 
-        **Black-Litterman solves this by never letting a view stand alone.**
+        **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
 
@@ -747,10 +747,10 @@ with tab1:
     # ── Section 2: Optimised Weights ──────────────────────────────────────────
     st.markdown("#### 2. Optimised Portfolio Weights")
     st.caption(
-        "The BL posterior returns from Section 1 feed directly into a long-only "
+        "The BL posterior returns from Section 1 feed directly into a long-only (no shorting) "
         "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
         "correlation to the rest of the portfolio receive higher weights. "
-        "The table also shows alternative weighting schemes for reference."
+        "The table also shows alternative weighting schemes for reference (bounded by min and max weights in the side bar."
     )
 
     ew_w   = erk.weight_ew(tick_rets)
@@ -807,9 +807,16 @@ with tab2:
     st.markdown(
         """
         **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
-        and (2) a historic stress test to backtest against historical shocks.** For the GBM, each path 
-        simulates one year of daily returns. Drift comes from the BL posterior returns. Correlations are 
-        preserved via Cholesky decomposition of the sample covariance and Starting value is normalised to a $1 investment.
+        and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk 
+        - each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
+        Correlations are preserved via Cholesky decomposition to better reflect the performance of correlated assets. 
+        Since many of the stocks in the universe are in the tech field, this is the apporpriate approach.
+
+        What the correlated GBM simulations cannot capture is the clustering of extreme events. In real markets, crashes are not randomly distributed. 
+        Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. 
+        The GBM simulations are hence best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. 
+        The historic stress tests ground that picture in what actually happened holding the BL portfolio. Together, they present a more complete
+        picture of the risks associated from holding the BL weights.
         """
     )
 
@@ -892,12 +899,6 @@ with tab2:
         height=360,
     )
     st.plotly_chart(fig_hist, use_container_width=True)
-
-    st.divider()
-
-    st.markdown(
-        """ A correlated GBM treats future returns as a random walk - each day shock is drawn independently, scaled by historical volatility and the correlations between stocks. What it cannot capture is the clustering of extreme events: in real markets, crashes are not randomly distributed. Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. The simulation above is best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. The historic stress tests below ground that picture in what actually happened holding the BL portfolio."""
-    )
 
     st.divider()
 
