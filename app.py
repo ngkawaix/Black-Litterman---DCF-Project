@@ -26,7 +26,7 @@ import plotly.express as px
 from datetime import datetime
 from scipy.optimize import minimize
 
-# Your custom EDHEC helper module -- keep edhec_risk_kit_final.py in the same folder
+# Custom EDHEC Risk Kit Module from EDHEC Course
 import edhec_risk_kit_final as erk
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -39,165 +39,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# AI CONFIDENCE SUGGESTIONS  (Anthropic API + web search)
-# ─────────────────────────────────────────────────────────────────────────────
-def fetch_ai_confidence_suggestions(tickers: list[str]) -> dict:
-    """
-    Calls the Anthropic API to get AI-suggested confidence scores for every
-    ticker in one round-trip, using the built-in web_search tool so the model
-    can ground its reasoning in current news.
-
-    HOW THIS WORKS — a short primer for future reference
-    ─────────────────────────────────────────────────────
-    1. We POST to /v1/messages with:
-         • model        — the Claude model to use
-         • messages     — the conversation so far (just one user turn here)
-         • tools        — a list of tools Claude may call; we enable web_search
-         • system       — a system prompt telling Claude its role and output format
-
-    2. The API may return a response with stop_reason = "tool_use".
-       That means Claude decided to search before answering.  The response
-       content is a list of blocks — some are {"type": "text"}, others are
-       {"type": "tool_use"}.  We do NOT need to manually handle the tool
-       results; the web_search tool is server-side, so Anthropic runs the
-       searches and feeds the results back to the model automatically in a
-       single HTTP response.  By the time we receive the final response
-       (stop_reason = "end_turn") the model has already read the search
-       results and synthesised them.
-
-    3. We extract the text block from the final response and parse it as JSON.
-       The system prompt instructs Claude to return ONLY a JSON array, which
-       makes parsing straightforward.
-
-    4. Error handling: any network hiccup, malformed JSON, or unexpected
-       response shape is caught and returns an empty dict so the app degrades
-       gracefully — the sliders just keep their current values.
-
-    Returns
-    -------
-    dict : {ticker: {"confidence": float, "rationale": str}, ...}
-           Empty dict if the call fails.
-    """
-    import json as _json
-
-    # ── Prompt design ──────────────────────────────────────────────────────────
-    # The system prompt defines the task and — critically — the output schema.
-    # Asking for JSON-only output and specifying the schema tightly reduces
-    # the chance of the model returning prose that breaks the JSON parser.
-    system_prompt = """You are a quantitative equity analyst helping calibrate
-Black-Litterman confidence parameters.
-
-For each ticker the user provides, search for the most recent analyst
-narratives, earnings results, and macro risks (May 2026). Then assign a
-confidence score representing how certain a DCF price-target view is likely
-to be correct over a 12-month horizon.
-
-Confidence scale:
-  0.10–0.29  Very low — material uncertainty (regulatory, AI disruption,
-             supply chain issues, unclear competitive position)
-  0.30–0.49  Low-moderate — real headwinds or mixed signals
-  0.50–0.64  Moderate — clear business but meaningful risks remain
-  0.65–0.79  High — strong recent results, clear narrative, manageable risks
-  0.80–1.00  Very high — dominant position, exceptional visibility (rare)
-
-IMPORTANT: Return ONLY a valid JSON array. No preamble, no markdown fences,
-no trailing text. Each element must have exactly these keys:
-  "ticker"     : string  — the ticker symbol
-  "confidence" : float   — rounded to nearest 0.05, in [0.10, 0.90]
-  "rationale"  : string  — one sentence, max 20 words, stating the key reason
-
-Example of valid output (do not copy these values):
-[
-  {"ticker": "AAPL", "confidence": 0.45, "rationale": "Tariff uncertainty and mid-transition supply chain weigh on margin visibility."},
-  {"ticker": "NVDA", "confidence": 0.75, "rationale": "Record revenue and strong guidance provide exceptional near-term visibility."}
-]"""
-
-    user_message = (
-        f"Provide confidence scores for these tickers: {', '.join(tickers)}. "
-        "Search for recent news on each before responding."
-    )
-
-    # ── API call ───────────────────────────────────────────────────────────────
-    # The web_search tool type is a first-party Anthropic tool — no extra
-    # configuration needed beyond declaring it in the tools list.
-    # The API key is injected by the Streamlit Cloud environment; we never
-    # hard-code it in source.
-    try:
-        resp = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "Content-Type":         "application/json",
-                "anthropic-version":    "2023-06-01",
-                # The beta header is required to enable built-in tools like
-                # web_search on this endpoint.
-                "anthropic-beta":       "interleaved-thinking-2025-05-14",
-            },
-            json={
-                "model":      "claude-sonnet-4-20250514",
-                "max_tokens": 2048,
-                "system":     system_prompt,
-                "tools": [
-                    # Declaring the web_search tool tells Claude it may search.
-                    # Anthropic runs the actual searches server-side — we never
-                    # see the raw search results, only the final synthesised text.
-                    {
-                        "type": "web_search_20250305",
-                        "name": "web_search",
-                    }
-                ],
-                "messages": [
-                    {"role": "user", "content": user_message}
-                ],
-            },
-            timeout=60,   # web searches add latency; 60 s is generous but safe
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-        # ── Response parsing ───────────────────────────────────────────────────
-        # The response content is a list of blocks.  We want the final text
-        # block, which contains the JSON array we asked for.
-        # Block types we might see:
-        #   {"type": "thinking", ...}   — chain-of-thought (if beta enabled)
-        #   {"type": "tool_use", ...}   — Claude is calling web_search
-        #   {"type": "tool_result", ...}— search results fed back (server-side)
-        #   {"type": "text", ...}       — the actual answer we want
-        text_blocks = [
-            b["text"] for b in data.get("content", [])
-            if b.get("type") == "text"
-        ]
-        if not text_blocks:
-            return {}
-
-        raw_text = text_blocks[-1].strip()
-
-        # Strip markdown code fences if the model wrapped the JSON anyway
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-            raw_text = raw_text.strip()
-
-        parsed = _json.loads(raw_text)
-
-        # Normalise into {ticker: {confidence, rationale}}
-        return {
-            item["ticker"]: {
-                "confidence": float(item["confidence"]),
-                "rationale":  str(item["rationale"]),
-            }
-            for item in parsed
-            if "ticker" in item and "confidence" in item
-        }
-
-    except Exception as e:
-        # Surface the error in session state so the UI can show it, but don't
-        # crash the app — the sliders keep their current values.
-        st.session_state["ai_suggestion_error"] = str(e)
-        return {}
-
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTANTS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -209,7 +50,7 @@ TICKERS = sorted([
 
 # My base case price targets
 BASE_TARGETS = {
-    "AAPL": 315.00, "ADBE": 380.00, "AMAT": 380.00,
+    "AAPL": 315.00, "ADBE": 320.00, "AMAT": 380.00,
     "AMZN": 300.00, "ASML":1791.00, "CPRT":  43.00,
     "FICO":1655.00, "GOOGL":460.00, "LRCX": 310.00,
     "MA":   650.00, "META": 810.00, "MSCI": 700.00,
@@ -217,7 +58,7 @@ BASE_TARGETS = {
     "TSM":  465.00, "V":    394.00,
 }
 
-# Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
+# FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
 
 BASE_CONFIDENCE = {
     # Updated May 2026 — reflects latest analyst narratives and earnings.
@@ -260,7 +101,7 @@ def load_market_data(tickers, start="2000-01-01"):
         st.warning(
             f"⚠️ Could not download price data for: **{', '.join(failed)}**. "
             "These tickers have been excluded from this run. "
-            "This is usually a Yahoo Finance rate-limit — refresh in a minute to retry.",
+            "Yahoo Finance likely rate-limited pull request — refresh in a minute to retry.",
         )
         price_data = price_data.drop(columns=failed)
 
@@ -363,10 +204,10 @@ def load_ticker_metadata(_price_data, tickers):
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
     try:
-        url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS3MO"
+        url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
         df   = pd.read_csv(url, parse_dates=["DATE"])
-        df   = df[df["DGS3MO"] != "."]
-        rate = float(df["DGS3MO"].iloc[-1]) / 100
+        df   = df[df["DGS1"] != "."]
+        rate = float(df["DGS1"].iloc[-1]) / 100
         return rate
     except Exception:
         return 0.04
@@ -572,18 +413,16 @@ with st.sidebar:
     )
     min_w_pct = st.slider(
         "Min position size (%)",
-        min_value=0, max_value=10, value=1, step=1,
+        min_value=0, max_value=10, value=1, step=0.5,
         help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
     )
     max_w_pct = st.slider(
         "Max position size (%)",
-        min_value=5, max_value=100, value=15, step=1,
+        min_value=5, max_value=100, value=15, step=0.5,
         help="Ceiling on any single stock weight. 15% is a reasonable starting point for a 17-stock portfolio.",
     )
     min_weight = min_w_pct / 100
     max_weight = max_w_pct / 100
-
-    st.divider()
 
     st.divider()
 
@@ -593,7 +432,7 @@ with st.sidebar:
         "**How these are set:** Base targets are personal estimates derived from "
         "DCF work (May 2025) and updated as new information arrives. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
-        "may lag recent revisions — treat as directional reference only. "
+        "may lag recent revisions - treat them as directional references only. "
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
@@ -636,91 +475,6 @@ with st.sidebar:
                     key=f"conf_{ticker}",
                 )
 
-    # ── AI Confidence Suggestions ─────────────────────────────────────────────
-    st.divider()
-    st.subheader("🤖 AI Confidence Review")
-    st.caption(
-        "Calls Claude with web search to scan the latest analyst narratives "
-        "and earnings for each stock, then suggests updated confidence scores. "
-        "Review the rationale before applying — this is a starting point, "
-        "not a replacement for judgement."
-    )
-
-    # HOW SESSION STATE WORKS HERE
-    # ────────────────────────────
-    # Streamlit reruns the entire script on every interaction.  To persist
-    # data across reruns (like API results), we use st.session_state — a
-    # dict that survives reruns within a session.
-    #
-    # Pattern used here:
-    #   1. Button click → store API results in st.session_state["ai_suggestions"]
-    #   2. On the next rerun, the results are still there → display them
-    #   3. "Apply" button → write each confidence value into
-    #      st.session_state[f"conf_{ticker}"]  (the slider's key)
-    #   4. Next rerun → sliders initialise from session_state → values updated
-
-    if st.button("🔍 Fetch AI Confidence Suggestions", use_container_width=True):
-        # Clear any previous error before a fresh attempt
-        st.session_state.pop("ai_suggestion_error", None)
-        with st.spinner("Searching latest narratives for all tickers…"):
-            results = fetch_ai_confidence_suggestions(TICKERS)
-            st.session_state["ai_suggestions"] = results
-
-    # Show any API error that was caught inside the function
-    if "ai_suggestion_error" in st.session_state:
-        st.error(
-            f"API call failed: {st.session_state['ai_suggestion_error']}  \n"
-            "Check that ANTHROPIC_API_KEY is set in Streamlit Cloud secrets."
-        )
-
-    # Display results table if suggestions exist
-    if st.session_state.get("ai_suggestions"):
-        sug = st.session_state["ai_suggestions"]
-
-        # Build a comparison DataFrame: current vs suggested
-        rows = []
-        for t in TICKERS:
-            if t in sug:
-                rows.append({
-                    "Ticker":    t,
-                    "Current":   st.session_state.get(f"conf_{t}", BASE_CONFIDENCE.get(t, 0.5)),
-                    "Suggested": sug[t]["confidence"],
-                    "Rationale": sug[t]["rationale"],
-                })
-        if rows:
-            sug_df = pd.DataFrame(rows).set_index("Ticker")
-
-            # Colour the Suggested column: green if higher than current,
-            # red if lower, grey if same — gives instant visual signal
-            def colour_delta(row):
-                delta = row["Suggested"] - row["Current"]
-                if delta > 0.01:
-                    colour = "#d4edda"   # light green
-                elif delta < -0.01:
-                    colour = "#f8d7da"   # light red
-                else:
-                    colour = ""
-                return ["", f"background-color: {colour}" if colour else "", f"background-color: {colour}" if colour else "", ""]
-
-            st.dataframe(
-                sug_df.style
-                    .apply(colour_delta, axis=1)
-                    .format("{:.2f}", subset=["Current", "Suggested"]),
-                use_container_width=True,
-                height=min(50 + 35 * len(rows), 400),
-            )
-
-            # Apply button: writes each suggested value into the slider's
-            # session_state key so sliders update on the next rerun
-            if st.button("✅ Apply AI Suggestions to Sliders", use_container_width=True):
-                for t in TICKERS:
-                    if t in sug:
-                        # Round to nearest 0.05 to match slider step
-                        rounded = round(sug[t]["confidence"] / 0.05) * 0.05
-                        st.session_state[f"conf_{t}"] = float(rounded)
-                st.success("Confidence sliders updated. Scroll up to review.")
-                st.rerun()
-
     st.divider()
 
     # --- Backtest estimation window ---
@@ -728,7 +482,6 @@ with st.sidebar:
     st.caption(
         "Controls how many years of historical data are used to estimate "
         "covariance and weights at each rolling rebalance step. "
-        "**2 years** is responsive but noisy. "
         "**3 years** captures a full market cycle and is the recommended default. "
         "**5 years** is most stable but may be stale for a sector that re-priced "
         "structurally in 2023. Note: a longer window delays the backtest start date "
@@ -787,7 +540,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 # ─────────────────────────────────────────────────────────────────────────────
 st.title("DCF × Black-Litterman Portfolio Optimiser")
 st.caption(
-    f"Risk-free rate (3M T-bill): **{RF:.2%}**  |  "
+    f"Risk-free rate (1Y T-bill): **{RF:.2%}**  |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
@@ -797,10 +550,10 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "📖 Introduction",
-    "📋 Views & Returns",
-    "⚖️ BL Weights",
+    "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
+    "🛡️ CPPI Overlay",
 ])
 
 
@@ -914,11 +667,28 @@ with tab0:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 -- Views & Returns Decomposition
+# TAB 1 -- Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
 
-    st.markdown("#### Return Decomposition")
+    st.markdown("#### What this tab shows")
+    st.markdown(
+        """
+        This section walks through the full Black-Litterman pipeline in sequence.
+        Starting from DCF price targets, it computes the excess return view (Q)
+        for each stock, blends it with the market-implied equilibrium return (π) using
+        confidence settings, and produces the BL posterior return that the
+        optimiser actually uses. The final section shows how those posterior returns
+        translate into optimal portfolio weights via a long-only Max Sharpe
+        optimisation. You can see directly how a change in a price target or
+        confidence slider flows through to a change in position size.
+        """
+    )
+
+    st.divider()
+
+    # ── Section 1: Return Decomposition ──────────────────────────────────────
+    st.markdown("#### 1. Return Decomposition")
     st.caption(
         "Each column is one layer of the BL process. "
         "**Total Return View** is the raw DCF-implied return. "
@@ -930,7 +700,7 @@ with tab1:
     view_df = pd.DataFrame({
         "Current Price ($)":          current_prices,
         "Price Target ($)":           targets_series,
-        "Total Return View":          total_return_views,
+        "DCF-Implied Return":         total_return_views,
         "Risk-Free Rate (rf)":        RF,
         "Excess Return View (Q)":     total_return_views - RF,
         "Market-Implied Return (π)":  pi,
@@ -938,11 +708,8 @@ with tab1:
         "Confidence":                 pd.Series(user_confidence).reindex(tick_rets.columns),
     }).sort_values("Excess Return View (Q)", ascending=False)
 
-    pct_cols = [
-        "Total Return View", "Risk-Free Rate (rf)",
-        "Excess Return View (Q)", "Market-Implied Return (π)", "BL Posterior Return",
-        "Confidence",
-    ]
+    pct_cols    = ["Total Return View", "Risk-Free Rate (rf)", "Excess Return View (Q)",
+                   "Market-Implied Return (π)", "BL Posterior Return", "Confidence"]
     dollar_cols = ["Current Price ($)", "Price Target ($)"]
 
     styled = view_df.style \
@@ -952,30 +719,22 @@ with tab1:
 
     st.dataframe(styled, use_container_width=True)
 
-    # Bar chart: Q vs pi vs BL posterior
     fig = go.Figure()
     sorted_tickers = view_df.index.tolist()
-
     fig.add_trace(go.Bar(
-        name="Market-Implied (π)",
-        x=sorted_tickers,
+        name="Market-Implied (π)", x=sorted_tickers,
         y=pi.reindex(sorted_tickers).values,
-        marker_color="steelblue",
-        opacity=0.7,
+        marker_color="steelblue", opacity=0.7,
     ))
     fig.add_trace(go.Bar(
-        name="View (Q)",
-        x=sorted_tickers,
+        name="View (Q)", x=sorted_tickers,
         y=(total_return_views - RF).reindex(sorted_tickers).values,
-        marker_color="orange",
-        opacity=0.7,
+        marker_color="orange", opacity=0.7,
     ))
     fig.add_trace(go.Bar(
-        name="BL Posterior",
-        x=sorted_tickers,
+        name="BL Posterior", x=sorted_tickers,
         y=mu_bl.reindex(sorted_tickers).values,
-        marker_color="seagreen",
-        opacity=0.9,
+        marker_color="seagreen", opacity=0.9,
     ))
     fig.update_layout(
         barmode="group",
@@ -986,19 +745,17 @@ with tab1:
     )
     st.plotly_chart(fig, use_container_width=True)
 
+    st.divider()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 -- BL Portfolio Weights
-# ══════════════════════════════════════════════════════════════════════════════
-with tab2:
-    st.markdown("#### Black-Litterman Optimal Weights (Long-Only Max Sharpe)")
+    # ── Section 2: Optimised Weights ──────────────────────────────────────────
+    st.markdown("#### 2. Optimised Portfolio Weights")
     st.caption(
-        "Weights are from a long-only max-Sharpe optimisation using the BL "
-        "posterior covariance and expected returns. Zero weights mean the "
-        "optimiser found no risk-adjusted benefit given the posterior."
+        "The BL posterior returns from Section 1 feed directly into a long-only "
+        "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
+        "correlation to the rest of the portfolio receive higher weights. "
+        "The table also shows alternative weighting schemes for reference."
     )
 
-    # Also compute other strategy weights for comparison
     ew_w   = erk.weight_ew(tick_rets)
     cw_w_s = tick_capweights.reindex(columns=tick_rets.columns).iloc[-1]
     cw_w_s = cw_w_s / cw_w_s.sum()
@@ -1006,62 +763,62 @@ with tab2:
     erc_w  = erk.weight_erc(tick_rets, cov_estimator=erk.shrinkage_cov, delta=0.7)
 
     weight_df = pd.DataFrame({
-        "BL Optimised":        bl_w_series,
-        "Equal-Weighted":      ew_w,
-        "Cap-Weighted":        cw_w_s,
-        "GMV (Shrinkage)":     gmv_w,
-        "Risk Parity":         erc_w,
+        "BL Optimised":    bl_w_series,
+        "Cap-Weighted":    cw_w_s,
+        "Equal-Weighted":  ew_w,
+        "Global Mean Variance": gmv_w,
+        "Risk Parity":     erc_w,
     }).sort_values("BL Optimised", ascending=False)
 
     st.dataframe(
-        weight_df.style.format("{:.2%}").background_gradient(
-            subset=["BL Optimised"], cmap="Blues"
-        ),
+        weight_df.style
+            .format("{:.2%}")
+            .background_gradient(subset=["BL Optimised"], cmap="Blues"),
         use_container_width=True,
     )
 
-    # Treemap of BL weights
     nonzero = weight_df[weight_df["BL Optimised"] > 0.001].reset_index()
     nonzero.columns = ["Ticker"] + list(nonzero.columns[1:])
     fig_tree = px.treemap(
-        nonzero,
-        path=["Ticker"],
-        values="BL Optimised",
-        title=f"BL Weight Allocation",
-        color="BL Optimised",
-        color_continuous_scale="Blues",
+        nonzero, path=["Ticker"], values="BL Optimised",
+        title="BL Weight Allocation",
+        color="BL Optimised", color_continuous_scale="Blues",
     )
     fig_tree.update_traces(textinfo="label+percent entry")
     st.plotly_chart(fig_tree, use_container_width=True)
 
-    # Grouped bar: BL vs cap-weighted
     fig2 = go.Figure()
     fig2.add_trace(go.Bar(
-        name="BL Optimised",
-        x=weight_df.index,
-        y=weight_df["BL Optimised"],
+        name="BL Optimised", x=weight_df.index, y=weight_df["BL Optimised"],
         marker_color="steelblue",
     ))
     fig2.add_trace(go.Bar(
-        name="Cap-Weighted",
-        x=weight_df.index,
-        y=weight_df["Cap-Weighted"],
+        name="Cap-Weighted", x=weight_df.index, y=weight_df["Cap-Weighted"],
         marker_color="lightcoral",
     ))
     fig2.update_layout(
-        barmode="group",
-        title="BL vs Cap-Weighted Allocation",
-        yaxis_tickformat=".1%",
-        height=380,
+        barmode="group", title="BL vs Cap-Weighted Allocation",
+        yaxis_tickformat=".1%", height=380,
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
     st.plotly_chart(fig2, use_container_width=True)
 
+st.caption(
+    "⚙️ **Note on the Covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
+    "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
+    "prior — where all pairwise correlations are set to the cross-sectional average — "
+    "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
+    "stocks the sample covariance matrix is prone to estimation noise and "
+    "near-singularity, which causes unconstrained optimisers to produce extreme, "
+    "unstable weights. Shrinking toward the structured prior regularises the matrix, "
+    "reduces its condition number, and makes the optimisation numerically well-behaved "
+    "without requiring a larger asset universe to stabilise the estimate."
+)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 -- Simulation & Stress Tests
+# TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
-with tab3:
+with tab2:
     st.markdown("#### Correlated GBM Monte Carlo (BL Drift)")
     st.caption(
         "This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, and (2) a historic stress test to backtest against historical shocks. "
@@ -1150,7 +907,6 @@ with tab3:
     )
     st.plotly_chart(fig_hist, use_container_width=True)
 
-
     st.divider()
 
     st.markdown(
@@ -1222,11 +978,10 @@ with tab3:
     )
     st.plotly_chart(fig_stress, use_container_width=True)
 
-
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 -- Strategy Comparison
+# TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
-with tab4:
+with tab3:
     # ── Section 1: Backtested Wealth Index ───────────────────────────────────
     st.markdown("#### Historical Wealth Index — Strategy Comparison")
     st.caption(
@@ -1384,6 +1139,116 @@ with tab4:
         showlegend=False,
     )
     st.plotly_chart(fig_comp, use_container_width=True)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 4 -- CPPI Overlay
+# ══════════════════════════════════════════════════════════════════════════════
+with tab5:
+    st.markdown("#### CPPI Overlay on BL Portfolio")
+    st.caption(
+        "CPPI dynamically scales your exposure to the BL portfolio based on "
+        "how far above the floor your account sits. When the cushion is wide, "
+        "you ride the upside. When it narrows, the model de-risks automatically."
+    )
+
+    # ── Inputs ────────────────────────────────────────────────────────────────
+    c1, c2, c3 = st.columns(3)
+    cppi_floor   = c1.slider("Floor (% of initial value)", 
+                              min_value=0.50, max_value=0.99, value=0.80, step=0.01,
+                              help="Minimum portfolio value CPPI tries to protect. 0.80 = protect 80% of starting capital.")
+    cppi_m       = c2.slider("Multiplier (m)", 
+                              min_value=1, max_value=10, value=3, step=1,
+                              help="How aggressively to lever up into the risky asset when the cushion is wide. 3 is a standard starting point.")
+    use_drawdown = c3.checkbox("Use drawdown-based floor (ratcheting)", value=False,
+                               help="If checked, the floor rises with the portfolio peak — locks in gains dynamically.")
+    
+    if use_drawdown:
+        dd_pct = c3.slider("Max drawdown from peak (%)", 
+                            min_value=5, max_value=40, value=20, step=5) / 100
+    else:
+        dd_pct = None
+
+    # ── Run CPPI ──────────────────────────────────────────────────────────────
+    # bl_r is already computed in Tab 4 — align to same window
+    bl_r_cppi = (tick_rets * bl_static_w.values).sum(axis=1).loc[ew_r.index[0]:]
+
+    cppi_result = erk.run_cppi(
+        risky_r       = bl_r_cppi,
+        safe_r        = None,           # uses riskfree_rate/12 internally
+        m             = cppi_m,
+        start         = 10_000,
+        floor         = cppi_floor,
+        riskfree_rate = RF,
+        drawdown      = dd_pct,
+    )
+
+    wealth_cppi  = cppi_result["Wealth"].squeeze()
+    risky_w_hist = cppi_result["Risky Allocation"].squeeze()
+    cushion_hist = cppi_result["Risk Budget"].squeeze()
+    floor_hist   = cppi_result["floor"].squeeze()
+
+    # ── Wealth comparison: CPPI vs raw BL ─────────────────────────────────────
+    raw_bl_wealth = 10_000 * (1 + bl_r_cppi).cumprod()
+
+    fig_cppi = go.Figure()
+    fig_cppi.add_trace(go.Scatter(
+        x=wealth_cppi.index, y=wealth_cppi,
+        mode="lines", name="CPPI-wrapped BL",
+        line=dict(color="seagreen", width=2),
+    ))
+    fig_cppi.add_trace(go.Scatter(
+        x=raw_bl_wealth.index, y=raw_bl_wealth,
+        mode="lines", name="BL (unprotected)",
+        line=dict(color="steelblue", width=1.5, dash="dot"),
+    ))
+    fig_cppi.add_trace(go.Scatter(
+        x=floor_hist.index, y=floor_hist,
+        mode="lines", name="Floor",
+        line=dict(color="#C44E52", width=1.2, dash="dash"),
+    ))
+    fig_cppi.update_layout(
+        title="CPPI Wealth Path vs Raw BL vs Floor",
+        yaxis_title="Portfolio Value ($)",
+        height=420,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    )
+    st.plotly_chart(fig_cppi, use_container_width=True)
+
+    # ── Risky weight over time ─────────────────────────────────────────────────
+    fig_w = go.Figure()
+    fig_w.add_trace(go.Scatter(
+        x=risky_w_hist.index, y=risky_w_hist,
+        mode="lines", name="Risky Weight",
+        line=dict(color="darkorange", width=1.5),
+        fill="tozeroy", fillcolor="rgba(255,165,0,0.15)",
+    ))
+    fig_w.update_layout(
+        title="CPPI Risky Allocation Over Time",
+        yaxis_tickformat=".0%",
+        yaxis_title="Allocation to BL Portfolio",
+        height=300,
+    )
+    st.plotly_chart(fig_w, use_container_width=True)
+
+    # ── Summary metrics ────────────────────────────────────────────────────────
+    cppi_r = wealth_cppi.pct_change().dropna()
+    raw_r  = raw_bl_wealth.pct_change().dropna()
+
+    floor_breaches = (wealth_cppi < floor_hist).sum()
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("CPPI Ann. Return",  f"{erk.annualize_rets(cppi_r, 252):.2%}")
+    m2.metric("BL Ann. Return",    f"{erk.annualize_rets(raw_r,  252):.2%}")
+    m3.metric("CPPI Max Drawdown", f"{(wealth_cppi/wealth_cppi.cummax()-1).min():.2%}")
+    m4.metric("Floor Breaches",    str(int(floor_breaches)), 
+              help="Days the portfolio value fell below the floor. Should be 0 unless a gap event occurred.")
+
+    st.caption(
+        "**Gap risk note:** CPPI guarantees the floor only if rebalancing is continuous "
+        "and the risky asset cannot gap below the floor overnight. For this tech-heavy "
+        "universe, that assumption is fragile around earnings and macro shocks — the "
+        "stress tests in Tab 3 are a useful sanity check on how bad those gaps can be."
+    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
