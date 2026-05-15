@@ -971,10 +971,11 @@ with tab3:
         The chart is therefore best read as 'how would this portfolio have held up' rather than a like-for-like backtest.
 
         Hence, I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
-        I had used in the "Simulation and Stress-Tests" section. More robust techniques emoloying Machine Learning
-        for the simulated paths will be one way to improve this analysis, for which I hope to employ after taking
-        more courses on Machine Learning for Asset Management. 
+        I had used in the "Simulation and Stress-Tests" section. The limitation of this analysis is that it assumes that
+        the portfolio weights follow a correlated GB< pathway, but more robust techniques employing Machine Learning
+        exists. I plan to employ these techniques after taking more courses on Machine Learning for Asset Management. 
         """
+    )
         
     st.markdown("#### 1. Historical Wealth Index — Strategy Comparison")
 
