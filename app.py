@@ -404,9 +404,8 @@ with st.sidebar:
     st.subheader("2. Position Size Constraints")
     st.caption(
         "**Max position** caps the optimiser from piling into a single stock — "
-        "a common failure mode of unconstrained mean-variance. "
-        "Industry standard for concentrated active funds is **5–15%**; "
-        "diversified funds typically use **3–5%**. "
+        "A maximum position of 25% set as default to allow for some concentration "
+        "while forcing some diversification. "
         "**Min position** prevents the optimiser assigning noise-level weights "
         "that would be uneconomic to trade — **1–2%** is typical. "
         "Set min to 0 to allow zero-weight positions."
