@@ -1014,7 +1014,7 @@ with tab3:
 
     palette = {
         "Equal-Weighted":          ("#94A3B8",    1.2, "solid"),
-        "Cap-Weighted":            (#CBD5E1",    1.2, "solid"),
+        "Cap-Weighted":            ("#CBD5E1",    1.2, "solid"),
         "Global Mean Variance":         ("#0D9488",   1.2, "solid"),
         "Risk Parity":             ("#6366F1", 1.2, "solid"),
         "BL (static)":             ("#002060",  2.5, "solid"),
