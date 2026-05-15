@@ -461,7 +461,7 @@ with st.sidebar:
     st.divider()
 
     # --- Other BL parameters ---
-    st.subheader("3. Other Black-Litterman Parameters")
+    st.subheader("3. Other BL Parameters")
     st.caption(
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
         "Standard value is 2.5. Higher means market expects more return per unit of risk."
