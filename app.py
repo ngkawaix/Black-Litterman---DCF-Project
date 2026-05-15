@@ -50,12 +50,12 @@ TICKERS = sorted([
 
 # My base case price targets
 BASE_TARGETS = {
-    "AAPL": 315.00, "ADBE": 320.00, "AMAT": 380.00,
-    "AMZN": 300.00, "ASML":1791.00, "CPRT":  43.00,
-    "FICO":1655.00, "GOOGL":460.00, "LRCX": 310.00,
-    "MA":   650.00, "META": 810.00, "MSCI": 700.00,
-    "MSFT": 600.00, "NFLX": 117.00, "NVDA": 275.00,
-    "TSM":  465.00, "V":    394.00,
+    "AAPL": 305.00, "ADBE": 328.00, "AMAT": 444.00,
+    "AMZN": 300.00, "ASML": 1661.00, "CPRT":  43.00,
+    "FICO": 1562.00, "GOOGL": 420.00, "LRCX": 310.00,
+    "MA":   650.00, "META": 827.00, "MSCI": 685.00,
+    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 270.00,
+    "TSM":  463.00, "V":    399.00,
 }
 
 # FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
@@ -437,7 +437,7 @@ with st.sidebar:
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
     st.caption("🟡 Ticker flagged = earnings reported in the last 30 days — consensus may have been revised.")
-
+    st.caption("**Last Updated: 15 May 2026**")
     user_targets    = {}
     user_confidence = {}
 
