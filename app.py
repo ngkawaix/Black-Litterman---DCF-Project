@@ -672,7 +672,7 @@ with tab0:
 with tab1:
     st.markdown(
         """
-        This section walks through the full Black-Litterman pipeline in sequence.
+        **This section walks through the full Black-Litterman pipeline in sequence.**
         Starting from DCF price targets, it computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
         confidence settings, and produces the BL posterior return that the
@@ -805,10 +805,10 @@ with tab1:
 # TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
-    st.caption(
+    st.markdown(
         """
-        This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
-        and (2) a historic stress test to backtest against historical shocks. For the GBM, each path 
+        **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
+        and (2) a historic stress test to backtest against historical shocks.** For the GBM, each path 
         simulates one year of daily returns. Drift comes from the BL posterior returns. Correlations are 
         preserved via Cholesky decomposition of the sample covariance and Starting value is normalised to a $1 investment.
         """
