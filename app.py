@@ -592,12 +592,14 @@ with tab0:
         market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
         into profit — sustained high ROIC over multiple years is one of the
-        most reliable indicators of a durable competitive advantage.
+        most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
+        to screen for profitable generating companies, this method would screen out high quality companies like
+        AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
 
         The resulting universe is concentrated in technology, semiconductors,
         payments infrastructure, and financial data — sectors where
         capital-light business models and high switching costs tend to produce
-        the kind of persistent ROIC that justifies long-term holding. Two names
+        the kind of high quality businesses with durable moats. Two names
         warrant a note: FICO carries negative book equity due to sustained
         buybacks rather than distress, which causes standard debt screens to
         misread it; ASML is the sole supplier of extreme ultraviolet
@@ -613,7 +615,8 @@ with tab0:
         """
         Most portfolio optimisers have a fundamental problem: feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
-        unstable allocations (i.e. prone to error maximisation - 80% in one stock, zero in everything else).
+        unstable allocations (i.e. prone to error maximisation where even small estimation errors
+        result in highly concentrated porfolios where no sensible investor would put their money into).
 
         **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
