@@ -990,7 +990,7 @@ with tab3:
     btr = pd.DataFrame({
         "Equal-Weighted":          ew_r,
         "Cap-Weighted":            cw_r,
-        "GMV (Shrinkage)":         gmv_r,
+        "Global Mean Variance":         gmv_r,
         "Risk Parity":             erc_r,
         "BL (static)": bl_r,
     }).dropna()
