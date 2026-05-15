@@ -962,8 +962,8 @@ with tab3:
     st.markdown(
         """
         **This section compares the BL Weights against other portfolio allocation strategies.**
-        It does this by using a rolling backtest using a **{estimation_window_yrs} year** estimation window 
-        to rebalance weights at each step.EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
+        It does this by using a rolling backtest using an estimation window (selected by user) to rebalance weights at each step. 
+        EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         This is a gross simplification as true BL weights would require a fresh set of views at every rebalance date. 
