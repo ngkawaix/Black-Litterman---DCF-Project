@@ -833,7 +833,7 @@ with tab2:
     final_values = port_paths[-1]
 
     # Summary stats
-    m1, m2, m3, m4, m5 = st.columns(5)
+    m1, m2, m3, m4, m5 = st.container(horizontal=True):
     m1.metric("Mean",          f"${np.mean(final_values):.3f}")
     m2.metric("Median",        f"${np.median(final_values):.3f}")
     m3.metric("5th pct",       f"${np.percentile(final_values, 5):.3f}")
