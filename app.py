@@ -1045,6 +1045,10 @@ with tab3:
         r      = btr[col].dropna()
         ann_r  = erk.annualize_rets(r, periods_per_year=252)
         ann_v  = erk.annualize_vol(r, periods_per_year=252)
+        skew  = erk.skewness(r)
+        kurtosis  = erk.kurtosis(r)
+        cf_var = erk.var_gaussian(r, level=5, modified=True)
+        cvar_hist = erk.cvar_historic(r, level=5)
         sharpe = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
         cp     = (1 + r).cumprod()
         mdd    = (cp / cp.cummax() - 1).min()
@@ -1053,13 +1057,17 @@ with tab3:
             "Ann. Vol":     ann_v,
             "Sharpe Ratio": sharpe,
             "Max Drawdown": mdd,
+            "Skewness": skew,
+            "Kurtosis": kurtosis,
+            "Corner Fisher VaR (5%)": cf_var,
+            "Historic CVaR (5%)": cvar_hist
         }
 
     summary_df = pd.DataFrame(summary_rows).T
     st.dataframe(
         summary_df.style
-            .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown"])
-            .format("{:.2f}", subset=["Sharpe Ratio"]),
+            .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown", "Corner Fisher VaR (5%)", "Historic CVaR (5%)"])
+            .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"]),
         use_container_width=True,
     )
 
