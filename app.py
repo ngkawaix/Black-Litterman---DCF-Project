@@ -205,7 +205,7 @@ def load_ticker_metadata(_price_data, tickers):
 def load_rf():
     try:
         url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
-        df   = pd.read_csv(url, parse_dates=["DATE"])
+        df   = pd.read_csv(url, index_col="observation_date", parse_dates=True)
         df   = df[df["DGS1"] != "."]
         rate = float(df["DGS1"].iloc[-1]) / 100
         return rate
