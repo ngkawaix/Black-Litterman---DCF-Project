@@ -384,24 +384,8 @@ if tick_rets.empty:
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
-    # --- BL parameters ---
-    st.subheader("1. Black-Litterman Parameters")
-    st.caption(
-        "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
-        "Standard value is 2.5. Higher means market expects more return per unit of risk."
-    )
-    delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
-
-    st.caption(
-        "**τ (tau)** = uncertainty in the prior returns. This model uses the Cap-Weighted as the market prior. "
-        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market prior."
-    )
-    tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
-
-    st.divider()
-
     # --- Position size constraints ---
-    st.subheader("2. Position Size Constraints")
+    st.subheader("1. Position Size Constraints")
     st.caption(
         "**Max position** caps the optimiser from piling into a single stock — "
         "A maximum position of 25% set as default to allow for some concentration "
@@ -426,7 +410,7 @@ with st.sidebar:
     st.divider()
 
     # --- Per-stock price targets ---
-    st.subheader("3. Price Targets & Confidence")
+    st.subheader("2. Price Targets & Confidence")
     st.caption(
         "**How these are set:** Base targets are rough estimates in-line with the Street View. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
@@ -473,6 +457,22 @@ with st.sidebar:
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
+
+    st.divider()
+
+     # --- Other BL parameters ---
+    st.subheader("3. Other Black-Litterman Parameters")
+    st.caption(
+        "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
+        "Standard value is 2.5. Higher means market expects more return per unit of risk."
+    )
+    delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
+
+    st.caption(
+        "**τ (tau)** = uncertainty in the prior returns. This model uses the Cap-Weighted as the market prior. "
+        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market prior."
+    )
+    tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
     st.divider()
 
