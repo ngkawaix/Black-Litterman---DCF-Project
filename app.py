@@ -932,9 +932,7 @@ with tab2:
     st.dataframe(
         stress_df.style
             .format("{:.1%}", subset=["Period Return", "Max Drawdown", "Annualised Vol"])
-            .format("{:.0f}", subset=["Trading Days"])
-            .background_gradient(subset=["Period Return"], cmap="RdYlGn")
-            .background_gradient(subset=["Max Drawdown"], cmap="RdYlGn_r"),
+            .format("{:.0f}", subset=["Trading Days"]),
         use_container_width=True,
     )
 
