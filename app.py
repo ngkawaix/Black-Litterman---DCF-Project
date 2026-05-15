@@ -765,7 +765,7 @@ with tab1:
         "BL Optimised":    bl_w_series,
         "Cap-Weighted":    cw_w_s,
         "Equal-Weighted":  ew_w,
-        "Global Mean Variance": gmv_w,
+        "GMV": gmv_w,
         "Risk Parity":     erc_w,
     }).sort_values("BL Optimised", ascending=False)
 
