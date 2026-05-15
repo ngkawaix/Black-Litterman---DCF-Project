@@ -589,7 +589,7 @@ with tab0:
     st.markdown(
         """
         The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen using four criterias: **(1) 5-year average ROIC above 15%**, (2) debt-to-equity
+        fundamental screen using four criterias: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
         below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
         market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
