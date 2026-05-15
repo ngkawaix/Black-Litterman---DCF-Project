@@ -1089,8 +1089,8 @@ with tab3:
 
     st.divider()
 
-    # ── Section 2: Forward Distribution (Monte Carlo) ─────────────────────────
-    st.markdown("#### 2. Forward Distribution — Strategy Comparison (Monte Carlo)")
+    # ── Section 2: 1-Year Monte Carlo Return Forecast ────────────────────────
+    st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
     st.caption(
         "Uses the same correlated GBM paths from Tab 3 but applied to each "
         "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
