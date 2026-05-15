@@ -803,18 +803,6 @@ with tab1:
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-st.caption(
-    "⚙️ **Note on the Covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
-    "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-    "prior — where all pairwise correlations are set to the cross-sectional average — "
-    "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
-    "stocks the sample covariance matrix is prone to estimation noise and "
-    "near-singularity, which causes unconstrained optimisers to produce extreme, "
-    "unstable weights. Shrinking toward the structured prior regularises the matrix, "
-    "reduces its condition number, and makes the optimisation numerically well-behaved "
-    "without requiring a larger asset universe to stabilise the estimate."
-)
-
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1254,6 +1242,17 @@ with tab5:
 # FOOTER
 # ─────────────────────────────────────────────────────────────────────────────
 st.divider()
+st.caption(
+    "⚙️ **Note on the Covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
+    "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
+    "prior — where all pairwise correlations are set to the cross-sectional average — "
+    "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
+    "stocks the sample covariance matrix is prone to estimation noise and "
+    "near-singularity, which causes unconstrained optimisers to produce extreme, "
+    "unstable weights. Shrinking toward the structured prior regularises the matrix, "
+    "reduces its condition number, and makes the optimisation numerically well-behaved "
+    "without requiring a larger asset universe to stabilise the estimate."
+)
 st.caption(
     "⚠️ **Disclaimer**: This app is for educational and personal research purposes only. "
     "Nothing here constitutes financial advice. All data is sourced from Yahoo Finance and FRED. "
