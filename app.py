@@ -51,8 +51,8 @@ TICKERS = sorted([
 # My base case price targets
 BASE_TARGETS = {
     "AAPL": 305.00, "ADBE": 328.00, "AMAT": 444.00,
-    "AMZN": 300.00, "ASML": 1661.00, "CPRT":  43.00,
-    "FICO": 1562.00, "GOOGL": 420.00, "LRCX": 310.00,
+    "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
+    "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
     "MSFT": 562.00, "NFLX": 115.00, "NVDA": 270.00,
     "TSM":  463.00, "V":    399.00,
