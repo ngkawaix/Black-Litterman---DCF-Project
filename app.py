@@ -429,8 +429,8 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "**How these are set:** Base targets are personal estimates derived from "
-        "DCF work (May 2025) and updated as new information arrives. "
+        "**How these are set:** Base targets are rough estimates in-line with the Street View."
+        "I will be adding my DCF work here eventually (in progress May 2026) "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
         "may lag recent revisions - treat them as directional references only. "
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
