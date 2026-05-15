@@ -394,15 +394,15 @@ with st.sidebar:
         "that would be uneconomic to trade — **1–2%** is typical. "
         "Set min to 0 to allow zero-weight positions."
     )
-    min_w_pct = st.slider(
-        "Min position size (%)",
-        min_value=0.0, max_value=10.0, value=1.0, step=0.5,
-        help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
-    )
-    max_w_pct = st.slider(
+     max_w_pct = st.slider(
         "Max position size (%)",
         min_value=5.0, max_value=100.0, value=25.0, step=0.5,
         help="Ceiling on any single stock weight. high 25% default to enable some concentration risks.",
+    )
+    min_w_pct = st.slider(
+        "Min position size (%)",
+        min_value=0.0, max_value=10.0, value=0.0, step=0.5,
+        help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
     )
     min_weight = min_w_pct / 100
     max_weight = max_w_pct / 100
