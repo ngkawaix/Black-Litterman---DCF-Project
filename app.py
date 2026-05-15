@@ -89,7 +89,7 @@ STRESS_PERIODS = {
 # DATA LOADING  (cached so Streamlit doesn't re-download on every interaction)
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Fetching market data from Yahoo Finance…")
-def load_market_data(tickers, start="2000-01-01"):
+def load_market_data(tickers, start="2012-01-01"):
     data = yf.download(tickers, start=start, interval="1d", auto_adjust=True, progress=False)
     price_data = data["Close"]
     price_data.index = price_data.index.tz_localize(None)
