@@ -548,12 +548,11 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, tab4 = st.tabs([
+tab0, tab1, tab2, tab3, = st.tabs([
     "📖 Introduction",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
-    "🛡️ CPPI Overlay",
 ])
 
 
@@ -1124,116 +1123,6 @@ with tab3:
         showlegend=False,
     )
     st.plotly_chart(fig_comp, use_container_width=True)
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 -- CPPI Overlay
-# ══════════════════════════════════════════════════════════════════════════════
-with tab4:
-    st.markdown("#### CPPI Overlay on BL Portfolio")
-    st.caption(
-        "CPPI dynamically scales your exposure to the BL portfolio based on "
-        "how far above the floor your account sits. When the cushion is wide, "
-        "you ride the upside. When it narrows, the model de-risks automatically."
-    )
-
-    # ── Inputs ────────────────────────────────────────────────────────────────
-    c1, c2, c3 = st.columns(3)
-    cppi_floor   = c1.slider("Floor (% of initial value)", 
-                              min_value=0.50, max_value=0.99, value=0.80, step=0.01,
-                              help="Minimum portfolio value CPPI tries to protect. 0.80 = protect 80% of starting capital.")
-    cppi_m       = c2.slider("Multiplier (m)", 
-                              min_value=1, max_value=10, value=3, step=1,
-                              help="How aggressively to lever up into the risky asset when the cushion is wide. 3 is a standard starting point.")
-    use_drawdown = c3.checkbox("Use drawdown-based floor (ratcheting)", value=False,
-                               help="If checked, the floor rises with the portfolio peak — locks in gains dynamically.")
-    
-    if use_drawdown:
-        dd_pct = c3.slider("Max drawdown from peak (%)", 
-                            min_value=5, max_value=40, value=20, step=5) / 100
-    else:
-        dd_pct = None
-
-    # ── Run CPPI ──────────────────────────────────────────────────────────────
-    # bl_r is already computed in Tab 4 — align to same window
-    bl_r_cppi = (tick_rets * bl_static_w.values).sum(axis=1).loc[ew_r.index[0]:]
-
-    cppi_result = erk.run_cppi(
-        risky_r       = bl_r_cppi,
-        safe_r        = None,           # uses riskfree_rate/12 internally
-        m             = cppi_m,
-        start         = 10_000,
-        floor         = cppi_floor,
-        riskfree_rate = RF,
-        drawdown      = dd_pct,
-    )
-
-    wealth_cppi  = cppi_result["Wealth"].squeeze()
-    risky_w_hist = cppi_result["Risky Allocation"].squeeze()
-    cushion_hist = cppi_result["Risk Budget"].squeeze()
-    floor_hist   = cppi_result["floor"].squeeze()
-
-    # ── Wealth comparison: CPPI vs raw BL ─────────────────────────────────────
-    raw_bl_wealth = 10_000 * (1 + bl_r_cppi).cumprod()
-
-    fig_cppi = go.Figure()
-    fig_cppi.add_trace(go.Scatter(
-        x=wealth_cppi.index, y=wealth_cppi,
-        mode="lines", name="CPPI-wrapped BL",
-        line=dict(color="seagreen", width=2),
-    ))
-    fig_cppi.add_trace(go.Scatter(
-        x=raw_bl_wealth.index, y=raw_bl_wealth,
-        mode="lines", name="BL (unprotected)",
-        line=dict(color="steelblue", width=1.5, dash="dot"),
-    ))
-    fig_cppi.add_trace(go.Scatter(
-        x=floor_hist.index, y=floor_hist,
-        mode="lines", name="Floor",
-        line=dict(color="#C44E52", width=1.2, dash="dash"),
-    ))
-    fig_cppi.update_layout(
-        title="CPPI Wealth Path vs Raw BL vs Floor",
-        yaxis_title="Portfolio Value ($)",
-        height=420,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-    )
-    st.plotly_chart(fig_cppi, use_container_width=True)
-
-    # ── Risky weight over time ─────────────────────────────────────────────────
-    fig_w = go.Figure()
-    fig_w.add_trace(go.Scatter(
-        x=risky_w_hist.index, y=risky_w_hist,
-        mode="lines", name="Risky Weight",
-        line=dict(color="darkorange", width=1.5),
-        fill="tozeroy", fillcolor="rgba(255,165,0,0.15)",
-    ))
-    fig_w.update_layout(
-        title="CPPI Risky Allocation Over Time",
-        yaxis_tickformat=".0%",
-        yaxis_title="Allocation to BL Portfolio",
-        height=300,
-    )
-    st.plotly_chart(fig_w, use_container_width=True)
-
-    # ── Summary metrics ────────────────────────────────────────────────────────
-    cppi_r = wealth_cppi.pct_change().dropna()
-    raw_r  = raw_bl_wealth.pct_change().dropna()
-
-    floor_breaches = (wealth_cppi < floor_hist).sum()
-
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("CPPI Ann. Return",  f"{erk.annualize_rets(cppi_r, 252):.2%}")
-    m2.metric("BL Ann. Return",    f"{erk.annualize_rets(raw_r,  252):.2%}")
-    m3.metric("CPPI Max Drawdown", f"{(wealth_cppi/wealth_cppi.cummax()-1).min():.2%}")
-    m4.metric("Floor Breaches",    str(int(floor_breaches)), 
-              help="Days the portfolio value fell below the floor. Should be 0 unless a gap event occurred.")
-
-    st.caption(
-        "**Gap risk note:** CPPI guarantees the floor only if rebalancing is continuous "
-        "and the risky asset cannot gap below the floor overnight. For this tech-heavy "
-        "universe, that assumption is fragile around earnings and macro shocks — the "
-        "stress tests in Tab 3 are a useful sanity check on how bad those gaps can be."
-    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
