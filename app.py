@@ -1009,10 +1009,9 @@ with tab3:
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
         f"Starts {estimation_window_yrs} year(s) after data begins — the minimum needed for the first rolling estimate."
     )
-
+# Wealth Index Plot with starting $10,000 invested
     wealth = (1 + btr).cumprod() * 10_000
 
-    # Colour palette: BL stands out, others are muted
     palette = {
         "Equal-Weighted":          ("steelblue",    1.2, "dot"),
         "Cap-Weighted":            ("slategray",    1.2, "dot"),
@@ -1069,6 +1068,23 @@ with tab3:
             .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown", "Corner Fisher VaR (5%)", "Historic CVaR (5%)"])
             .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"]),
         use_container_width=True,
+        column_config={
+            "Skewness": st.column_config.Column(
+                "Skewness",
+                help="0 indicates normally distributed returns."
+            ),
+            "Kurtosis": st.column_config.Column(
+                "Kutrosis",
+                help="3 indicates normally distributed returns. Higher values mean a higher risk of exterme tail events."
+            ),
+            "Corner Fisher VaR (5%)": st.column_config.Column(
+                "Corner Fisher VaR (5%)",
+                help="Value at Risk adjusted for Skewness and Kurtosis. Represents the minimum expected loss on the worst 5% of days."
+            ),
+            "Historic CVaR (5%)": st.column_config.Column(
+                "Historic CVaR (5%),
+                help="Conditional Value at Risk (Expected Shortfall). Represents the average expected loss **beyond** the 5% VaR threshold during the worst 5% of days."
+                )}
     )
 
     st.divider()
