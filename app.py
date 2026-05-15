@@ -1121,7 +1121,7 @@ with tab3:
         comp_df.style
             .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
             .format("{:.3f}", subset=["Spread (95--5)"])
-            .background_gradient(subset=["Expected Return"], cmap="RdYlGn"),
+            .background_gradient(subset=["Expected Return"], cmap="RdYlGn", vmin=0),
         use_container_width=True,
     )
 
