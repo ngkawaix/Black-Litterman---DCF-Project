@@ -539,7 +539,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 # ─────────────────────────────────────────────────────────────────────────────
 st.title("DCF × Black-Litterman Portfolio Optimiser")
 st.caption(
-    f"Risk-free rate (1Y T-bill): **{RF:.2%}**  |  "
+    f"Risk-free rate (1Y T-bill): **{RF:.2%}** (retrieved today) |  "
     f"Universe: **{len(TICKERS)} stocks**  |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
