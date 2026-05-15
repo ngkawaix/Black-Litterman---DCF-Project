@@ -1082,7 +1082,7 @@ with tab3:
                 help="Value at Risk adjusted for Skewness and Kurtosis. Represents the minimum expected loss on the worst 5% of days."
             ),
             "Historic CVaR (5%)": st.column_config.Column(
-                "Historic CVaR (5%),
+                "Historic CVaR (5%)",
                 help="Conditional Value at Risk (Expected Shortfall). Represents the average expected loss **beyond** the 5% VaR threshold during the worst 5% of days."
                 )}
     )
