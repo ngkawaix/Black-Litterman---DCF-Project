@@ -388,13 +388,13 @@ with st.sidebar:
     st.subheader("1. Black-Litterman Parameters")
     st.caption(
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
-        "Standard value is 2.5. Higher --> market expects more return per unit of risk."
+        "Standard value is 2.5. Higher means market expects more return per unit of risk."
     )
     delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
 
     st.caption(
-        "**τ (tau)** = uncertainty in the prior (equilibrium) returns. "
-        "Smaller τ means you trust the market prior more over your own views."
+        "**τ (tau)** = uncertainty in the prior returns. This model uses the Cap-Weighted as the market prior. "
+        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market prior."
     )
     tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
