@@ -454,7 +454,7 @@ with st.sidebar:
                 mean_t = cons.get("mean", None)
                 n_ana  = cons.get("n_analysts", None)
                 if mean_t:
-                    n_str = f" · {int(n_ana)} analysts" if n_ana else ""
+                    n_str = f" | from {int(n_ana)} analysts" if n_ana else ""
                     st.caption(f"Consensus: ${mean_t:,.0f}{n_str}")
                 else:
                     st.caption("Consensus: N/A")
@@ -670,8 +670,6 @@ with tab0:
 # TAB 1 -- Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-
-    st.markdown("#### What this tab shows")
     st.markdown(
         """
         This section walks through the full Black-Litterman pipeline in sequence.
@@ -807,15 +805,15 @@ with tab1:
 # TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
-    st.markdown("#### Correlated GBM Monte Carlo (BL Drift)")
     st.caption(
-        "This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, and (2) a historic stress test to backtest against historical shocks. "
-        "For the GBM, each path simulates one year of daily returns. "
-        "Drift comes from the **BL posterior returns**. "
-        "Correlations are preserved via Cholesky decomposition of the sample covariance. "
-        "Starting value is normalised to $1."
+        """
+        This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
+        and (2) a historic stress test to backtest against historical shocks. For the GBM, each path 
+        simulates one year of daily returns. Drift comes from the BL posterior returns. Correlations are 
+        preserved via Cholesky decomposition of the sample covariance and Starting value is normalised to a $1 investment."
     )
 
+    st.markdown("#### Correlated GBM Monte Carlo Simulation")
     col1, col2 = st.columns(2)
     n_scenarios = col1.slider("Number of scenarios", 100, 1000, 500, step=100)
     seed        = col2.number_input("Random seed (for reproducibility)", value=42, step=1)
@@ -888,7 +886,7 @@ with tab2:
             annotation_text=label, annotation_position="top right",
         )
     fig_hist.update_layout(
-        title="Distribution of Final Portfolio Value ($1 invested)",
+        title="Distribution of Final Portfolio Value ($10,000 invested)",
         xaxis_title="Portfolio Value",
         yaxis_title="Frequency",
         height=360,
