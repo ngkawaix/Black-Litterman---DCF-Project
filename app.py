@@ -687,7 +687,7 @@ with tab1:
     st.divider()
 
     # ── Section 1: Return Decomposition ──────────────────────────────────────
-    st.markdown("#### 1. Return Decomposition")
+    st.markdown("#### 1. Decomposition of Returns")
     st.caption(
         "Each column is one layer of the BL process. "
         "**DCF-Implied Return** is the raw DCF-implied return. "
