@@ -394,7 +394,7 @@ with st.sidebar:
         "that would be uneconomic to trade — **1–2%** is typical. "
         "Set min to 0 to allow zero-weight positions."
     )
-     max_w_pct = st.slider(
+    max_w_pct = st.slider(
         "Max position size (%)",
         min_value=5.0, max_value=100.0, value=25.0, step=0.5,
         help="Ceiling on any single stock weight. high 25% default to enable some concentration risks.",
@@ -460,7 +460,7 @@ with st.sidebar:
 
     st.divider()
 
-     # --- Other BL parameters ---
+    # --- Other BL parameters ---
     st.subheader("3. Other Black-Litterman Parameters")
     st.caption(
         "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
@@ -470,7 +470,7 @@ with st.sidebar:
 
     st.caption(
         "**τ (tau)** = uncertainty in the prior returns. This model uses the Cap-Weighted as the market prior. "
-        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market prior."
+        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
     )
     tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
@@ -540,7 +540,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 st.title("DCF × Black-Litterman Portfolio Optimiser")
 st.caption(
     f"Risk-free rate (1Y T-bill): **{RF:.2%}** (retrieved from FRED) |  "
-    f"Universe: **{len(TICKERS)} stocks**  |  "
+    f"Universe: **{len(TICKERS)} stocks** |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
 
