@@ -127,19 +127,25 @@ def load_ticker_metadata(tickers):
     consensus       = {}
     recent_earnings = {}
 
-    for ticker in tickers:
+  for ticker in tickers:
         t = yf.Ticker(ticker)
 
-        # ── Single .info call — covers mcap, consensus fallback, analyst count ─
+        # Attempt to use fast_info first (less likely to be rate-limited)
+        try:
+            mcap[ticker] = t.fast_info.get("marketCap")
+        except Exception:
+            mcap[ticker] = None
+
         info = {}
         try:
             info = t.info
         except Exception:
             pass
+        
+        # Fallback to standard info if fast_info fails
+        if mcap[ticker] is None:
+            mcap[ticker] = info.get("marketCap", None)
 
-        mcap[ticker] = info.get("marketCap", None)
-
-        # Consensus: try dedicated property first (yfinance 0.2.x), fall back to info
         mean_t     = None
         n_analysts = info.get("numberOfAnalystOpinions", None)
         try:
@@ -152,7 +158,6 @@ def load_ticker_metadata(tickers):
 
         consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
 
-        # ── Calendar call for earnings recency flag ───────────────────────────
         flagged = False
         try:
             cal   = t.calendar
@@ -171,18 +176,26 @@ def load_ticker_metadata(tickers):
             pass
         recent_earnings[ticker] = flagged
 
-        time.sleep(0.2)   # stay well within Yahoo Finance's rate limit
+        time.sleep(0.2)   
 
-    # Build cap-weight Series (to be built into DataFrame dynamically later)
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
+    
+    # Use hardcoded approximate market caps if API fails entirely, preventing silent equal-weighting
     if missing:
-        avg = mcap_series.dropna().mean()
-        mcap_series[missing] = avg if pd.notna(avg) and avg > 0 else 1.0
+        FALLBACK_MCAP = {
+            "AAPL": 2.9e12, "ADBE": 220e9, "AMAT": 160e9, "AMZN": 1.9e12, 
+            "ASML": 380e9, "CPRT": 50e9, "FICO": 30e9, "GOOGL": 2.1e12, 
+            "LRCX": 130e9, "MA": 420e9, "META": 1.2e12, "MSCI": 40e9,
+            "MSFT": 3.1e12, "NFLX": 260e9, "NVDA": 2.3e12, "TSM": 750e9, "V": 560e9,
+        }
+        for tkr in missing:
+            mcap_series[tkr] = FALLBACK_MCAP.get(tkr, 1e10)
     
     weights = mcap_series / mcap_series.sum()
 
     return weights, consensus, recent_earnings
+
 
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
