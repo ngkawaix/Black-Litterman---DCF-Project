@@ -692,7 +692,7 @@ with tab0:
 # TAB 1 -- Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.html("<div style='height: 20px;'></div>")
+    st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
         **This section walks through the full Black-Litterman pipeline in sequence.**
@@ -841,7 +841,7 @@ with tab1:
 # TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
-    st.html("<div style='height: 20px;'></div>")
+    st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
         **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
@@ -997,7 +997,7 @@ with tab2:
 # TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
-    st.html("<div style='height: 20px;'></div>")
+    st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
         **This section compares the BL Weights against other portfolio allocation strategies.**
