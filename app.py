@@ -616,7 +616,7 @@ with tab0:
     st.markdown(
         """
         **The question this tool answers:** Once you derive a 12-month price target 
-        for a stock through DCF analysis, how do you translate that conviction 
+        for a stock through Discount Cash Flow (DCF) analysis, how do you translate that conviction 
         into a disciplined portfolio sizing decision?
     
         Most optimisation frameworks either ignore forward-looking views entirely, 
