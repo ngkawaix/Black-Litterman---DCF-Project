@@ -1032,8 +1032,10 @@ with tab2:
 
         # SPY benchmark for the same period
         spx_period = spx_rets.loc[start:end]
-        spx_period_return = float((1 + spx_period).prod() - 1) if not spx_period.empty else None
-        excess_return = (total_period_return - spx_period_return) if spx_period_return is not None else None
+        spx_period_return = float((1 + spx_period).prod() - 1)
+        excess_return = (total_period_return - spx_period_return)
+        cumprod_spx = (1 + spx_period).cumprod()
+        max_dd_spx = float((cumprod_spx / cumprod_spx.cummax() - 1).min())
 
         stress_rows[name] = {
             "Period Return":    total_period_return,
@@ -1044,6 +1046,7 @@ with tab2:
             "Ann. Vol":         ann_vol_bl_period,
             "Sharpe Ratio":     sharpe_bl_period,
             "Max Drawdown":     max_dd_bl,
+            "SPY Max Drawdown": max_dd_spx 
         }
 
     stress_df = pd.DataFrame(stress_rows).T
@@ -1055,7 +1058,7 @@ with tab2:
             .format("{:.0f}", subset=["Trading Days"])
             .format("{:.2f}", subset=["Sharpe Ratio"])
             .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmax=0.0)
-            .background_gradient(subset=["Excess Return"], cmap="RdYlGn", vmin=-0.10, vmax=0.10),
+            .background_gradient(subset=["SPY Max Drawdown"], cmap="Reds_r", vmax=0.0),
         use_container_width=True,
     )
 
