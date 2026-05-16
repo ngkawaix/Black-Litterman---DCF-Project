@@ -347,54 +347,55 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
-# --- Data Range Selection ---
-_FLOOR = date(2012, 6, 1)
-_MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
-
-st.sidebar.markdown("#### 📅 Data Range")
-data_range_help = (
-    "**Minimum: 2012-06-01** – one month after META's IPO (the most recent in the universe).\n\n"
-    "**Recommended Default: 2015-01-01** – captures multiple market regimes "
-    "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
-    "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).\n\n"
-    "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
-)
-data_start_date = st.sidebar.date_input(
-    "Historical data start date",
-    value=date(2015, 1, 1),
-    min_value=_FLOOR,
-    max_value=_MAX_START,
-    key="data_start_date",
-    help=data_range_help
-)
-st.sidebar.divider()
-
-price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
-
-# Fetch the cached weights series and metadata
-weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
-
-# Build the cap-weight DataFrame dynamically with the fresh index
-idx = price_data.index
-tick_capweights = pd.DataFrame(
-    [weights_series.reindex(TICKERS).values] * len(idx),
-    index=idx, columns=TICKERS,
-)
-
-# Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
-if tick_rets.empty:
-    st.error(
-        "❌ **All price data downloads failed.** "
-        "Yahoo Finance is likely rate-limiting the Streamlit Cloud shared IP. "
-        "Wait 60 seconds and refresh the page."
-    )
-    st.stop()
-
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
+    # --- Data Range Selection ---
+    _FLOOR = date(2012, 6, 1)
+    _MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
+    
+    st.subheader("#### 1. Data Range")
+    data_range_help = (
+        "**Minimum: 2012-06-01** – one month after META's IPO (the most recent in the universe).\n\n"
+        "**Recommended Default: 2015-01-01** – captures multiple market regimes "
+        "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
+        "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).\n\n"
+        "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
+    )
+    data_start_date = st.sidebar.date_input(
+        "Historical data start date",
+        value=date(2015, 1, 1),
+        min_value=_FLOOR,
+        max_value=_MAX_START,
+        key="data_start_date",
+        help=data_range_help
+    )
+    st.sidebar.divider()
+    
+    price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
+    
+    # Fetch the cached weights series and metadata
+    weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
+    
+    # Build the cap-weight DataFrame dynamically with the fresh index
+    idx = price_data.index
+    tick_capweights = pd.DataFrame(
+        [weights_series.reindex(TICKERS).values] * len(idx),
+        index=idx, columns=TICKERS,
+    )
+    
+    # Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
+    if tick_rets.empty:
+        st.error(
+            "❌ **All price data downloads failed.** "
+            "Yahoo Finance is likely rate-limiting the Streamlit Cloud shared IP. "
+            "Wait 60 seconds and refresh the page."
+        )
+        st.stop()
+
+
     # --- Position size constraints ---
-    st.subheader("1. Position Size Constraints")
+    st.subheader("2. Position Size Constraints")
     
     max_w_pct = st.slider(
         "Max position size (%)",
@@ -416,7 +417,7 @@ with st.sidebar:
     st.divider()
 
     # --- Per-stock price targets ---
-    st.subheader("2. Price Targets & Confidence")
+    st.subheader("3. Price Targets & Confidence")
     st.caption(
         "**How these are set:** Base targets are rough estimates in-line with the Street View. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
@@ -466,7 +467,7 @@ with st.sidebar:
     st.divider()
 
     # --- Other BL parameters ---
-    st.subheader("3. Other BL Parameters")
+    st.subheader("4. Other BL Parameters")
 
     delta = st.slider(
         "δ  Risk Aversion",
@@ -487,7 +488,7 @@ with st.sidebar:
     st.divider()
 
     # --- Backtest estimation window ---
-    st.subheader("4. Backtest Estimation Window")
+    st.subheader("5. Backtest Estimation Window")
 
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
