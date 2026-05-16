@@ -562,7 +562,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
     mu_bl, sigma_bl, pi, Q, cw_w, sigma = build_bl_inputs(
         tick_rets        = tick_rets,
         tick_capweights  = tick_capweights,
-        price_targets    = total_return_views,   # excess returns already; recalculated inside
+        price_targets    = total_return_views,
         confidence       = user_confidence,
         delta            = delta,
         tau              = tau,
@@ -986,11 +986,10 @@ with tab2:
         "known market shocks. This shows how this allocation *would* have "
         "performed and is not a forecast."
     )
- 
-    w_stress     = bl_w_series.reindex(tick_rets.columns).fillna(0).values
-    stress_rows  = {}
-    stress_paths = {}   # wealth index path per period, indexed to 1.0 at start
- 
+
+    w_stress = bl_w_series.reindex(tick_rets.columns).fillna(0).values
+    stress_rows = {}
+
     for name, (start, end) in STRESS_PERIODS.items():
         period_rets = tick_rets.loc[start:end]
         if period_rets.empty:
@@ -1006,18 +1005,17 @@ with tab2:
             "Annualised Vol": ann_vol,
             "Trading Days":   len(port_rets),
         }
-        stress_paths[name] = cumprod   # already starts at first-day cumulative return
- 
+
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
         stress_df.style
             .format("{:.1%}", subset=["Period Return", "Max Drawdown", "Annualised Vol"])
             .format("{:.0f}", subset=["Trading Days"])
-            .background_gradient(subset=["Period Return"], cmap="RdYlGn", vmin=-0.5, vmax=0.5)
-            .background_gradient(subset=["Max Drawdown"], cmap="RdYlGn", vmin=-0.6, vmax=0.0),
+            .background_gradient(subset=["Period Return"], cmap="YlGnBu")
+            .background_gradient(subset=["Max Drawdown"], cmap="YlGnBu"),
         use_container_width=True,
     )
- 
+
     # Bar chart
     fig_stress = go.Figure()
     fig_stress.add_trace(go.Bar(
@@ -1034,62 +1032,7 @@ with tab2:
         xaxis_tickangle=-20,
     )
     st.plotly_chart(fig_stress, use_container_width=True)
- 
-    # Wealth index + drawdown underwater — one trace per stress period
-    st.caption(
-        "Charts below show how the BL portfolio's value moved day-by-day during each period. "
-        "The left panel is the wealth index (portfolio value starting at $1). "
-        "The right panel is the underwater curve — how far the portfolio sat below its "
-        "running peak at each point, making the depth and recovery of each drawdown explicit."
-    )
- 
-    STRESS_COLOURS = ["#C44E52", "#DD8452", "#4C72B0", "#55A868", "#8172B2"]
-    col_wi, col_dd = st.columns(2)
- 
-    fig_wi = go.Figure()
-    fig_dd = go.Figure()
- 
-    for i, (name, cp) in enumerate(stress_paths.items()):
-        colour   = STRESS_COLOURS[i % len(STRESS_COLOURS)]
-        x_days   = list(range(len(cp)))
-        underwater = (cp / cp.cummax()) - 1
- 
-        fig_wi.add_trace(go.Scatter(
-            x=x_days, y=cp.values,
-            mode="lines", name=name,
-            line=dict(color=colour, width=1.8),
-        ))
-        fig_dd.add_trace(go.Scatter(
-            x=x_days, y=underwater.values,
-            mode="lines", name=name,
-            line=dict(color=colour, width=1.8),
-            fill="tozeroy", fillcolor=colour.replace(")", ", 0.08)").replace("rgb", "rgba")
-                if colour.startswith("rgb") else colour + "14",
-            showlegend=False,
-        ))
- 
-    fig_wi.add_hline(y=1.0, line_dash="dot", line_color="gray", line_width=1)
-    fig_wi.update_layout(
-        title="Wealth Index (start = $1)",
-        xaxis_title="Trading Days from Period Start",
-        yaxis_title="Portfolio Value ($)",
-        height=360,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(size=10)),
-    )
- 
-    fig_dd.add_hline(y=0, line_dash="dot", line_color="gray", line_width=1)
-    fig_dd.update_layout(
-        title="Drawdown — Underwater Curve",
-        xaxis_title="Trading Days from Period Start",
-        yaxis_title="Drawdown (%)",
-        yaxis_tickformat=".0%",
-        height=360,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(size=10)),
-    )
- 
-    col_wi.plotly_chart(fig_wi, use_container_width=True)
-    col_dd.plotly_chart(fig_dd, use_container_width=True)
- 
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
