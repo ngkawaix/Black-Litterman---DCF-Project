@@ -1011,7 +1011,7 @@ with tab2:
         stress_df.style
             .format("{:.1%}", subset=["Period Return", "Max Drawdown", "Annualised Vol"])
             .format("{:.0f}", subset=["Trading Days"])
-            .background_gradient(subset=["Period Return"], cmap="YlGnBu"),
+            .background_gradient(subset=["Period Return"], cmap="YlGnBu")
             .background_gradient(subset=["Max Drawdown"], cmap="YlGnBu"),
         use_container_width=True,
     )
