@@ -1060,6 +1060,8 @@ with tab3:
     st.plotly_chart(fig_wealth, use_container_width=True)
 
     # Summary stats
+    _ann_scale = np.sqrt(252)
+    
     summary_rows = {}
     for col in btr.columns:
         r         = btr[col].dropna()
