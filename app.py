@@ -82,7 +82,7 @@ STRESS_PERIODS = {
     "Post-COVID Rate Hikes (2022)":      ("2022-01-01", "2022-12-31"),
     "Tech Selloff (Nov 2021--May 2022)":  ("2021-11-19", "2022-05-20"),
     "GFC Echo (Aug--Oct 2015)":           ("2015-08-18", "2015-10-01"),
-    "Trump Tariffs (Apr 2025)":          ("2025-04-02", "2025-04-09"),
+    "Trump Tariffs (Full Year 2025)": ("2025-02-01", "2025-12-31"),
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1004,37 +1004,32 @@ with tab2:
         
         ann_rets_bl_period = erk.annualize_rets(bl_period_rets, periods_per_year=252)
         ann_vol_bl_period = erk.annualize_vol(bl_period_rets, periods_per_year=252)
-        skew_bl_period = erk.skewness(bl_period_rets)
-        kurt_bl_period = erk.kurtosis(bl_period_rets)
-        cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252)
-        cvar_bl_period = erk.cvar_historic(bl_period_rets, level=5) * np.sqrt(252)
+        skew_bl_period = erk.skewness(bl_period_rets) # Left here but not useful acutally for short period stress tests
+        kurt_bl_period = erk.kurtosis(bl_period_rets) # Left here but not useful acutally for short period stress tests
+        cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252) # Left here but not useful acutally for short period stress tests
+        cvar_bl_period = erk.cvar_historic(bl_period_rets, level=5) * np.sqrt(252) # Left here but not useful acutally for short period stress tests
         sharpe_bl_period = erk.sharpe_ratio(bl_period_rets, riskfree_rate=RF, periods_per_year=252)
         cumprod_bl = (1 + bl_period_rets).cumprod()
         max_dd_bl = (cumprod_bl / cumprod_bl.cummax() - 1).min()
         
         stress_rows[name] = {
-            "Period Return":  total_period_return,
+            "Period Return":  total_period_return, 
             "Trading Days":   len(bl_period_rets),
-            "Ann. Return": ann_rets_bl_period,
-            "Ann. Vol": ann_vol_bl_period,
-            "Sharpe Ratio": sharpe_bl_period,
+            "Ann. Return":    ann_rets_bl_period,
+            "Ann. Vol":       ann_vol_bl_period, # Make sure this uses erk.annualize_vol!
+            "Sharpe Ratio":   sharpe_bl_period,
             "Max Drawdown":   max_dd_bl,
-            "Skewness": skew_bl_period,
-            "Kurtosis": kurt_bl_period,
-            "Ann. CF VaR (5%)": cf_var_bl_period,
-            "Ann. CVaR (5%)": cvar_bl_period,
         }
 
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
         stress_df.style
-            .format("{:.2%}", subset=["Period Return", "Ann. Return", "Ann. Vol", "Max Drawdown", 
-                                      "Ann. CF VaR (5%)", "Ann. CVaR (5%)"])
+            .format("{:.2%}", subset=["Period Return", "Ann. Return", "Ann. Vol", "Max Drawdown"])
             .format("{:.0f}", subset=["Trading Days"])
-            .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"])
-            .background_gradient(subset=["Max Drawdown"], cmap="YlGnBu"),
+            .format("{:.2f}", subset=["Sharpe Ratio"])
+            .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmin=0.0),
         use_container_width=True,
-    )
+    ).sort_values("Max Drawdown", ascending=False)
 
     # Bar chart
     fig_stress = go.Figure()
