@@ -1023,13 +1023,14 @@ with tab2:
 
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
-        stress_df.style
+        stress_df.sort_values("Max Drawdown", ascending=True)
+            .style                                             
             .format("{:.2%}", subset=["Period Return", "Ann. Return", "Ann. Vol", "Max Drawdown"])
             .format("{:.0f}", subset=["Trading Days"])
             .format("{:.2f}", subset=["Sharpe Ratio"])
-            .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmin=0.0),
+            .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmax=0.0),
         use_container_width=True,
-    ).sort_values("Max Drawdown", ascending=False)
+    )
 
     # Bar chart
     fig_stress = go.Figure()
