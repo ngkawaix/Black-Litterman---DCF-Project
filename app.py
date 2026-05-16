@@ -1073,7 +1073,147 @@ with tab_thesis:
 
     st.divider()
 
-    # ── Section 3: DCF Models (placeholder) ───────────────────────────────────
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # ── Section 3: Conviction Map ──────────────────────────────────────────────
+    st.markdown("#### 3. Conviction Map")
+    st.caption(
+        "Each stock plotted by how far your DCF view deviates from the market equilibrium (x-axis) "
+        "and your confidence in that view (y-axis). Stocks to the right have bullish views (Q > π) "
+        "and will be overweighted; stocks to the left have bearish views (Q < π) and will be "
+        "underweighted. The 50% line separates deliberate, high-conviction tilts from mild signals. "
+        "Where you have adjusted a confidence slider from its default, a hollow marker shows the "
+        "original level and the dotted line shows how far you have moved."
+    )
+
+    # ── Build per-ticker conviction rows from live BL outputs ─────────────────
+    _crows = []
+    for _tkr in tick_rets.columns:
+        _q    = float((total_return_views - RF).get(_tkr, 0)) * 100
+        _pi   = float(pi.get(_tkr, 0)) * 100
+        _gap  = _q - _pi
+        _cc   = float(user_confidence.get(_tkr, BASE_CONFIDENCE.get(_tkr, 0.5))) * 100
+        _cd   = float(BASE_CONFIDENCE.get(_tkr, 0.5)) * 100
+        _post = float(mu_bl.get(_tkr, 0)) * 100
+        _crows.append({
+            "ticker": _tkr,  "gap": _gap,  "conf_c": _cc,  "conf_d": _cd,
+            "bullish": _gap > 0,  "changed": abs(_cc - _cd) > 0.5,
+            "q": _q,  "pi": _pi,  "posterior": _post,
+        })
+    _cdf = pd.DataFrame(_crows)
+
+    _TEAL, _CORAL = "#1D9E75", "#D85A30"
+    _xmin = min(float(_cdf["gap"].min()) - 3, -22)
+    _xmax = max(float(_cdf["gap"].max()) + 3, 28)
+    _ymin, _ymax = 18.0, 87.0
+
+    # Label positions tuned for the default gap distribution; top/bottom alternated
+    # for the conf=65% cluster on the bearish side to avoid overlap.
+    _tpos = {
+        "META": "top center",    "NFLX": "top center",    "FICO": "top center",
+        "MSFT": "bottom center", "NVDA": "top center",    "ADBE": "bottom center",
+        "MA":   "bottom center", "CPRT": "top center",    "MSCI": "top center",
+        "V":    "top center",    "AMZN": "top center",    "AMAT": "bottom center",
+        "AAPL": "bottom center", "LRCX": "bottom center", "TSM":  "bottom center",
+        "ASML": "top center",   "GOOGL": "bottom center",
+    }
+
+    _fg = go.Figure()
+
+    # Quadrant background fills
+    for _x0, _x1, _y0, _y1, _fc, _op in [
+        (0,     _xmax, 50,    _ymax, _TEAL,  0.07),   # top-right:  bullish + high conf
+        (_xmin, 0,     50,    _ymax, _CORAL, 0.11),   # top-left:   bearish + high conf
+        (0,     _xmax, _ymin, 50,   _TEAL,  0.02),   # bottom-right
+        (_xmin, 0,     _ymin, 50,   _CORAL, 0.03),   # bottom-left
+    ]:
+        _fg.add_shape(type="rect", x0=_x0, x1=_x1, y0=_y0, y1=_y1,
+                      fillcolor=_fc, opacity=_op, line_width=0, layer="below")
+
+    # Reference lines at gap = 0 and confidence = 50 %
+    _fg.add_shape(type="line", x0=0, x1=0, y0=_ymin, y1=_ymax,
+                  line=dict(color="rgba(130,130,130,0.4)", width=1, dash="dot"))
+    _fg.add_shape(type="line", x0=_xmin, x1=_xmax, y0=50, y1=50,
+                  line=dict(color="rgba(130,130,130,0.4)", width=1, dash="dot"))
+
+    # Dotted connectors + hollow default markers where confidence has been adjusted
+    _chg = _cdf[_cdf["changed"]]
+    if not _chg.empty:
+        _lx, _ly = [], []
+        for _, _rw in _chg.iterrows():
+            _lx += [_rw["gap"], _rw["gap"], None]
+            _ly += [_rw["conf_d"], _rw["conf_c"], None]
+        _fg.add_trace(go.Scatter(
+            x=_lx, y=_ly, mode="lines",
+            line=dict(color="rgba(100,100,100,0.4)", width=1.5, dash="dot"),
+            showlegend=False, hoverinfo="skip",
+        ))
+        for _sub, _c in [(_chg[_chg["bullish"]], _TEAL), (_chg[~_chg["bullish"]], _CORAL)]:
+            if _sub.empty:
+                continue
+            _fg.add_trace(go.Scatter(
+                x=_sub["gap"], y=_sub["conf_d"], mode="markers",
+                marker=dict(size=10, color="rgba(0,0,0,0)", line=dict(color=_c, width=2)),
+                showlegend=False,
+                hovertemplate="<b>%{customdata}</b> (default)<br>Default conf: %{y:.0f}%<extra></extra>",
+                customdata=_sub["ticker"].values,
+            ))
+
+    # Filled current markers with ticker labels
+    for _bull, _c, _nm in [(True, _TEAL, "Bullish (Q > π)"), (False, _CORAL, "Bearish (Q < π)")]:
+        _sub = _cdf[_cdf["bullish"] == _bull]
+        _fg.add_trace(go.Scatter(
+            x=_sub["gap"], y=_sub["conf_c"],
+            mode="markers+text",
+            text=_sub["ticker"],
+            textposition=[_tpos.get(t, "top center") for t in _sub["ticker"]],
+            textfont=dict(size=11, color=_c),
+            marker=dict(size=10, color=_c),
+            name=_nm,
+            customdata=_sub[["ticker", "q", "pi", "posterior", "conf_d"]].values,
+            hovertemplate=(
+                "<b>%{customdata[0]}</b><br>"
+                "View Q: %{customdata[1]:.1f}%<br>"
+                "Market π: %{customdata[2]:.1f}%<br>"
+                "Gap Q − π: %{x:.1f}pp<br>"
+                "BL Posterior: %{customdata[3]:.1f}%<br>"
+                "Confidence: %{y:.0f}% (default: %{customdata[4]:.0f}%)"
+                "<extra></extra>"
+            ),
+        ))
+
+    # Quadrant corner labels
+    for _ax, _ay, _at, _anc in [
+        (_xmin + 0.5, _ymax - 1.5, "deliberate underweight ⚠", "left"),
+        (_xmax - 0.5, _ymax - 1.5, "deliberate overweight",    "right"),
+        (_xmin + 0.5, _ymin + 1.5, "mild underweight",          "left"),
+        (_xmax - 0.5, _ymin + 1.5, "mild overweight",           "right"),
+    ]:
+        _fg.add_annotation(x=_ax, y=_ay, text=_at, showarrow=False,
+                            xanchor=_anc, font=dict(size=10, color="rgba(120,120,120,0.7)"))
+
+    _fg.update_layout(
+        xaxis=dict(title="View gap: Q − π (%)", range=[_xmin, _xmax],
+                   zeroline=False, ticksuffix="%", tickformat="+.0f"),
+        yaxis=dict(title="Confidence (%)", range=[_ymin, _ymax], ticksuffix="%"),
+        height=500,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(t=30),
+    )
+    st.plotly_chart(_fg, use_container_width=True)
+
+    st.divider()
+
+    # ── Section 3: Optimised Weights ──────────────────────────────────────────
+    st.markdown("#### 3. Optimised Portfolio Weights")
+    st.caption(
+        "The BL posterior returns from Section 1 feed directly into a long-only (no shorting) "
+
+    # ── Section 4: DCF Models (placeholder) ───────────────────────────────────
     st.markdown("#### 3. Individual DCF Models")
     st.info(
         "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
@@ -1087,7 +1227,6 @@ with tab_thesis:
         "specificity of street estimates versus a bottom-up model.",
         icon="🔬",
     )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 1 -- Views, Returns & Weights
