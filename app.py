@@ -77,6 +77,123 @@ BASE_CONFIDENCE = {
     "TSM":  0.65, "V":    0.65,
 }
 
+# ── DCF Override Dict ─────────────────────────────────────────────────────────
+# Once individual DCF models are complete, populate this dict to override
+# the analyst-narrative confidence levels above with model-derived values.
+# Any ticker present here will display a ⚡ DCF Model badge in the Investment
+# Theses tab, visually distinguishing it from the pre-filled analyst estimates.
+# Example (do not uncomment until DCF work is finalised):
+#   "NVDA": 0.80, "META": 0.72, "AMZN": 0.68,
+DCF_OVERRIDES: dict[str, float] = {}
+
+# ── Earnings Highlights ───────────────────────────────────────────────────────
+# Two-sentence summary of the most recent earnings report for each stock.
+# These inform the confidence levels above. Review and update after each
+# earnings cycle. Source: company earnings releases and investor presentations.
+EARNINGS_HIGHLIGHTS = {
+    "AAPL": (
+        "Services revenue reached a record high led by the App Store and subscriptions, "
+        "partially offsetting softer iPhone unit sales amid tariff-driven supply chain uncertainty. "
+        "The India manufacturing ramp is progressing but transition risk remains a near-term overhang."
+    ),
+    "ADBE": (
+        "Net new ARR missed consensus for the second consecutive quarter as Firefly AI has yet "
+        "to translate into measurable subscription growth acceleration. "
+        "The stock has de-rated sharply (~42% from its 52-week high) on fears that "
+        "generative AI tools are commoditising the creative suite."
+    ),
+    "AMAT": (
+        "Revenue declined year-on-year with weakness in NAND and trailing-edge logic "
+        "more than offsetting strength in advanced packaging and gate-all-around transitions. "
+        "China export restrictions remain a structural headwind, limiting access to one of the "
+        "largest semiconductor equipment markets."
+    ),
+    "AMZN": (
+        "AWS re-accelerated its growth rate with AI inference and model-training workloads "
+        "cited as primary demand drivers, reinforcing the cloud thesis. "
+        "Operating income margin expanded to record levels, marking a clear inflection "
+        "from heavy investment phase to profitable scale."
+    ),
+    "ASML": (
+        "Raised its 2026 net sales guidance in April, citing a robust EUV backlog "
+        "and continued AI-driven lithography demand from leading-edge foundries. "
+        "As the sole global supplier of EUV systems, demand visibility extends into 2027 "
+        "with no credible competitive threat on the horizon."
+    ),
+    "CPRT": (
+        "Revenue grew steadily year-on-year, underpinned by resilient salvage vehicle "
+        "volumes and continued international market expansion into Europe and the Middle East. "
+        "Margins held despite elevated SG&A investment, and the company maintains a "
+        "debt-free balance sheet — rare quality among mid-cap industrials."
+    ),
+    "FICO": (
+        "Scores revenue outpaced platform revenue, driven by strong mortgage and auto "
+        "lender demand and a continued shift to usage-based pricing structures. "
+        "The monetisation ceiling is expanding as financial institutions accept "
+        "higher per-score royalty rates under new licensing agreements."
+    ),
+    "GOOGL": (
+        "Search and YouTube both outperformed estimates while Google Cloud accelerated "
+        "its revenue growth rate on AI infrastructure and enterprise demand. "
+        "Early monetisation signals from Gemini integrations across Workspace and Search "
+        "are encouraging, though GenAI cost-per-query remains a watch item for margins."
+    ),
+    "LRCX": (
+        "Revenue surged year-on-year driven by NAND recovery and advanced logic spend "
+        "from TSMC and Samsung for next-generation process nodes. "
+        "The high-margin Customer Support Business Group now represents a meaningful "
+        "share of revenue, providing structural insulation from equipment spending cycles."
+    ),
+    "MA": (
+        "Net revenue growth was driven by strong cross-border volume recovery and an "
+        "expanding value-added services mix that carries higher margins than core switching fees. "
+        "Consumer spending data embedded in transaction flows shows no material credit "
+        "deterioration, supporting a resilient payments volume outlook."
+    ),
+    "META": (
+        "Revenue beat consensus driven by AI-powered ad relevance improvements "
+        "that lifted CPMs meaningfully across Facebook and Instagram. "
+        "Daily active users across the Family of Apps continued to grow, with "
+        "Llama-driven Reels ranking cited as a key engagement retention mechanism."
+    ),
+    "MSCI": (
+        "Recurring subscription revenue grew steadily with index and analytics "
+        "retention rates above 95%, reflecting high switching costs embedded in the model. "
+        "ESG & Real Assets showed early recovery after several quarters of muted "
+        "institutional demand, though it remains the most cyclically sensitive segment."
+    ),
+    "MSFT": (
+        "Azure grew ahead of estimates with Copilot integrations driving "
+        "consumption-based upsell across enterprise customers at scale. "
+        "Operating margin held at elevated levels, demonstrating that AI infrastructure "
+        "investment is being absorbed without material margin dilution — a key bull case signal."
+    ),
+    "NFLX": (
+        "Subscriber additions beat guidance with the ad-supported tier representing "
+        "a growing share of new sign-ups in available markets. "
+        "Free cash flow guidance was raised for the full year and management reaffirmed "
+        "that content investment is being funded internally without balance sheet strain."
+    ),
+    "NVDA": (
+        "Revenue grew 73% year-on-year in Q4 FY2026 driven by Blackwell GPU shipments "
+        "to hyperscalers building AI training and inference clusters at unprecedented scale. "
+        "Q1 FY2027 guidance of approximately $78B implies continued acceleration, though "
+        "US export restrictions on H20 chips to China represent a multi-billion dollar headwind."
+    ),
+    "TSM": (
+        "Advanced node (3nm and 5nm) revenue mix continued to expand, driven by "
+        "Apple, NVIDIA, and AMD demand for leading-edge capacity. "
+        "Management reiterated its Arizona fab capex plan, though geopolitical risk "
+        "around Taiwan strait tensions remains the primary discount factor embedded in the stock."
+    ),
+    "V": (
+        "Payments volume and processed transactions both grew in line with or ahead of "
+        "estimates, supported by continued cross-border travel recovery. "
+        "Value-added services revenue is growing faster than core payment volume, "
+        "gradually shifting the mix toward higher-margin, recurring revenue streams."
+    ),
+}
+
 STRESS_PERIODS = {
     "COVID Crash (Feb--Mar 2020)":        ("2020-02-19", "2020-03-23"),
     "Post-COVID Rate Hikes (2022)":      ("2022-01-01", "2022-12-31"),
@@ -222,6 +339,76 @@ def load_rf():
         return rate
     except Exception:
         return 0.04
+
+
+@st.cache_data(show_spinner="Fetching valuation metrics…", ttl=86400)
+def load_valuation_metrics(tickers):
+    """
+    Fetches valuation ratios and earnings dates for each ticker via yfinance.
+    Kept separate from load_ticker_metadata so a slow or rate-limited ratio
+    pull does not block the sidebar from loading cap weights and consensus.
+
+    Returns a DataFrame indexed by ticker with columns:
+        P/E (TTM), Fwd P/E, Beta, EV/EBITDA, P/S, P/B,
+        Last Earnings, Next Earnings
+    """
+    import time
+
+    today = pd.Timestamp.today().normalize()
+    rows  = {}
+
+    for ticker in tickers:
+        t    = yf.Ticker(ticker)
+        info = {}
+        try:
+            info = t.info
+        except Exception:
+            pass
+
+        # ── Earnings dates ────────────────────────────────────────────────────
+        last_earnings = "N/A"
+        next_earnings = "N/A"
+
+        try:
+            mrq = info.get("mostRecentQuarter", None)
+            if mrq:
+                last_earnings = pd.Timestamp(mrq, unit="s").strftime("%Y-%m-%d")
+        except Exception:
+            pass
+
+        try:
+            cal   = t.calendar
+            dates = []
+            if isinstance(cal, dict):
+                raw   = cal.get("Earnings Date", [])
+                dates = raw if isinstance(raw, list) else [raw]
+            elif isinstance(cal, pd.DataFrame) and not cal.empty:
+                col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
+                dates    = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
+            future = [
+                pd.Timestamp(d).normalize()
+                for d in dates
+                if d is not None and pd.Timestamp(d).normalize() >= today
+            ]
+            if future:
+                next_earnings = min(future).strftime("%Y-%m-%d")
+        except Exception:
+            pass
+
+        # ── Valuation ratios ──────────────────────────────────────────────────
+        rows[ticker] = {
+            "P/E (TTM)":   info.get("trailingPE",                   None),
+            "Fwd P/E":     info.get("forwardPE",                    None),
+            "Beta":        info.get("beta",                         None),
+            "EV/EBITDA":   info.get("enterpriseToEbitda",           None),
+            "P/S":         info.get("priceToSalesTrailing12Months", None),
+            "P/B":         info.get("priceToBook",                  None),
+            "Last Earnings": last_earnings,
+            "Next Earnings": next_earnings,
+        }
+        time.sleep(0.25)
+
+    return pd.DataFrame(rows).T
 
 
 @st.cache_data(show_spinner=False, ttl=86400)
@@ -556,7 +743,8 @@ with st.sidebar:
 # LOAD DATA  (price data and metadata already fetched before the sidebar)
 # ─────────────────────────────────────────────────────────────────────────────
 RF = load_rf()
-spx_rets = load_benchmark_data()
+spx_rets    = load_benchmark_data()
+val_metrics = load_valuation_metrics(TICKERS)
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
@@ -599,8 +787,9 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, = st.tabs([
+tab0, tab_thesis, tab1, tab2, tab3 = st.tabs([
     "📖 Introduction",
+    "💡 Investment Theses",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
@@ -616,7 +805,7 @@ with tab0:
     st.markdown(
         """
         **The question this tool answers:** Once you derive a 12-month price target 
-        for a stock through Discount Cash Flow (DCF) analysis, how do you translate that conviction 
+        for a stock through DCF analysis, how do you translate that conviction 
         into a disciplined portfolio sizing decision?
     
         Most optimisation frameworks either ignore forward-looking views entirely, 
@@ -745,6 +934,179 @@ with tab0:
         other - a high-conviction view on NVDA nudges the posterior for TSM too,
         because they co-move. The table in the next tab shows this blending in action.
         """
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB THESIS -- Investment Theses
+# ══════════════════════════════════════════════════════════════════════════════
+with tab_thesis:
+    st.html("<div style='height: 18px;'></div>")
+    st.markdown("#### Investment Theses & Confidence Rationale")
+    st.markdown(
+        """
+        This tab documents the reasoning behind each position in the portfolio — specifically,
+        why a stock was included and how confident I am in the price target I've assigned it.
+        Confidence is not a measure of whether a stock will go up; it is the weight given to
+        my view *relative to what the market already implies* in the Black-Litterman framework.
+        A low confidence means the model stays close to the market-cap equilibrium for that stock;
+        a high confidence means the model tilts meaningfully toward my DCF-derived view.
+
+        **Current status:** Confidence levels below are informed by analyst narratives and the
+        most recent earnings reports. Individual DCF models for Amazon, Nvidia, Google, Netflix,
+        and Meta are in progress; once complete, those confidence levels will be updated and
+        marked with a ⚡ **DCF Model** badge to distinguish model-derived conviction from
+        analyst-narrative estimates.
+        """
+    )
+    st.divider()
+
+    # ── Section 1: Valuation Snapshot ─────────────────────────────────────────
+    st.markdown("#### 1. Valuation Snapshot")
+    st.caption(
+        "Ratios sourced from Yahoo Finance (24h cache). "
+        "Last Close is the most recent trading day's closing price. "
+        "Confidence reflects conviction in the price target relative to market equilibrium — "
+        "it feeds directly into the Black-Litterman model via the Idzorek method. "
+        "⚡ DCF Model = derived from individual discounted cash flow analysis below; "
+        "Analyst est. = informed by earnings narratives and street consensus."
+    )
+
+    # ── Build display DataFrame ───────────────────────────────────────────────
+    last_close = (
+        price_data
+        .reindex(columns=TICKERS)
+        .iloc[-1]
+        .rename("Last Close ($)")
+    )
+
+    conf_vals   = {}
+    conf_source = {}
+    for tkr in TICKERS:
+        if tkr in DCF_OVERRIDES:
+            conf_vals[tkr]   = DCF_OVERRIDES[tkr]
+            conf_source[tkr] = "⚡ DCF Model"
+        else:
+            conf_vals[tkr]   = BASE_CONFIDENCE[tkr]
+            conf_source[tkr] = "Analyst est."
+
+    snap_df = pd.DataFrame(
+        index=TICKERS,
+        data={
+            "Last Close ($)":    last_close.reindex(TICKERS),
+            "P/E (TTM)":         val_metrics["P/E (TTM)"].astype(float, errors="ignore"),
+            "Fwd P/E":           val_metrics["Fwd P/E"].astype(float, errors="ignore"),
+            "Beta":              val_metrics["Beta"].astype(float, errors="ignore"),
+            "EV/EBITDA":         val_metrics["EV/EBITDA"].astype(float, errors="ignore"),
+            "P/S":               val_metrics["P/S"].astype(float, errors="ignore"),
+            "P/B":               val_metrics["P/B"].astype(float, errors="ignore"),
+            "Last Earnings":     val_metrics["Last Earnings"],
+            "Next Earnings":     val_metrics["Next Earnings"],
+            "Earnings Highlights": pd.Series(
+                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
+            ),
+            "Confidence":        pd.Series(conf_vals),
+            "Source":            pd.Series(conf_source),
+        }
+    )
+
+    # ── Style ─────────────────────────────────────────────────────────────────
+    numeric_1dp = ["P/E (TTM)", "Fwd P/E", "Beta", "EV/EBITDA", "P/S", "P/B"]
+
+    styled_snap = (
+        snap_df.style
+        .format("${:,.2f}", subset=["Last Close ($)"])
+        .format("{:.1f}",   subset=numeric_1dp, na_rep="N/A")
+        .format("{:.0%}",   subset=["Confidence"])
+        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
+    )
+
+    st.dataframe(
+        styled_snap,
+        use_container_width=True,
+        column_config={
+            "Last Close ($)": st.column_config.NumberColumn(
+                "Last Close ($)", help="Most recent trading day closing price (Yahoo Finance)."
+            ),
+            "P/E (TTM)": st.column_config.NumberColumn(
+                "P/E (TTM)",
+                help="Trailing twelve-month price-to-earnings ratio. "
+                     "Share price divided by earnings per share over the last four quarters. "
+                     "Higher = market paying more per dollar of current earnings.",
+            ),
+            "Fwd P/E": st.column_config.NumberColumn(
+                "Fwd P/E",
+                help="Forward price-to-earnings ratio using next twelve months' consensus EPS estimates. "
+                     "A lower Fwd P/E than trailing P/E implies the market expects earnings growth.",
+            ),
+            "Beta": st.column_config.NumberColumn(
+                "Beta",
+                help="Sensitivity of the stock's returns to the broad market (typically S&P 500). "
+                     "Beta > 1 = amplifies market moves; Beta < 1 = dampens them. "
+                     "Estimated over the trailing 5 years of monthly returns.",
+            ),
+            "EV/EBITDA": st.column_config.NumberColumn(
+                "EV/EBITDA",
+                help="Enterprise Value divided by Earnings Before Interest, Tax, Depreciation & Amortisation. "
+                     "A capital-structure-neutral valuation multiple useful for comparing "
+                     "companies with different levels of debt or depreciation.",
+            ),
+            "P/S": st.column_config.NumberColumn(
+                "P/S",
+                help="Price-to-Sales ratio: market cap divided by trailing twelve-month revenue. "
+                     "Useful for high-growth companies where earnings are minimal or negative.",
+            ),
+            "P/B": st.column_config.NumberColumn(
+                "P/B",
+                help="Price-to-Book ratio: market cap divided by book value of equity. "
+                     "Note: FICO's negative book equity (from buybacks) makes this metric "
+                     "uninformative for that ticker.",
+            ),
+            "Last Earnings": st.column_config.TextColumn(
+                "Last Earnings",
+                help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
+            ),
+            "Next Earnings": st.column_config.TextColumn(
+                "Next Earnings",
+                help="Estimated date of the next earnings release (Yahoo Finance calendar). "
+                     "May be approximate — verify against company investor relations pages.",
+            ),
+            "Earnings Highlights": st.column_config.TextColumn(
+                "Earnings Highlights",
+                width="large",
+                help="Two-sentence summary of the most recent earnings report. "
+                     "These narratives inform the confidence levels assigned to each stock.",
+            ),
+            "Confidence": st.column_config.NumberColumn(
+                "Confidence",
+                help="Idzorek confidence: how strongly this stock's price target view "
+                     "overrides the market-implied equilibrium return in the BL model. "
+                     "0% = ignore the view entirely; 100% = full conviction. "
+                     "Coloured on the YlGnBu scale — darker blue = higher conviction.",
+            ),
+            "Source": st.column_config.TextColumn(
+                "Source",
+                help="Analyst est. = confidence informed by earnings narratives and street consensus. "
+                     "⚡ DCF Model = derived from an individual discounted cash flow model.",
+            ),
+        },
+    )
+
+    st.divider()
+
+    # ── Section 2: DCF Models (placeholder) ───────────────────────────────────
+    st.markdown("#### 2. Individual DCF Models")
+    st.info(
+        "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
+        "and WACC sensitivity tables are being built for **Amazon, Nvidia, Google, "
+        "Netflix, and Meta** as part of the Wall Street Prep DCF programme. "
+        "Once complete, football field diagrams and the investment narrative for each "
+        "name will appear here, and their confidence levels above will be updated "
+        "to reflect the model-derived conviction (marked ⚡).\n\n"
+        "For the remaining 12 stocks, analyst consensus targets are used as the "
+        "view input, with confidence set conservatively to reflect the lower "
+        "specificity of street estimates versus a bottom-up model.",
+        icon="🔬",
     )
 
 
