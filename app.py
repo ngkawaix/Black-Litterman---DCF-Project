@@ -967,14 +967,14 @@ with tab_thesis:
     soon_cutoff  = today + pd.Timedelta(days=30)
 
     def _earnings_status(tkr):
-        """🟢 just reported / 🟡 reporting soon / — otherwise."""
+        """🟢 = reported < 30 days ago / 🟡 = reporting within 30 days / — otherwise."""
         if recent_earnings.get(tkr, False):
-            return "🟢 Just reported"
+            return "🟢"
         next_e = val_metrics.loc[tkr, "Next Earnings"]
         if next_e != "N/A":
             try:
                 if today <= pd.Timestamp(next_e).normalize() <= soon_cutoff:
-                    return "🟡 Reporting soon"
+                    return "🟡"
             except Exception:
                 pass
         return "—"
@@ -992,17 +992,13 @@ with tab_thesis:
     # ── Section 1: Valuation Snapshot ─────────────────────────────────────────
     st.markdown("#### 1. Valuation Snapshot")
     st.caption(
-        "Ratios sourced from Yahoo Finance (24h cache).  "
-        "**🟢 Just reported** = earnings released within the last 30 days — data is fresh "
-        "and analyst estimates have likely updated.  "
-        "**🟡 Reporting soon** = earnings due within 30 days — consensus estimates may shift "
-        "materially after the release, so treat current ratios and targets with extra caution."
+        "Ratios sourced from Yahoo Finance (24h cache). "
+        "Last Close is the most recent trading day's closing price."
     )
 
     val_df = pd.DataFrame(
         index=TICKERS,
         data={
-            "Status":        pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
             "Last Close ($)": last_close.reindex(TICKERS),
             "P/E (TTM)":     val_metrics["P/E (TTM)"].astype(float, errors="ignore"),
             "Fwd P/E":       val_metrics["Fwd P/E"].astype(float, errors="ignore"),
@@ -1025,19 +1021,6 @@ with tab_thesis:
         styled_val,
         use_container_width=True,
         column_config={
-            "Status": st.column_config.TextColumn(
-                "Status",
-                width="small",
-                help=(
-                    "🟢 Just reported: earnings released in the last 30 days. "
-                    "Analyst estimates and ratios are likely current. "
-                    "Confidence can reasonably be set higher given recent clarity.\n\n"
-                    "🟡 Reporting soon: earnings due within 30 days. "
-                    "Consensus targets and forward multiples may shift meaningfully "
-                    "after the release — treat current figures with extra caution.\n\n"
-                    "— No near-term earnings signal."
-                ),
-            ),
             "Last Close ($)": st.column_config.NumberColumn(
                 "Last Close ($)",
                 help="Most recent trading day closing price (Yahoo Finance).",
@@ -1054,8 +1037,7 @@ with tab_thesis:
                 "Fwd P/E",
                 help=(
                     "Forward price-to-earnings ratio using next twelve months' consensus EPS estimates. "
-                    "A lower Fwd P/E than trailing P/E implies the market expects earnings to grow. "
-                    "Particularly sensitive to revision for 🟡 stocks."
+                    "A lower Fwd P/E than trailing P/E implies the market expects earnings to grow."
                 ),
             ),
             "EV/EBITDA": st.column_config.NumberColumn(
@@ -1097,26 +1079,27 @@ with tab_thesis:
     # ── Section 2: Thesis & Conviction ────────────────────────────────────────
     st.markdown("#### 2. Thesis & Conviction")
     st.caption(
-        "Earnings highlights summarise the most recent quarterly report and inform the confidence level assigned. "
-        "Confidence is higher where a recent earnings release (🟢) has reduced near-term uncertainty. "
+        "Sorted by conviction level, highest first.  "
+        "🟢 = earnings reported in the last 30 days — data is fresh, higher confidence appropriate.  "
+        "🟡 = earnings due within 30 days — consensus may shift after the release.  "
         "**Confidence** = Idzorek weight on the price target view relative to market equilibrium: "
-        "0% means the model ignores the view entirely; 100% means full conviction over the market prior. "
-        "⚡ DCF Model = confidence derived from a bottom-up DCF model; "
-        "Analyst est. = informed by earnings narrative and street consensus."
+        "0% = ignore the view entirely; 100% = full conviction over the market prior.  "
+        "⚡ DCF Model = derived from a bottom-up DCF model; Analyst est. = informed by earnings narrative and street consensus."
     )
 
     thesis_df = pd.DataFrame(
         index=TICKERS,
         data={
-            "Last Earnings":      val_metrics["Last Earnings"],
-            "Next Earnings":      val_metrics["Next Earnings"],
+            "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
+            "Last Earnings":       val_metrics["Last Earnings"],
             "Earnings Highlights": pd.Series(
                 {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
             ),
-            "Confidence":         pd.Series(conf_vals),
-            "Source":             pd.Series(conf_source),
+            "Next Earnings":       val_metrics["Next Earnings"],
+            "Confidence":          pd.Series(conf_vals),
+            "Source":              pd.Series(conf_source),
         }
-    )
+    ).sort_values("Confidence", ascending=False)
 
     styled_thesis = (
         thesis_df.style
@@ -1127,16 +1110,21 @@ with tab_thesis:
         styled_thesis,
         use_container_width=True,
         column_config={
+            "Status": st.column_config.TextColumn(
+                "Status",
+                width="small",
+                help=(
+                    "🟢 Earnings reported within the last 30 days — "
+                    "data is fresh and analyst estimates are likely current. "
+                    "Higher confidence is appropriate given recent clarity.\n\n"
+                    "🟡 Earnings due within the next 30 days — "
+                    "consensus targets and forward estimates may shift after the release.\n\n"
+                    "— No near-term earnings signal."
+                ),
+            ),
             "Last Earnings": st.column_config.TextColumn(
                 "Last Earnings",
                 help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
-            ),
-            "Next Earnings": st.column_config.TextColumn(
-                "Next Earnings",
-                help=(
-                    "Estimated date of the next earnings release (Yahoo Finance calendar). "
-                    "May span a range — verify against company investor relations pages."
-                ),
             ),
             "Earnings Highlights": st.column_config.TextColumn(
                 "Earnings Highlights",
@@ -1146,13 +1134,20 @@ with tab_thesis:
                     "These narratives directly inform the confidence level assigned to each stock."
                 ),
             ),
+            "Next Earnings": st.column_config.TextColumn(
+                "Next Earnings",
+                help=(
+                    "Estimated date of the next earnings release (Yahoo Finance calendar). "
+                    "May span a range — verify against company investor relations pages."
+                ),
+            ),
             "Confidence": st.column_config.NumberColumn(
                 "Confidence",
                 help=(
                     "Idzorek confidence: how strongly this stock's price target view "
                     "overrides the market-implied equilibrium return in the BL model. "
                     "0% = ignore the view entirely; 100% = full conviction over the prior. "
-                    "Higher confidence is appropriate where earnings clarity is recent (🟢 stocks)."
+                    "Higher confidence is appropriate where earnings clarity is recent (🟢)."
                 ),
             ),
             "Source": st.column_config.TextColumn(
