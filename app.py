@@ -629,10 +629,9 @@ with tab0:
         what the market collectively believes.
     
         The project draws on coursework from EDHEC's Advanced Portfolio Construction 
-        and Analysis and Wall Street Prep's DCF Modelling programme. Building it 
-        end-to-end - from data pipeline to optimiser to stress tests - was the 
-        deliberate choice: implementation forces a level of precision that 
-        reading alone does not.
+        and Analysis and Wall Street Prep's DCF Modelling programme. It employs
+        the skills and knowledge that I have learned in those courses into an
+        app I hope others will find useful.
     
         **Project Scope:** This framework assumes the investor's objective is 
         wealth accumulation via a long-only equity sleeve. Institutions with 
