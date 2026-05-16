@@ -400,14 +400,14 @@ with st.sidebar:
         "Max position size (%)",
         min_value=5.0, max_value=100.0, value=25.0, step=0.5,
         help=("Imposes a ceiling on the maximum weight the optimiser can allocate into a single stock. "
-              Default: 25% default to enable some concentration risks while forcing some diversification."
+              "Default: 25% to enable some concentration risks while forcing some diversification."
               )
     )
     min_w_pct = st.slider(
         "Min position size (%)",
         min_value=0.0, max_value=10.0, value=0.0, step=0.5,
         help=("Imposes a floor on the minimum weight the optimiser can allocate into a single stock. "
-              Default: 0% allowing for zero-weight positions."
+              "Default: 0% to allow for zero-weight positions."
               )
     )
     min_weight = min_w_pct / 100
@@ -472,7 +472,7 @@ with st.sidebar:
         "δ  Risk Aversion",
         min_value=1.0, max_value=5.0, value=2.5, step=0.1,
         help=("Delta is the risk-aversion coefficient of the market portfolio. "
-              Standard Value is 2.5. Higher means market expects more return per unit of risk."
+              "Standard Value is 2.5. Higher means market expects more return per unit of risk."
               )
     )
 
@@ -480,7 +480,7 @@ with st.sidebar:
         "τ  Prior Uncertainty",
         min_value=0.01, max_value=0.10, value=0.02, step=0.01,
         help=("Tau is the uncertainty in the prior returns benchmark. For this model, the Cap-Weighted allocation returns are the benchmark"
-              Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
+              "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
               )
     )
     
