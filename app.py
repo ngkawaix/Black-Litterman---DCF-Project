@@ -1053,7 +1053,7 @@ with tab2:
 
         stress_rows[name] = {
             "Period Return":    total_period_return,
-            "S&P 500 (SPY)":   spx_period_return,
+            "S&P 500 (SPY) Return":   spx_period_return,
             "Excess Return":    excess_return,
             "Trading Days":     len(bl_period_rets),
             "Ann. Return":      ann_rets_bl_period,
@@ -1067,7 +1067,7 @@ with tab2:
     st.dataframe(
         stress_df.sort_values("Max Drawdown", ascending=True)
             .style
-            .format("{:.2%}", subset=["Period Return", "S&P 500 (SPY)", "Excess Return",
+            .format("{:.2%}", subset=["Period Return", "S&P 500 (SPY) Return", "Excess Return",
                                       "Ann. Return", "Ann. Vol", "Max Drawdown", "SPY Max Drawdown"])
             .format("{:.0f}", subset=["Trading Days"])
             .format("{:.2f}", subset=["Sharpe Ratio"])
