@@ -605,7 +605,7 @@ with tab0:
         and to guide the sizing of my own portfolio allocations.** It implements the skills
         and knowledge that I have acquired over the last three months from EDHEC's Advanced
         Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
-        with the aim of answering question: Having derived the 1Y price target of a stock
+        with the aim of answering one question: Having derived the 1Y price target of a stock
         through DCF analysis, how does one use this knowledge to size their portfolios?
 
         **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
@@ -614,8 +614,8 @@ with tab0:
         The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
         asks the investor what their confidence levels are for these views, relative to the market's implied returns. 
         Crucially, this method allows investors to incorporate their views to guide portfolio allocations and integrate DCF analysis 
-        into one cohesive framework. This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
-        It stress-test those allocations against real market crashes, and benchmark it against other strategies. 
+        into one cohesive framework. This app lets you build that allocation based on some modelling assumptions from the side-bar,
+        stress-test those allocations against real market crashes, and benchmark it against other strategies. 
 
         **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
         rather than wealth preservation. Sovereign Funds with payout obligations would pursue a different objective entirely,
@@ -623,8 +623,10 @@ with tab0:
         This strategy does not take those repayment schedules into account, but can be used for the "riskier" equity
         allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies.
         
-        This project is still a work in progress. I plan to incorporate DCF assumptions as inputs to this model to
-        experiment with the resulting allocations from DCF models directly. Stay tuned!
+        This project is still a work in progress and I plan to continue adding new features. Currently, I am working on 
+        incorporating DCF assumptions as verifiable inputs into the side bar, merging the BL model with DCF modeling.
+
+        *Last Updated: 16 May 2026*
         """
     )
 
