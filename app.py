@@ -91,107 +91,23 @@ DCF_OVERRIDES: dict[str, float] = {}
 # These inform the confidence levels above. Review and update after each
 # earnings cycle. Source: company earnings releases and investor presentations.
 EARNINGS_HIGHLIGHTS = {
-    "AAPL": (
-        "Services revenue reached a record high led by the App Store and subscriptions, "
-        "partially offsetting softer iPhone unit sales amid tariff-driven supply chain uncertainty. "
-        "The India manufacturing ramp is progressing but transition risk remains a near-term overhang."
-    ),
-    "ADBE": (
-        "Net new ARR missed consensus for the second consecutive quarter as Firefly AI has yet "
-        "to translate into measurable subscription growth acceleration. "
-        "The stock has de-rated sharply (~42% from its 52-week high) on fears that "
-        "generative AI tools are commoditising the creative suite."
-    ),
-    "AMAT": (
-        "Revenue declined year-on-year with weakness in NAND and trailing-edge logic "
-        "more than offsetting strength in advanced packaging and gate-all-around transitions. "
-        "China export restrictions remain a structural headwind, limiting access to one of the "
-        "largest semiconductor equipment markets."
-    ),
-    "AMZN": (
-        "AWS re-accelerated its growth rate with AI inference and model-training workloads "
-        "cited as primary demand drivers, reinforcing the cloud thesis. "
-        "Operating income margin expanded to record levels, marking a clear inflection "
-        "from heavy investment phase to profitable scale."
-    ),
-    "ASML": (
-        "Raised its 2026 net sales guidance in April, citing a robust EUV backlog "
-        "and continued AI-driven lithography demand from leading-edge foundries. "
-        "As the sole global supplier of EUV systems, demand visibility extends into 2027 "
-        "with no credible competitive threat on the horizon."
-    ),
-    "CPRT": (
-        "Revenue grew steadily year-on-year, underpinned by resilient salvage vehicle "
-        "volumes and continued international market expansion into Europe and the Middle East. "
-        "Margins held despite elevated SG&A investment, and the company maintains a "
-        "debt-free balance sheet — rare quality among mid-cap industrials."
-    ),
-    "FICO": (
-        "Scores revenue outpaced platform revenue, driven by strong mortgage and auto "
-        "lender demand and a continued shift to usage-based pricing structures. "
-        "The monetisation ceiling is expanding as financial institutions accept "
-        "higher per-score royalty rates under new licensing agreements."
-    ),
-    "GOOGL": (
-        "Search and YouTube both outperformed estimates while Google Cloud accelerated "
-        "its revenue growth rate on AI infrastructure and enterprise demand. "
-        "Early monetisation signals from Gemini integrations across Workspace and Search "
-        "are encouraging, though GenAI cost-per-query remains a watch item for margins."
-    ),
-    "LRCX": (
-        "Revenue surged year-on-year driven by NAND recovery and advanced logic spend "
-        "from TSMC and Samsung for next-generation process nodes. "
-        "The high-margin Customer Support Business Group now represents a meaningful "
-        "share of revenue, providing structural insulation from equipment spending cycles."
-    ),
-    "MA": (
-        "Net revenue growth was driven by strong cross-border volume recovery and an "
-        "expanding value-added services mix that carries higher margins than core switching fees. "
-        "Consumer spending data embedded in transaction flows shows no material credit "
-        "deterioration, supporting a resilient payments volume outlook."
-    ),
-    "META": (
-        "Revenue beat consensus driven by AI-powered ad relevance improvements "
-        "that lifted CPMs meaningfully across Facebook and Instagram. "
-        "Daily active users across the Family of Apps continued to grow, with "
-        "Llama-driven Reels ranking cited as a key engagement retention mechanism."
-    ),
-    "MSCI": (
-        "Recurring subscription revenue grew steadily with index and analytics "
-        "retention rates above 95%, reflecting high switching costs embedded in the model. "
-        "ESG & Real Assets showed early recovery after several quarters of muted "
-        "institutional demand, though it remains the most cyclically sensitive segment."
-    ),
-    "MSFT": (
-        "Azure grew ahead of estimates with Copilot integrations driving "
-        "consumption-based upsell across enterprise customers at scale. "
-        "Operating margin held at elevated levels, demonstrating that AI infrastructure "
-        "investment is being absorbed without material margin dilution — a key bull case signal."
-    ),
-    "NFLX": (
-        "Subscriber additions beat guidance with the ad-supported tier representing "
-        "a growing share of new sign-ups in available markets. "
-        "Free cash flow guidance was raised for the full year and management reaffirmed "
-        "that content investment is being funded internally without balance sheet strain."
-    ),
-    "NVDA": (
-        "Revenue grew 73% year-on-year in Q4 FY2026 driven by Blackwell GPU shipments "
-        "to hyperscalers building AI training and inference clusters at unprecedented scale. "
-        "Q1 FY2027 guidance of approximately $78B implies continued acceleration, though "
-        "US export restrictions on H20 chips to China represent a multi-billion dollar headwind."
-    ),
-    "TSM": (
-        "Advanced node (3nm and 5nm) revenue mix continued to expand, driven by "
-        "Apple, NVIDIA, and AMD demand for leading-edge capacity. "
-        "Management reiterated its Arizona fab capex plan, though geopolitical risk "
-        "around Taiwan strait tensions remains the primary discount factor embedded in the stock."
-    ),
-    "V": (
-        "Payments volume and processed transactions both grew in line with or ahead of "
-        "estimates, supported by continued cross-border travel recovery. "
-        "Value-added services revenue is growing faster than core payment volume, "
-        "gradually shifting the mix toward higher-margin, recurring revenue streams."
-    ),
+    "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
+    "ADBE": "Net new ARR missed for a second consecutive quarter — Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
+    "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
+    "AMZN": "AWS re-accelerated on AI inference and model-training demand, reinforcing the cloud thesis. Operating margin expanded to a record — clear inflection from investment phase to profitable scale.",
+    "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
+    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A — rare quality among mid-cap industrials.",
+    "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
+    "GOOGL": "Search and YouTube outperformed; Cloud accelerated on AI infrastructure demand. Gemini monetisation showing early signals — GenAI cost-per-query remains the key margin watch item.",
+    "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
+    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data — payments outlook resilient.",
+    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew — Llama-driven Reels ranking cited as the key engagement driver.",
+    "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
+    "MSFT": "Azure beat estimates — Copilot integrations driving consumption-based upsell across enterprise. Operating margin held; AI infrastructure investment absorbed without material margin dilution.",
+    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised — content investment funded internally without balance sheet strain.",
+    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B — US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
+    "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
+    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume — gradually shifting mix to higher margins.",
 }
 
 STRESS_PERIODS = {
@@ -992,8 +908,8 @@ with tab_thesis:
     # ── Section 1: Valuation Snapshot ─────────────────────────────────────────
     st.markdown("#### 1. Valuation Snapshot")
     st.caption(
-        "Ratios sourced from Yahoo Finance (24h cache). "
-        "Last Close is the most recent trading day's closing price."
+        f"Ratios sourced from Yahoo Finance (24h cache). "
+        f"Last Close as of **{price_data.index[-1].strftime('%d %b %Y')}**."
     )
 
     val_df = pd.DataFrame(
@@ -1079,12 +995,10 @@ with tab_thesis:
     # ── Section 2: Thesis & Conviction ────────────────────────────────────────
     st.markdown("#### 2. Thesis & Conviction")
     st.caption(
-        "Sorted by conviction level, highest first.  "
-        "🟢 = earnings reported in the last 30 days — data is fresh, higher confidence appropriate.  "
-        "🟡 = earnings due within 30 days — consensus may shift after the release.  "
-        "**Confidence** = Idzorek weight on the price target view relative to market equilibrium: "
-        "0% = ignore the view entirely; 100% = full conviction over the market prior.  "
-        "⚡ DCF Model = derived from a bottom-up DCF model; Analyst est. = informed by earnings narrative and street consensus."
+        "Sorted by conviction, highest first. "
+        "🟢 = reported in the last 30 days — estimates are fresh. "
+        "🟡 = reporting within 30 days — consensus may shift. "
+        "**Confidence** = how strongly the view overrides the market prior in the BL model."
     )
 
     thesis_df = pd.DataFrame(
@@ -1097,7 +1011,6 @@ with tab_thesis:
             ),
             "Next Earnings":       val_metrics["Next Earnings"],
             "Confidence":          pd.Series(conf_vals),
-            "Source":              pd.Series(conf_source),
         }
     ).sort_values("Confidence", ascending=False)
 
@@ -1109,6 +1022,7 @@ with tab_thesis:
     st.dataframe(
         styled_thesis,
         use_container_width=True,
+        height=680,
         column_config={
             "Status": st.column_config.TextColumn(
                 "Status",
@@ -1148,13 +1062,6 @@ with tab_thesis:
                     "overrides the market-implied equilibrium return in the BL model. "
                     "0% = ignore the view entirely; 100% = full conviction over the prior. "
                     "Higher confidence is appropriate where earnings clarity is recent (🟢)."
-                ),
-            ),
-            "Source": st.column_config.TextColumn(
-                "Source",
-                help=(
-                    "Analyst est. = confidence informed by earnings narratives and street consensus. "
-                    "⚡ DCF Model = derived from an individual discounted cash flow model."
                 ),
             ),
         },
