@@ -354,7 +354,7 @@ _MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
 st.sidebar.markdown("#### 📅 Data Range")
 data_range_help = (
     "**Minimum: 2012-06-01** – one month after META's IPO (the most recent in the universe).\n\n"
-    "**Recommended default: 2015-01-01** – captures multiple market regimes "
+    "**Recommended Default: 2015-01-01** – captures multiple market regimes "
     "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
     "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).\n\n"
     "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
@@ -395,23 +395,20 @@ with st.sidebar:
 
     # --- Position size constraints ---
     st.subheader("1. Position Size Constraints")
-    st.caption(
-        "**Max position** caps the optimiser from piling into a single stock — "
-        "A maximum position of 25% set as default to allow for some concentration "
-        "while forcing some diversification. "
-        "**Min position** prevents the optimiser assigning noise-level weights "
-        "that would be uneconomic to trade — **1–2%** is typical. "
-        "Set min to 0 to allow zero-weight positions."
-    )
+    
     max_w_pct = st.slider(
         "Max position size (%)",
         min_value=5.0, max_value=100.0, value=25.0, step=0.5,
-        help="Ceiling on any single stock weight. high 25% default to enable some concentration risks.",
+        help=("Imposes a ceiling on the maximum weight the optimiser can allocate into a single stock. "
+              Default: 25% default to enable some concentration risks while forcing some diversification."
+              )
     )
     min_w_pct = st.slider(
         "Min position size (%)",
         min_value=0.0, max_value=10.0, value=0.0, step=0.5,
-        help="Floor on any single stock weight. 0 = allow the optimiser to zero out a stock.",
+        help=("Imposes a floor on the minimum weight the optimiser can allocate into a single stock. "
+              Default: 0% allowing for zero-weight positions."
+              )
     )
     min_weight = min_w_pct / 100
     max_weight = max_w_pct / 100
@@ -424,7 +421,6 @@ with st.sidebar:
         "**How these are set:** Base targets are rough estimates in-line with the Street View. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
         "may lag recent revisions - treat them as directional references only. "
-        "I will be adding my DCF work here eventually (in progress May 2026) "
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
@@ -471,35 +467,42 @@ with st.sidebar:
 
     # --- Other BL parameters ---
     st.subheader("3. Other BL Parameters")
-    st.caption(
-        "**δ (delta)** = risk-aversion coefficient of the market portfolio. "
-        "Standard value is 2.5. Higher means market expects more return per unit of risk."
-    )
-    delta = st.slider("δ  Risk Aversion", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
 
-    st.caption(
-        "**τ (tau)** = uncertainty in the prior returns. This model uses the Cap-Weighted as the market prior. "
-        "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
+    delta = st.slider(
+        "δ  Risk Aversion",
+        min_value=1.0, max_value=5.0, value=2.5, step=0.1,
+        help=("Delta is the risk-aversion coefficient of the market portfolio. "
+              Standard Value is 2.5. Higher means market expects more return per unit of risk."
+              )
     )
-    tau = st.slider("τ  Prior Uncertainty", min_value=0.01, max_value=0.10, value=0.02, step=0.01)
 
+    tau = st.slider(
+        "τ  Prior Uncertainty",
+        min_value=0.01, max_value=0.10, value=0.02, step=0.01,
+        help=("Tau is the uncertainty in the prior returns benchmark. For this model, the Cap-Weighted allocation returns are the benchmark"
+              Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
+              )
+    )
+    
     st.divider()
 
     # --- Backtest estimation window ---
     st.subheader("4. Backtest Estimation Window")
-    st.caption(
-        "Controls how many years of historical data are used to estimate "
-        "covariance and weights at each rolling rebalance step. "
-        "**3 years** captures a full market cycle and is the recommended default. "
-        "**5 years** is most stable but may be stale for a sector that re-priced "
-        "structurally in 2023. Note: a longer window delays the backtest start date "
-        "by the same amount — the first rebalance can only happen once a full "
-        "window of data is available."
-    )
+   estimation_window_help = (
+    "Controls how many years of historical data are used to estimate "
+    "covariance and weights at each rolling rebalance step.\n\n"
+    "**3 years** captures a full market cycle and is the recommended default.\n\n"
+    "**5 years** is most stable but may be stale for a sector that re-priced "
+    "structurally in 2023.\n\n"
+    "Note: a longer window delays the backtest start date "
+    "by the same amount – the first rebalance can only happen once a full "
+    "window of data is available.\n\n"
+    "1 year = 252 trading days. Feeds into EW, CW, GMV, and Risk Parity rolling backtests."
+)
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
         min_value=1, max_value=7, value=3, step=1,
-        help="1 year = 252 trading days. Feeds into EW, CW, GMV, and Risk Parity rolling backtests.",
+        help=estimation_window_help
     )
     estimation_window = estimation_window_yrs * 252
 
