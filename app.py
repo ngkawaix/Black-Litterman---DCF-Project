@@ -1010,6 +1010,7 @@ with tab3:
         exists. I plan to employ these techniques after taking more courses on Machine Learning for Asset Management. 
         """
     )
+    st.divider()
         
     st.markdown("#### 1. Historical Wealth Index")
 
