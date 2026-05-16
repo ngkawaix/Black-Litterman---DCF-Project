@@ -991,29 +991,42 @@ with tab2:
 
     w_stress = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     stress_rows = {}
-
+    
+    # Summary Stats for Stress Periods
     for name, (start, end) in STRESS_PERIODS.items():
         period_rets = tick_rets.loc[start:end]
         if period_rets.empty:
             continue
-        port_rets   = (period_rets * w_stress).sum(axis=1)
-        cumulative  = (1 + port_rets).prod() - 1
-        cumprod     = (1 + port_rets).cumprod()
-        max_dd      = (cumprod / cumprod.cummax() - 1).min()
-        ann_vol     = port_rets.std() * np.sqrt(252)
+        bl_period_rets = (period_rets * w_stress).sum(axis=1)
+        ann_bl_period_rets = erk.annualize_rets(bl_period_rets, periods_per_year=252)
+        ann_bl_period_vol = erk.annualize_rets(bl_period_rets, periods_per_year=252)
+        skew_bl_period = erk.skewness(bl_period_rets)
+        kurt_bl_period = erk.kurtosis(bl_period_rets)
+        cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252)
+        cvar_bl_period = erk.cvar_historic(bl_period_rets, level=5) * np.sqrt(252)
+        sharpe_bl_period = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
+        cumprod_bl = (1 + bl_period_rets).cumprod()
+        max_dd_bl = (cumprod_bl / cumprod_bl.cummax() - 1).min()
         stress_rows[name] = {
-            "Period Return":  cumulative,
-            "Max Drawdown":   max_dd,
-            "Annualised Vol": ann_vol,
-            "Trading Days":   len(port_rets),
+            "Period Return":  bl_period_rets,
+            "Trading Days":   len(bl_rets)
+            "Ann. Return": ann_bl_period_rets,
+            "Ann. Vol": ann_bl_vol_hist,
+            "Sharpe Ratio": sharpe_bl_period,
+            "Max Drawdown":   max_dd_bl,
+            "Skewness": skew_bl_period,
+            "Kurtosis": kurt_bl_period,
+            "Ann. CF Var (5%)": cf_var_bl_period,
+            "Ann. CVaR (5%)": cvar_bl_period,
         }
 
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
         stress_df.style
-            .format("{:.1%}", subset=["Period Return", "Max Drawdown", "Annualised Vol"])
+            .format("{:.2%}", subset=["Period Return", "Ann. Return", "Ann. Vol", "Max Drawdown", 
+                                      "Ann. CF VaR (5%)", "Ann. CVaR (5%)"])
             .format("{:.0f}", subset=["Trading Days"])
-            .background_gradient(subset=["Period Return"], cmap="YlGnBu")
+            .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"])
             .background_gradient(subset=["Max Drawdown"], cmap="YlGnBu"),
         use_container_width=True,
     )
