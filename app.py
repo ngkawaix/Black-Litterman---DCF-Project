@@ -50,7 +50,7 @@ TICKERS = sorted([
 
 # My base case price targets
 BASE_TARGETS = {
-    "AAPL": 305.00, "ADBE": 328.00, "AMAT": 444.00,
+    "AAPL": 305.00, "ADBE": 328.00, "AMAT": 486.00,
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
@@ -61,7 +61,7 @@ BASE_TARGETS = {
 # FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
 
 BASE_CONFIDENCE = {
-    # Updated May 2026 — reflects latest analyst narratives and earnings.
+    # Updated May 2026 - reflects latest analyst narratives and earnings.
     # AAPL  ↓ tariff uncertainty + supply chain mid-transition to India
     # ADBE  ↓ AI commoditisation fears; stock -42% from 52-week high
     # AMAT  ↓ revenue -3.5% YoY last quarter; China headwinds persist
@@ -101,7 +101,7 @@ def load_market_data(tickers, start="2012-01-01"):
         st.warning(
             f"⚠️ Could not download price data for: **{', '.join(failed)}**. "
             "These tickers have been excluded from this run. "
-            "Yahoo Finance likely rate-limited pull request — refresh in a minute to retry.",
+            "Yahoo Finance likely rate-limited pull request - refresh in a minute to retry.",
         )
         price_data = price_data.drop(columns=failed)
 
@@ -205,7 +205,7 @@ def load_ticker_metadata(tickers):
         mcap_series = mcap_series.fillna(median_cap)
         st.sidebar.warning(
             f"⚠️ Could not fetch market cap for: **{', '.join(missing)}**. "
-            "Filled with median of available caps — cap-weight strategy may be slightly off. "
+            "Filled with median of available caps - cap-weight strategy may be slightly off. "
             "Yahoo Finance likely rate-limited the pull; will retry on next cache refresh (24h)."
         )
 
@@ -230,7 +230,7 @@ def load_benchmark_data():
     Downloads SPY (S&P 500 ETF) daily returns from 2012 onward.
     SPY is used rather than ^GSPC so that auto_adjust=True captures
     dividend reinvestment, giving total return rather than price return.
-    Cached for 24 hours — same cadence as ticker metadata.
+    Cached for 24 hours - same cadence as ticker metadata.
     """
     spx = yf.download("SPY", start="2012-01-01", auto_adjust=True, progress=False)
     spx = spx["Close"].squeeze()
@@ -243,7 +243,7 @@ def run_backtests(_tick_rets, _tick_capweights, estimation_window):
     """
     Runs all four rolling-window backtests and returns a returns DataFrame.
     Results are cached against the price data hash, so re-running only happens
-    when new market data is fetched — not on every slider or input interaction.
+    when new market data is fetched - not on every slider or input interaction.
 
     Underscore-prefixed args tell Streamlit to hash by object identity rather
     than value (DataFrames are not directly hashable).
@@ -467,7 +467,7 @@ with st.sidebar:
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
-    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days — consensus may have been revised.")
+    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days - consensus may have been revised.")
     st.caption("**Last Updated: 15 May 2026**")
     user_targets    = {}
     user_confidence = {}
@@ -623,29 +623,29 @@ with tab0:
         optimising purely on historical covariance, or apply them naively, producing 
         extreme, unstable weights that no sensible investor would act on. This app 
         implements the **Black-Litterman (BL) model** to bridge that gap. BL blends 
-        an investor's forward-looking views with the market-implied equilibrium return — 
-        the expected return that would justify current market-cap weights under CAPM — 
+        an investor's forward-looking views with the market-implied equilibrium return - 
+        the expected return that would justify current market-cap weights under CAPM - 
         producing allocations that are both forward-looking and anchored to 
         what the market collectively believes.
     
         The project draws on coursework from EDHEC's Advanced Portfolio Construction 
         and Analysis and Wall Street Prep's DCF Modelling programme. Building it 
-        end-to-end — from data pipeline to optimiser to stress tests — was the 
+        end-to-end - from data pipeline to optimiser to stress tests - was the 
         deliberate choice: implementation forces a level of precision that 
         reading alone does not.
     
         **Project Scope:** This framework assumes the investor's objective is 
         wealth accumulation via a long-only equity sleeve. Institutions with 
-        payment obligations — sovereign wealth funds managing reserve portfolios, 
-        for instance — would typically adopt a liability-driven approach instead, 
+        payment obligations - sovereign wealth funds managing reserve portfolios, 
+        for instance - would typically adopt a liability-driven approach instead, 
         optimising for duration matching rather than Sharpe maximisation. 
         Within a broader multi-asset framework, this tool is most naturally 
         read as sizing the higher-conviction equity allocation, with the 
-        split between the risky and risk-free sleeves governed separately — 
+        split between the risky and risk-free sleeves governed separately - 
         for example, via a Constant Proportion Portfolio Insurance (CPPI) structure.
     
-        Individual DCF models for Amazon, Nvidia, Google, Netflix, and Meta — 
-        with bear / base / bull scenarios and WACC sensitivity tables — are 
+        Individual DCF models for Amazon, Nvidia, Google, Netflix, and Meta - 
+        with bear / base / bull scenarios and WACC sensitivity tables - are 
         currently in progress. Once complete, the derived price targets will 
         replace the current consensus-anchored inputs above, and a dedicated 
         investment thesis tab will document the assumptions behind each view.
@@ -673,13 +673,13 @@ with tab0:
         below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
         market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
-        into profit — sustained high ROIC over multiple years is one of the
+        into profit - sustained high ROIC over multiple years is one of the
         most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
         to screen for profitable generating companies, this method would screen out high quality companies like
         AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
 
         The resulting universe is concentrated in technology, semiconductors,
-        payments infrastructure, and financial data — sectors where
+        payments infrastructure, and financial data - sectors where
         capital-light business models and high switching costs tend to produce
         the kind of high quality businesses with durable moats. Two names
         warrant a note: FICO carries negative book equity due to sustained
@@ -706,12 +706,12 @@ with tab0:
 
         The model has two inputs:
 
-        - **The market prior (π)** — what the market implies everyone should expect,
+        - **The market prior (π)** - what the market implies everyone should expect,
           derived by reverse-engineering the CAPM: if every investor holds the market
           portfolio, what expected returns would justify current prices and weights?
           This is the baseline the model starts from.
 
-        - **Analyst views (Q)** — the excess return implied by each DCF price target
+        - **Analyst views (Q)** - the excess return implied by each DCF price target
           (total return minus the risk-free rate). This is the forward-looking judgment layer.
 
         It then blends them using a precision-weighted average. *Precision* is inverse
@@ -730,12 +730,12 @@ with tab0:
 
         | Symbol | Name | What it means |
         |--------|------|---------------|
-        | **μ_BL** | Posterior expected return | The model's final blended return estimate — what feeds into the optimiser |
+        | **μ_BL** | Posterior expected return | The model's final blended return estimate - what feeds into the optimiser |
         | **π** (pi) | Market-implied equilibrium return | What the market collectively expects, derived from cap weights and risk aversion |
         | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
-        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together — captures correlation risk |
+        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together - captures correlation risk |
         | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
-        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix — one view per stock |
+        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix - one view per stock |
         | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
 
         **The intuition:** The formula is a tug-of-war between π and Q, refereed by
@@ -743,7 +743,7 @@ with tab0:
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
         its inverse shrinks, and the posterior barely moves from equilibrium. The
         covariance Σ ensures that stocks with shared risk exposures influence each
-        other — a high-conviction view on NVDA nudges the posterior for TSM too,
+        other - a high-conviction view on NVDA nudges the posterior for TSM too,
         because they co-move. The table in the next tab shows this blending in action.
         """
     )
@@ -776,7 +776,7 @@ with tab1:
         "**DCF-Implied Return** is the raw DCF-implied return. "
         "**Q** subtracts the risk-free rate to get the excess return fed into the model. "
         "**π** is the market equilibrium baseline. "
-        "**BL Posterior** is the blended output — the return the optimiser actually uses."
+        "**BL Posterior** is the blended output - the return the optimiser actually uses."
     )
 
     view_df = pd.DataFrame({
@@ -889,7 +889,7 @@ with tab1:
     st.caption(
         "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
         "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-        "prior — where all pairwise correlations are set to the cross-sectional average — "
+        "prior - where all pairwise correlations are set to the cross-sectional average - "
         "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
         "stocks the sample covariance matrix is prone to estimation noise and "
         "near-singularity, which causes unconstrained optimisers to produce extreme, "
@@ -913,7 +913,7 @@ with tab2:
 
         **Critical Model Caveats**: While the correlated GBM captures *typical* market uncertainty, it fundamentally assumes a Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical correlations** that occur during severe market drawdowns. 
-        In a free-fall market, diversification benefits often vanish—a tail-risk reality that standard GBM systematically understates. 
+        In a free-fall market, diversification benefits often vanish-a tail-risk reality that standard GBM systematically understates. 
         Consequently, the Monte Carlo simulation represents a baseline for normal market regimes, while the historical stress test provides 
         the necessary reality check for tail risk. A more robust approach would be to employ Machine Learning to model fat tail risks and is 
         an area for further development for this project.
@@ -934,7 +934,7 @@ with tab2:
 
     final_values = port_paths[-1]
 
-    # Summary stats — expressed as 1Y return (final value – 1) with $10k terminal context
+    # Summary stats - expressed as 1Y return (final value – 1) with $10k terminal context
     mean_ret   = float(np.mean(final_values))   - 1
     median_ret = float(np.median(final_values)) - 1
     p5_ret     = float(np.percentile(final_values,  5)) - 1
@@ -948,7 +948,7 @@ with tab2:
     m4.metric("95th Percentile",  f"{p95_ret:+.1%}",  delta=f"${(1 + p95_ret)*10_000:,.0f} on $10k",  delta_color="off")
     m5.metric("Uncertainty Band", f"{spread:.1%}",     delta="95th − 5th pct width",                   delta_color="off")
 
-    # Fan chart and histogram — side by side
+    # Fan chart and histogram - side by side
     col_fan, col_hist = st.columns([3, 2])
 
     # Fan chart -- portfolio paths
@@ -1146,7 +1146,7 @@ with tab3:
     )
     c2.caption(
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
-        f"Starts {estimation_window_yrs} year(s) after data begins — the minimum needed for the first rolling estimate."
+        f"Starts {estimation_window_yrs} year(s) after data begins - the minimum needed for the first rolling estimate."
     )
     
     # Wealth Index Plot with starting $10,000 invested
@@ -1158,7 +1158,7 @@ with tab3:
         "Cap-Weighted":         ("#a1dab4",  1.4, "solid"),   # light mint-green
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
-        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy — hero line
+        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
     }
 
     fig_wealth = go.Figure()
@@ -1219,14 +1219,14 @@ with tab3:
                 help=(
                     "Measures asymmetry of the return distribution. "
                     "0 = symmetric (normal). Negative skew means more frequent "
-                    "large losses than large gains — bad for portfolios."
+                    "large losses than large gains - bad for portfolios."
                 ),
             ),
             "Kurtosis": st.column_config.Column(
                 "Kurtosis",
                 help=(
                     "Raw kurtosis of the return distribution. "
-                    "3 = normal distribution. Values above 3 indicate fat tails — "
+                    "3 = normal distribution. Values above 3 indicate fat tails - "
                     "extreme gains/losses occur more often than a normal model would predict."
                 ),
             ),
@@ -1246,7 +1246,7 @@ with tab3:
                     "Historic Conditional VaR (Expected Shortfall) at the 5% level. "
                     "Answers: given that we are in the worst 5% of outcomes, "
                     "what is the average loss? CVaR is always expressed as a "
-                    "percentage of portfolio value — a higher number means deeper "
+                    "percentage of portfolio value - a higher number means deeper "
                     "average losses in bad tail scenarios."
                 ),
             ),
