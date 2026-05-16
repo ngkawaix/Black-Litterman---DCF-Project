@@ -1188,7 +1188,7 @@ with tab3:
             ),
         ))
     fig_comp.update_layout(
-        title="Expected Return with 5th--95th pct Range",
+        title="Expected 1Y Return with 95% Confidence Interval",
         yaxis_tickformat=".1%",
         yaxis_title="1-Year Return",
         height=420,
