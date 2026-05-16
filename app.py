@@ -597,43 +597,57 @@ tab0, tab1, tab2, tab3, = st.tabs([
 # TAB 0 -- Introduction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab0:
-
     st.markdown("#### About this Project")
     st.markdown(
         """
-        **I started this self-guided project to better understand investment management
-        and to guide the sizing of my own portfolio allocations.** It implements the skills
-        and knowledge that I have acquired over the last three months from EDHEC's Advanced
-        Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
-        with the aim of answering one question: Having derived the 1Y price target of a stock
-        through DCF analysis, how does one use this knowledge to size their portfolios?
-
-        **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
-        because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
-        or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        The Black-Litterman (BL) Model is different. It is a forward-looking allocator and derives a portfolio allocation from
-        a blend between the market-implied returns and an investor's forward-looking views. Crucially, this method allows 
-        investors to incorporate their views to guide portfolio allocations and integrate DCF analysis into one cohesive framework. 
-        
-        This app lets you build that allocation dynamically. As you change the preset model assumptions in the side bar, 
-        based on some modelling assumptions from the side-bar, the portfolio allocations will change. The stress tests also
-        dynamically fill in and the BL weights are benchmarked against other strategies. 
-
-        **A limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth preservation. Sovereign Funds with payment schedules to meet  would pursue a different objective entirely,
-        adopting a more liability-driven investing strategy, choosing to optimise for duration matching of bond coupon payouts.
-        Nevetheless, this tool remains useful for sizing the "riskier" equity allocations, though it can be adjusted to incorporate
-        bond cash flows as part of an asset return regime. The mediating mechanism which this allocation between "risky" (equities) and
-        "less risky" assets (bonds) is the Constant Proportion Portfolio Insurance (CPPI), and is another natural expansion of this app
-        to help manage a multi-portfolio portfolio.
-        
-        This project is still a work in progress and I plan to continue adding new features. Currently, I am working on 
-        incorporating DCF assumptions as verifiable inputs into the side bar, merging the BL model with DCF modeling.
-
-        *Last Updated: 16 May 2026*
+        **The question this tool answers:** Once you derive a 12-month price target 
+        for a stock through DCF analysis, how do you translate that conviction 
+        into a disciplined portfolio sizing decision?
+    
+        Most optimisation frameworks either ignore forward-looking views entirely, 
+        optimising purely on historical covariance, or apply them naively, producing 
+        extreme, unstable weights that no sensible investor would act on. This app 
+        implements the **Black-Litterman (BL) model** to bridge that gap. BL blends 
+        an investor's forward-looking views with the market-implied equilibrium return - 
+        the expected return that would justify current market-cap weights under CAPM - 
+        producing allocations that are both forward-looking and anchored to 
+        what the market collectively believes.
+    
+        The project draws on coursework from EDHEC's Advanced Portfolio Construction 
+        and Analysis and Wall Street Prep's DCF Modelling programme. Building it 
+        end-to-end — from data pipeline to optimiser to stress tests — was the 
+        deliberate choice: implementation forces a level of precision that 
+        reading alone does not.
+    
+        **A note on scope:** this framework assumes the investor's objective is 
+        wealth accumulation via a long-only equity sleeve. Institutions with 
+        payment obligations such as sovereign wealth funds managing reserve portfolios, 
+        for instance, would typically adopt a liability-driven approach instead, 
+        optimising for duration-matching rather than Sharpe maximisation. 
+        Within a broader multi-asset framework, this tool is most naturally 
+        read as sizing the higher-conviction equity allocation, with the 
+        split between the risky and risk-free sleeves governed separately — 
+        for example, via a Constant Proportion Portfolio Insurance (CPPI) structure.
+    
+        Individual DCF models for Amazon, Nvidia, Google, Netflix, and Meta — 
+        with bear / base / bull scenarios and WACC sensitivity tables — are 
+        currently in progress. Once complete, the derived price targets will 
+        replace the current consensus-anchored inputs above, and a dedicated 
+        investment thesis tab will document the assumptions behind each view.
+    
+        *Last updated: 16 May 2026*
         """
     )
 
+    st.info(
+    "**Suggested reading order:** Introduction (you are here) → "
+    "**Views & Weights** to see how price targets feed through the model → "
+    "**Simulation & Stress Tests** for tail risk → "
+    "**Strategy Comparison** to benchmark BL against alternatives. "
+    "All model assumptions are adjustable in the sidebar.",
+    icon="🗺️",
+    )
+    
     st.divider()
 
     st.markdown("#### Stock Universe & Selection Criteria")
@@ -1065,7 +1079,7 @@ with tab3:
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
-        **Critcial Model Caveats**: As BL weights are derived from the full historical window, 
+        **Critical Model Caveats**: As BL weights are derived from the full historical window, 
         this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
         A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
         However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
