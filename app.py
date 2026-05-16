@@ -115,7 +115,6 @@ def load_market_data(tickers, start="2012-01-01"):
 @st.cache_data(show_spinner="Fetching ticker metadata (mcap, consensus, earnings)…", ttl=86400)
 def load_ticker_metadata(tickers):
     import time
-    import os
 
     today  = pd.Timestamp.today().normalize()
     cutoff = today - pd.Timedelta(days=30)
@@ -124,8 +123,6 @@ def load_ticker_metadata(tickers):
     consensus       = {}
     recent_earnings = {}
     
-    CACHE_FILE = "cached_market_caps.csv"
-
     for ticker in tickers:
         t = yf.Ticker(ticker)
 
@@ -200,41 +197,17 @@ def load_ticker_metadata(tickers):
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
-    
-    # ── LAYER 4: Local Persistent Cache Fallback ──
-    if missing and os.path.exists(CACHE_FILE):
-        try:
-            cached_df = pd.read_csv(CACHE_FILE, index_col=0)
-            for tkr in missing:
-                if tkr in cached_df.index:
-                    mcap_series[tkr] = float(cached_df.loc[tkr, "marketCap"])
-        except Exception:
-            pass
-        
-        # Recalculate what is still missing after checking cache
-        missing = mcap_series[mcap_series.isna()].index.tolist()
-    
-    # ── LAYER 5: Baseline Scale Distribution (Absolute Last Resort) ──
-    if missing:
-        # If API fails and no cache exists yet, preserve structural proportions
-        BASELINE_RELS = {
-            "AAPL": 2.9e12, "ADBE": 220e9, "AMAT": 160e9, "AMZN": 1.9e12, 
-            "ASML": 380e9, "CPRT": 50e9, "FICO": 30e9, "GOOGL": 2.1e12, 
-            "LRCX": 130e9, "MA": 420e9, "META": 1.2e12, "MSCI": 40e9,
-            "MSFT": 3.1e12, "NFLX": 260e9, "NVDA": 2.3e12, "TSM": 750e9, "V": 560e9,
-        }
-        for tkr in missing:
-            mcap_series[tkr] = BASELINE_RELS.get(tkr, 1.0e10)
-        
-        st.sidebar.warning("⚠️ Market data endpoints throttled. Using cached/baseline distributions for cap-weights.")
 
-    # ── CACHE UPDATE ON SUCCESS ──
-    # If we have a complete, valid set of numbers, save them locally to protect future sessions
-    if not mcap_series.isna().any():
-        try:
-            mcap_series.to_frame(name="marketCap").to_csv(CACHE_FILE)
-        except Exception:
-            pass
+    # If any tickers failed all three API layers, fill with the median of known values
+    # so they receive a roughly "average" cap weight rather than distorting the allocation.
+    if missing:
+        median_cap = mcap_series.median()
+        mcap_series = mcap_series.fillna(median_cap)
+        st.sidebar.warning(
+            f"⚠️ Could not fetch market cap for: **{', '.join(missing)}**. "
+            "Filled with median of available caps — cap-weight strategy may be slightly off. "
+            "Yahoo Finance likely rate-limited the pull; will retry on next cache refresh (24h)."
+        )
 
     weights = mcap_series / mcap_series.sum()
     return weights, consensus, recent_earnings
@@ -927,13 +900,22 @@ with tab2:
 
     final_values = port_paths[-1]
 
-    # Summary stats
+    # Summary stats — expressed as 1Y return (final value – 1) with $10k terminal context
+    mean_ret   = float(np.mean(final_values))   - 1
+    median_ret = float(np.median(final_values)) - 1
+    p5_ret     = float(np.percentile(final_values,  5)) - 1
+    p95_ret    = float(np.percentile(final_values, 95)) - 1
+    spread     = p95_ret - p5_ret
+
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Mean",          f"${np.mean(final_values):.3f}")
-    m2.metric("Median",        f"${np.median(final_values):.3f}")
-    m3.metric("5th pct",       f"${np.percentile(final_values, 5):.3f}")
-    m4.metric("95th pct",      f"${np.percentile(final_values, 95):.3f}")
-    m5.metric("95--5 Spread",   f"${np.percentile(final_values, 95) - np.percentile(final_values, 5):.3f}")
+    m1.metric("Expected Return",  f"{mean_ret:+.1%}",  delta=f"${(1 + mean_ret)*10_000:,.0f} on $10k",  delta_color="off")
+    m2.metric("Median Return",    f"{median_ret:+.1%}", delta=f"${(1 + median_ret)*10_000:,.0f} on $10k", delta_color="off")
+    m3.metric("5th Percentile",   f"{p5_ret:+.1%}",   delta=f"${(1 + p5_ret)*10_000:,.0f} on $10k",   delta_color="off")
+    m4.metric("95th Percentile",  f"{p95_ret:+.1%}",  delta=f"${(1 + p95_ret)*10_000:,.0f} on $10k",  delta_color="off")
+    m5.metric("Uncertainty Band", f"{spread:.1%}",     delta="95th − 5th pct width",                   delta_color="off")
+
+    # Fan chart and histogram — side by side
+    col_fan, col_hist = st.columns([3, 2])
 
     # Fan chart -- portfolio paths
     paths_df = pd.DataFrame(port_paths)
@@ -963,12 +945,13 @@ with tab2:
         line=dict(color="#55A868", width=1.5, dash="dash"),
     ))
     fig_mc.update_layout(
-        title="Correlated GBM -- Portfolio Value Paths (starting $1)",
+        title="GBM Portfolio Paths (starting $1)",
         xaxis_title="Trading Day",
         yaxis_title="Portfolio Value ($)",
-        height=420,
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
-    st.plotly_chart(fig_mc, use_container_width=True)
+    col_fan.plotly_chart(fig_mc, use_container_width=True)
 
     # Final value histogram
     fig_hist = go.Figure()
@@ -987,12 +970,12 @@ with tab2:
             annotation_text=label, annotation_position="top right",
         )
     fig_hist.update_layout(
-        title="Distribution of Final Portfolio Value ($10,000 invested)",
-        xaxis_title="Portfolio Value",
+        title="Distribution of 1Y Final Value",
+        xaxis_title="Portfolio Value ($)",
         yaxis_title="Frequency",
-        height=360,
+        height=400,
     )
-    st.plotly_chart(fig_hist, use_container_width=True)
+    col_hist.plotly_chart(fig_hist, use_container_width=True)
 
     st.divider()
 
@@ -1027,7 +1010,9 @@ with tab2:
     st.dataframe(
         stress_df.style
             .format("{:.1%}", subset=["Period Return", "Max Drawdown", "Annualised Vol"])
-            .format("{:.0f}", subset=["Trading Days"]),
+            .format("{:.0f}", subset=["Trading Days"])
+            .background_gradient(subset=["Period Return"], cmap="RdYlGn", vmin=-0.5, vmax=0.5)
+            .background_gradient(subset=["Max Drawdown"], cmap="RdYlGn", vmin=-0.6, vmax=0.0),
         use_container_width=True,
     )
 
@@ -1110,11 +1095,12 @@ with tab3:
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
-        "Equal-Weighted":          ("#94A3B8",    1.2, "solid"),
-        "Cap-Weighted":            ("#CBD5E1",    1.2, "solid"),
-        "Global Mean Variance":         ("#0D9488",   1.2, "solid"),
-        "Risk Parity":             ("#6366F1", 1.2, "solid"),
-        "BL (static)":             ("#002060",  2.5, "solid"),
+        # Ordered light → dark along the YlGnBu ramp; BL gets extra weight to stand out
+        "Equal-Weighted":       ("#fecc5c",  1.4, "solid"),   # warm yellow
+        "Cap-Weighted":         ("#a1dab4",  1.4, "solid"),   # light mint-green
+        "Global Mean Variance": ("#41b6c4",  1.4, "solid"),   # teal
+        "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
+        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy — hero line
     }
 
     fig_wealth = go.Figure()
