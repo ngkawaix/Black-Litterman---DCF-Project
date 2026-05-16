@@ -1068,7 +1068,7 @@ with tab2:
         stress_df.sort_values("Max Drawdown", ascending=True)
             .style
             .format("{:.2%}", subset=["Period Return", "S&P 500 (SPY)", "Excess Return",
-                                      "Ann. Return", "Ann. Vol", "Max Drawdown"])
+                                      "Ann. Return", "Ann. Vol", "Max Drawdown", "SPY Max Drawdown"])
             .format("{:.0f}", subset=["Trading Days"])
             .format("{:.2f}", subset=["Sharpe Ratio"])
             .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmax=0.0)
