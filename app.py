@@ -617,11 +617,13 @@ with tab0:
         into one cohesive framework. This app lets you build that allocation based on some modelling assumptions from the side-bar,
         stress-test those allocations against real market crashes, and benchmark it against other strategies. 
 
-        **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth preservation. Sovereign Funds with payout obligations would pursue a different objective entirely,
-        adopting a liability driven investing as its basis and optimising for duration matching of bond coupon payouts.
-        This strategy does not take those repayment schedules into account, but can be used for the "riskier" equity
-        allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies.
+        **A limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
+        rather than wealth preservation. Sovereign Funds with payment schedules to meet  would pursue a different objective entirely,
+        adopting a more liability-driven investing strategy, choosing to optimise for duration matching of bond coupon payouts.
+        Nevetheless, this tool remains useful for sizing the "riskier" equity allocations, though it can be adjusted to incorporate
+        bond cash flows as part of an asset return regime. The mediating mechanism which this allocation between "risky" (equities) and
+        "less risky" assets (bonds) is the Constant Proportion Portfolio Insurance (CPPI), and is another natural expansion of this app
+        to help manage a multi-portfolio portfolio.
         
         This project is still a work in progress and I plan to continue adding new features. Currently, I am working on 
         incorporating DCF assumptions as verifiable inputs into the side bar, merging the BL model with DCF modeling.
