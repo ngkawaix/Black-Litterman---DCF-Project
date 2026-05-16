@@ -694,6 +694,7 @@ with tab0:
 with tab1:
     st.markdown(
         """
+        &nbsp;
         **This section walks through the full Black-Litterman pipeline in sequence.**
         Starting from DCF price targets, it computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
@@ -842,6 +843,7 @@ with tab1:
 with tab2:
     st.markdown(
         """
+        &nbsp;
         **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
         and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk; 
         each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
@@ -997,6 +999,7 @@ with tab2:
 with tab3:
     st.markdown(
         """
+        &nbsp;
         **This section compares the BL Weights against other portfolio allocation strategies.**
         It does this by using a rolling backtest using an estimation window (selected by the user) to rebalance weights at each step. 
         EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
