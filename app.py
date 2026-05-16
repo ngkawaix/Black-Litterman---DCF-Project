@@ -998,8 +998,12 @@ with tab2:
         if period_rets.empty:
             continue
         bl_period_rets = (period_rets * w_stress).sum(axis=1)
+        
+        # Calculate the single compounded return for the period
+        total_period_return = (1 + bl_period_rets).prod() - 1 
+        
         ann_rets_bl_period = erk.annualize_rets(bl_period_rets, periods_per_year=252)
-        ann_vol_bl_period = erk.annualize_rets(bl_period_rets, periods_per_year=252)
+        ann_vol_bl_period = erk.annualize_vol(bl_period_rets, periods_per_year=252)
         skew_bl_period = erk.skewness(bl_period_rets)
         kurt_bl_period = erk.kurtosis(bl_period_rets)
         cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252)
@@ -1007,8 +1011,9 @@ with tab2:
         sharpe_bl_period = erk.sharpe_ratio(bl_period_rets, riskfree_rate=RF, periods_per_year=252)
         cumprod_bl = (1 + bl_period_rets).cumprod()
         max_dd_bl = (cumprod_bl / cumprod_bl.cummax() - 1).min()
+        
         stress_rows[name] = {
-            "Period Return":  bl_period_rets,
+            "Period Return":  total_period_return,
             "Trading Days":   len(bl_period_rets),
             "Ann. Return": ann_rets_bl_period,
             "Ann. Vol": ann_vol_bl_period,
@@ -1016,7 +1021,7 @@ with tab2:
             "Max Drawdown":   max_dd_bl,
             "Skewness": skew_bl_period,
             "Kurtosis": kurt_bl_period,
-            "Ann. CF Var (5%)": cf_var_bl_period,
+            "Ann. CF VaR (5%)": cf_var_bl_period,
             "Ann. CVaR (5%)": cvar_bl_period,
         }
 
