@@ -62,13 +62,6 @@ BASE_TARGETS = {
 
 BASE_CONFIDENCE = {
     # Updated May 2026 — reflects latest analyst narratives and earnings.
-    # AAPL  ↓ tariff uncertainty + supply chain mid-transition to India
-    # ADBE  ↓ AI commoditisation fears; stock -42% from 52-week high
-    # AMAT  ↓ revenue -3.5% YoY last quarter; China headwinds persist
-    # ASML  ↑ raised 2026 sales forecast Apr; EUV monopoly + AI tailwind clear
-    # LRCX  ↑ revenue +28% YoY; high-margin recurring revenue insulates cycle risk
-    # META  ↑ fastest-growing AI hyperscaler; ad integration playing out in numbers
-    # NVDA  ↑ Q4 FY2026 $68B rev (+73% YoY); Q1 FY2027 guided ~$78B
     "AAPL": 0.40, "ADBE": 0.30, "AMAT": 0.35,
     "AMZN": 0.65, "ASML": 0.65, "CPRT": 0.50,
     "FICO": 0.35, "GOOGL":0.60, "LRCX": 0.65,
@@ -95,7 +88,6 @@ def load_market_data(tickers, start="2012-01-01"):
     price_data.index = price_data.index.tz_localize(None)
     price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
 
-    # Drop tickers whose entire column is NaN (failed/rate-limited downloads).
     failed = price_data.columns[price_data.isna().all()].tolist()
     if failed:
         st.warning(
@@ -105,8 +97,6 @@ def load_market_data(tickers, start="2012-01-01"):
         )
         price_data = price_data.drop(columns=failed)
 
-    # Forward-fill intra-series gaps, then use dropna(how="all") so a single
-    # missing ticker on one day does not wipe out the entire returns history.
     price_data = price_data.ffill()
     tick_rets  = price_data.pct_change().dropna(how="all")
     return price_data, tick_rets
@@ -114,10 +104,6 @@ def load_market_data(tickers, start="2012-01-01"):
 
 @st.cache_data(show_spinner="Fetching ticker metadata (mcap, consensus, earnings)…", ttl=86400)
 def load_ticker_metadata(tickers):
-    """
-    Single-pass fetch for all per-ticker metadata: market cap, analyst
-    consensus target, analyst count, and recent-earnings flag.
-    """
     import time
 
     today  = pd.Timestamp.today().normalize()
@@ -127,7 +113,7 @@ def load_ticker_metadata(tickers):
     consensus       = {}
     recent_earnings = {}
 
-  for ticker in tickers:
+    for ticker in tickers:
         t = yf.Ticker(ticker)
 
         # Attempt to use fast_info first (less likely to be rate-limited)
@@ -196,7 +182,6 @@ def load_ticker_metadata(tickers):
 
     return weights, consensus, recent_earnings
 
-
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
     try:
@@ -211,14 +196,6 @@ def load_rf():
 
 @st.cache_data(show_spinner="Running rolling backtests…")
 def run_backtests(_tick_rets, _tick_capweights, estimation_window):
-    """
-    Runs all four rolling-window backtests and returns a returns DataFrame.
-    Results are cached against the price data hash, so re-running only happens
-    when new market data is fetched — not on every slider or input interaction.
-
-    Underscore-prefixed args tell Streamlit to hash by object identity rather
-    than value (DataFrames are not directly hashable).
-    """
     ew_r  = erk.backtest_ws(
         _tick_rets, estimation_window=estimation_window,
         weighting=erk.weight_ew,
@@ -244,25 +221,9 @@ def run_backtests(_tick_rets, _tick_capweights, estimation_window):
 # BLACK-LITTERMAN HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta, tau, rf):
-    """
-    Constructs all BL matrices and returns posterior mu, sigma, and the
-    market-implied returns (pi) so we can show the decomposition table.
-
-    Returns
-    -------
-    mu_bl      : pd.Series   -- posterior expected returns
-    sigma_bl   : pd.DataFrame -- posterior covariance
-    pi         : pd.Series   -- market-implied returns
-    Q          : pd.Series   -- excess-return views fed into BL
-    cw_w       : pd.Series   -- cap weights used as the market prior
-    sigma      : pd.DataFrame -- annualised covariance (shrinkage)
-    """
-    # Total return view and excess return view Q
-    # (price_targets already passed in as a Series indexed by ticker)
     total_return_views = pd.Series(price_targets)
     Q = total_return_views - rf
 
-    # Identity P matrix -- one absolute view per stock
     P = pd.DataFrame(
         np.eye(len(tick_rets.columns)),
         columns=tick_rets.columns,
@@ -270,7 +231,7 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
     )
 
     sigma_daily = erk.shrinkage_cov(tick_rets, delta=0.5)
-    sigma       = sigma_daily * 252               # annualised covariance
+    sigma       = sigma_daily * 252               
 
     cap_aligned = tick_capweights.reindex(columns=tick_rets.columns)
     if cap_aligned.empty:
@@ -297,21 +258,8 @@ def build_bl_inputs(tick_rets, tick_capweights, price_targets, confidence, delta
 
 
 def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
-    """
-    Max-Sharpe optimisation with long-only and position-size constraints.
-
-    Parameters
-    ----------
-    min_weight : float
-        Floor on any single position (e.g. 0.02 = 2%).
-        Set to 0 to allow zero-weight (unconstrained floor).
-    max_weight : float
-        Ceiling on any single position (e.g. 0.15 = 15%).
-    """
     n = mu.shape[0]
 
-    # Feasibility check: n * min_weight must not exceed 1
-    # If the floor is too tight for the universe size, relax it silently.
     if n * min_weight > 1.0:
         min_weight = 1.0 / n
 
@@ -325,7 +273,7 @@ def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
 
     result = minimize(
         neg_sharpe,
-        np.repeat(1 / n, n),   # equal-weight warm start (always feasible)
+        np.repeat(1 / n, n),   
         method="SLSQP",
         bounds=bounds,
         constraints=constraints,
@@ -334,10 +282,6 @@ def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
 
 
 def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1, steps=252):
-    """
-    Runs a correlated GBM Monte Carlo using BL posterior returns as drift.
-    Returns all_paths (steps+1, n_scenarios, n_stocks) and portfolio paths.
-    """
     n_stocks  = len(tick_rets.columns)
     mu_vec    = mu_bl.reindex(tick_rets.columns).values / 252
     sigma_sim = erk.sample_cov(tick_rets)
@@ -363,17 +307,15 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
 
-    # --- Data Range Selection ---
     _FLOOR = date(2012, 6, 1)
     _MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
     
     st.subheader("1. Data Range")
     data_range_help = (
-        "**Minimum: 2012-06-01** – one month after META's IPO (the most recent in the universe).\n\n"
+        "**Minimum: 2012-06-01** – one month after META's IPO.\n\n"
         "**Recommended Default: 2015-01-01** – captures multiple market regimes "
-        "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
-        "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).\n\n"
-        "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
+        "without anchoring the covariance to the post-GFC zero-rate anomaly.\n\n"
+        "Going shorter than 5 years risks an under-identified covariance matrix."
     )
     data_start_date = st.sidebar.date_input(
         "Historical data start date",
@@ -387,17 +329,14 @@ with st.sidebar:
     
     price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
     
-    # Fetch the cached weights series and metadata
     weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
     
-    # Build the cap-weight DataFrame dynamically with the fresh index
     idx = price_data.index
     tick_capweights = pd.DataFrame(
         [weights_series.reindex(TICKERS).values] * len(idx),
         index=idx, columns=TICKERS,
     )
     
-    # Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
     if tick_rets.empty:
         st.error(
             "❌ **All price data downloads failed.** "
@@ -407,39 +346,28 @@ with st.sidebar:
         st.stop()
 
 
-    # --- Position size constraints ---
     st.subheader("2. Position Size Constraints")
     
     max_w_pct = st.slider(
         "Max position size (%)",
         min_value=5.0, max_value=100.0, value=25.0, step=0.5,
-        help=("Imposes a ceiling on the maximum weight the optimiser can allocate into a single stock. "
-              "Default: 25% to enable some concentration risks while forcing some diversification."
-              )
     )
     min_w_pct = st.slider(
         "Min position size (%)",
         min_value=0.0, max_value=10.0, value=0.0, step=0.5,
-        help=("Imposes a floor on the minimum weight the optimiser can allocate into a single stock. "
-              "Default: 0% to allow for zero-weight positions."
-              )
     )
     min_weight = min_w_pct / 100
     max_weight = max_w_pct / 100
 
     st.divider()
 
-    # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "**How these are set:** Base targets are rough estimates in-line with the Street View. "
-        "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
-        "may lag recent revisions - treat them as directional references only. "
-        "**Confidence** (Idzorek method) weights your view vs. the market-implied "
-        "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
+        "**How these are set:** Base targets are rough estimates. "
+        "Consensus figures are sourced from Yahoo Finance. "
+        "**Confidence** weights your view vs. the market-implied equilibrium."
     )
-    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days — consensus may have been revised.")
-    st.caption("**Last Updated: 15 May 2026**")
+    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days.")
     user_targets    = {}
     user_confidence = {}
 
@@ -447,11 +375,9 @@ with st.sidebar:
         col_a, col_b = st.columns(2)
         for col, ticker in zip([col_a, col_b], TICKERS[i:i + 2]):
             with col:
-                # Ticker label + earnings recency flag
                 flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
                 st.markdown(f"**{ticker}**{flag}")
 
-                # Consensus reference line
                 cons   = consensus_data.get(ticker, {})
                 mean_t = cons.get("mean", None)
                 n_ana  = cons.get("n_analysts", None)
@@ -479,64 +405,39 @@ with st.sidebar:
 
     st.divider()
 
-    # --- Other BL parameters ---
     st.subheader("4. Other BL Parameters")
 
     delta = st.slider(
         "δ  Risk Aversion",
         min_value=1.0, max_value=5.0, value=2.5, step=0.1,
-        help=("Delta is the risk-aversion coefficient of the market portfolio. "
-              "Standard Value is 2.5. Higher means market expects more return per unit of risk."
-              )
     )
 
     tau = st.slider(
         "τ  Prior Uncertainty",
         min_value=0.01, max_value=0.10, value=0.02, step=0.01,
-        help=("Tau is the uncertainty in the prior returns benchmark. For this model, the Cap-Weighted allocation returns are the benchmark"
-              "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
-              )
     )
     
     st.divider()
 
-    # --- Backtest estimation window ---
     st.subheader("5. Backtest Estimation Window")
 
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
         min_value=1, max_value=7, value=3, step=1,
-        help=("Controls how many years of historical data are used to estimate covariance and weights at "
-              "each rolling rebalance step to prevent look-ahead bias for backtests. "
-              "Default: 3 years captures a full market cycle and is the recommended default.\n\n"
-              "5 years is the most stable but comes at the cost of reducing the backtest period. \n\n"
-              "Note: A longer estimation window delays the backtest start date by the same amount such "
-              "that the first debalance can only happen once a full window of data is available."
-              )
     )
     estimation_window = estimation_window_yrs * 252
 
-    st.divider()
-    st.caption(
-        "🔮 **DCF integration coming soon** -- once the Wall Street Prep models "
-        "are finalised, xlwings will pull targets directly from Excel into the "
-        "views matrix above."
-    )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOAD DATA  (price data and metadata already fetched before the sidebar)
+# LOAD DATA 
 # ─────────────────────────────────────────────────────────────────────────────
 RF = load_rf()
 
-# Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
 tick_rets       = tick_rets.loc[common_index]
 tick_capweights = tick_capweights.loc[common_index]
 
-# Current prices for computing total-return views
 current_prices = price_data.reindex(columns=tick_rets.columns).iloc[-1]
-
-# Compute total-return views from user price targets
 targets_series = pd.Series(user_targets).reindex(tick_rets.columns)
 total_return_views = (targets_series / current_prices) - 1
 
@@ -547,14 +448,14 @@ with st.spinner("Running Black-Litterman optimisation…"):
     mu_bl, sigma_bl, pi, Q, cw_w, sigma = build_bl_inputs(
         tick_rets        = tick_rets,
         tick_capweights  = tick_capweights,
-        price_targets    = total_return_views,   # excess returns already; recalculated inside
+        price_targets    = total_return_views,  
         confidence       = user_confidence,
         delta            = delta,
         tau              = tau,
         rf               = RF,
     )
     bl_w = bl_msr_longonly(sigma=sigma_bl, mu=mu_bl, riskfree_rate=RF, min_weight=min_weight, max_weight=max_weight)
-    bl_w_series = bl_w   # pd.Series indexed by ticker
+    bl_w_series = bl_w   
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HEADER
@@ -578,7 +479,6 @@ tab0, tab1, tab2, tab3, = st.tabs([
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ══════════════════════════════════════════════════════════════════════════════
 # TAB 0 -- Introduction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab0:
@@ -601,17 +501,6 @@ with tab0:
         Crucially, this method allows investors to incorporate their views to guide portfolio allocations and intergrate DCF analysis 
         into one cohesive framework. This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
         It stress-test those allocations against real market crashes, and benchmark it against other strategies. 
-
-        **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth presevation. Sovereign Funds with payout obligations would pursue a different objective entirely,
-        adopting a liability driven investing as its basis and optimising for duration matching of bond coupon payouts.
-        This strategy does not take thoese repayment schedules into account, but can be used for the "riskier" equity
-        allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies to enforce downside
-        protections.
-        
-        This project is still a work in progress. I plan to incorporate DCF assumptions as inputs to this model to
-        experiment with the resulting allocations from DCF models directly. I plan to also incorporate the
-        CPPI mechanics into this application soon. Stay tuned!
         """
     )
 
@@ -623,22 +512,7 @@ with tab0:
         The 17 stocks in this portfolio were selected through a systematic
         fundamental screen using four criterias: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
         below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
-        market cap of $10 billion**. ROIC was chosen as the primary quality
-        filter because it measures how efficiently a company converts capital
-        into profit — sustained high ROIC over multiple years is one of the
-        most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
-        to screen for profitable generating companies, this method would screen out high quality companies like
-        AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
-
-        The resulting universe is concentrated in technology, semiconductors,
-        payments infrastructure, and financial data — sectors where
-        capital-light business models and high switching costs tend to produce
-        the kind of high quality businesses with durable moats. Two names
-        warrant a note: FICO carries negative book equity due to sustained
-        buybacks rather than distress, which causes standard debt screens to
-        misread it; ASML is the sole supplier of extreme ultraviolet
-        lithography equipment to the global semiconductor industry, making it
-        structurally irreplaceable within the AI infrastructure stack.
+        market cap of $10 billion**. 
         """
     )
 
@@ -655,49 +529,11 @@ with tab0:
         **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
-
-        The model has two inputs:
-
-        - **The market prior (π)** — what the market implies everyone should expect,
-          derived by reverse-engineering the CAPM: if every investor holds the market
-          portfolio, what expected returns would justify current prices and weights?
-          This is the baseline the model starts from.
-
-        - **Analyst views (Q)** — the excess return implied by each DCF price target
-          (total return minus the risk-free rate). This is the forward-looking judgment layer.
-
-        It then blends them using a precision-weighted average. *Precision* is inverse
-        uncertainty: the higher the confidence, the more weight a view receives. The
-        lower the confidence, the more the model falls back to the market equilibrium.
         """
     )
 
     st.latex(
         r"\mu_{BL} = \left[(\tau\Sigma)^{-1} + P^\top\Omega^{-1}P\right]^{-1}\left[(\tau\Sigma)^{-1}\pi + P^\top\Omega^{-1}Q\right]"
-    )
-
-    st.markdown(
-        """
-        **Every term, in plain English:**
-
-        | Symbol | Name | What it means |
-        |--------|------|---------------|
-        | **μ_BL** | Posterior expected return | The model's final blended return estimate — what feeds into the optimiser |
-        | **π** (pi) | Market-implied equilibrium return | What the market collectively expects, derived from cap weights and risk aversion |
-        | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
-        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together — captures correlation risk |
-        | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
-        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix — one view per stock |
-        | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
-
-        **The intuition:** The formula is a tug-of-war between π and Q, refereed by
-        uncertainty. When confidence is high, Ω is small, its inverse is large, and Q
-        pulls the posterior strongly away from π. When confidence is low, Ω is large,
-        its inverse shrinks, and the posterior barely moves from equilibrium. The
-        covariance Σ ensures that stocks with shared risk exposures influence each
-        other — a high-conviction view on NVDA nudges the posterior for TSM too,
-        because they co-move. The table in the next tab shows this blending in action.
-        """
     )
 
 
@@ -712,25 +548,14 @@ with tab1:
         Starting from DCF price targets, it computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
         confidence settings, and produces the BL posterior return that the
-        optimiser uses. The final section shows how those posterior returns
-        translate into optimal portfolio weights via a long-only (no shorting allowed) 
-        Max Sharpe optimisation. You can see directly how a change in a price target or
-        confidence slider flows through to a change in position size.
+        optimiser uses. 
         """
     )
 
     st.divider()
 
-    # ── Section 1: Decomposition of Returns ──────────────────────────────────────
     st.markdown("#### 1. Decomposition of Returns")
-    st.caption(
-        "Each column is one layer of the BL process. "
-        "**DCF-Implied Return** is the raw DCF-implied return. "
-        "**Q** subtracts the risk-free rate to get the excess return fed into the model. "
-        "**π** is the market equilibrium baseline. "
-        "**BL Posterior** is the blended output — the return the optimiser actually uses."
-    )
-
+    
     view_df = pd.DataFrame({
         "Current Price ($)":          current_prices,
         "Price Target ($)":           targets_series,
@@ -781,14 +606,7 @@ with tab1:
 
     st.divider()
 
-    # ── Section 2: Optimised Weights ──────────────────────────────────────────
     st.markdown("#### 2. Optimised Portfolio Weights")
-    st.caption(
-        "The BL posterior returns from Part 1 feed directly into a long-only (no shorting) "
-        "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
-        "correlation to the rest of the portfolio receive higher weights. "
-        "The table also shows alternative weighting schemes for reference (bounded by min and max weights in the side bar."
-    )
 
     ew_w   = erk.weight_ew(tick_rets)
     cw_w_s = tick_capweights.reindex(columns=tick_rets.columns).iloc[-1]
@@ -837,18 +655,6 @@ with tab1:
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-    st.divider()
-    st.caption(
-        "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
-        "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-        "prior — where all pairwise correlations are set to the cross-sectional average — "
-        "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
-        "stocks the sample covariance matrix is prone to estimation noise and "
-        "near-singularity, which causes unconstrained optimisers to produce extreme, "
-        "unstable weights. Shrinking toward the structured prior regularises the matrix, "
-        "reduces its condition number, and makes the optimisation numerically well-behaved "
-        "without requiring a larger asset universe to stabilise the estimate."
-    )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 -- Simulation & Stress Tests
@@ -858,17 +664,7 @@ with tab2:
     st.markdown(
         """
         **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
-        and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk; 
-        each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
-        Correlations are preserved via Cholesky decomposition to better reflect the performance of correlated assets. 
-        Since many of the stocks in the universe are in the tech field, this is the apporpriate approach.
-
-        **What the correlated GBM simulations cannot capture is the clustering of extreme events.** In real markets, crashes are not randomly distributed. 
-        Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. 
-        The GBM simulations are hence best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. 
-        The historic stress tests ground that picture in what actually happened holding the BL portfolio. Together, they present a more complete
-        picture of the risks associated from holding the BL weights.
-        """
+        and (2) a historic stress test to backtest against historical shocks.** """
     )
     st.divider()
 
@@ -885,7 +681,6 @@ with tab2:
 
     final_values = port_paths[-1]
 
-    # Summary stats
     m1, m2, m3, m4, m5 = st.columns(5)
     m1.metric("Mean",          f"${np.mean(final_values):.3f}")
     m2.metric("Median",        f"${np.median(final_values):.3f}")
@@ -893,12 +688,11 @@ with tab2:
     m4.metric("95th pct",      f"${np.percentile(final_values, 95):.3f}")
     m5.metric("95--5 Spread",   f"${np.percentile(final_values, 95) - np.percentile(final_values, 5):.3f}")
 
-    # Fan chart -- portfolio paths
     paths_df = pd.DataFrame(port_paths)
     x_axis   = list(range(port_paths.shape[0]))
 
     fig_mc = go.Figure()
-    for col in paths_df.columns[:200]:   # plot up to 200 paths to keep it fast
+    for col in paths_df.columns[:200]:   
         fig_mc.add_trace(go.Scatter(
             x=x_axis, y=paths_df[col], mode="lines",
             line=dict(color="steelblue", width=0.4),
@@ -928,7 +722,6 @@ with tab2:
     )
     st.plotly_chart(fig_mc, use_container_width=True)
 
-    # Final value histogram
     fig_hist = go.Figure()
     fig_hist.add_trace(go.Histogram(
         x=final_values, nbinsx=60,
@@ -954,13 +747,7 @@ with tab2:
 
     st.divider()
 
-    # ── Historical Stress Tests ───────────────────────────────────────────────
     st.markdown("#### 2. Historical Stress Test")
-    st.caption(
-        "Applies the BL optimal weights to *actual* historical returns during "
-        "known market shocks. This shows how this allocation *would* have "
-        "performed and is not a forecast."
-    )
 
     w_stress = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     stress_rows = {}
@@ -989,7 +776,6 @@ with tab2:
         use_container_width=True,
     )
 
-    # Bar chart
     fig_stress = go.Figure()
     fig_stress.add_trace(go.Bar(
         name="Period Return",
@@ -1006,6 +792,7 @@ with tab2:
     )
     st.plotly_chart(fig_stress, use_container_width=True)
 
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1014,17 +801,6 @@ with tab3:
     st.markdown(
         """
         **This section compares the BL Weights against other portfolio allocation strategies.**
-        It does this by using a rolling backtest using an estimation window (selected by the user) to rebalance weights at each step. 
-        EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
-        each period using only data available at that point in time, so there is no look-ahead bias.
-        The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
-        This is a gross simplification as true BL weights would require a fresh set of views at every rebalance date. 
-        The chart is therefore best read as 'how would this portfolio have held up' rather than a like-for-like backtest.
-
-        I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
-        I had used in the "Simulation and Stress-Tests" section. The limitation of this analysis is that it assumes that
-        the portfolio weights follow a correlated GBM pathway, but more robust techniques employing Machine Learning
-        exists. I plan to employ these techniques after taking more courses on Machine Learning for Asset Management. 
         """
     )
     st.divider()
@@ -1035,19 +811,18 @@ with tab3:
         tick_rets, tick_capweights, estimation_window
     )
 
-    valid_start_date = tick_rets.index[estimation window]
+    valid_start_date = tick_rets.index[estimation_window]
 
-    # BL: static weights applied to full history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
     bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
 
     btr = pd.DataFrame({
-            "Equal-Weighted":          pd.Series(ew_r).squeeze(),
-            "Cap-Weighted":            pd.Series(cw_r).squeeze(),
-            "Global Mean Variance":    pd.Series(gmv_r).squeeze(),
-            "Risk Parity":             pd.Series(erc_r).squeeze(),
-            "BL (static)":             pd.Series(bl_r).squeeze(),
-        })
+        "Equal-Weighted":          pd.Series(ew_r).squeeze(),
+        "Cap-Weighted":            pd.Series(cw_r).squeeze(),
+        "Global Mean Variance":    pd.Series(gmv_r).squeeze(),
+        "Risk Parity":             pd.Series(erc_r).squeeze(),
+        "BL (static)":             pd.Series(bl_r).squeeze(),
+    })
 
     btr = btr.loc[valid_start_date:].dropna()
 
@@ -1065,7 +840,7 @@ with tab3:
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
         f"Starts {estimation_window_yrs} year(s) after data begins — the minimum needed for the first rolling estimate."
     )
-# Wealth Index Plot with starting $10,000 invested
+    
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
@@ -1094,7 +869,6 @@ with tab3:
     )
     st.plotly_chart(fig_wealth, use_container_width=True)
 
-    # Summary stats
     _ann_scale = np.sqrt(252)
     
     summary_rows = {}
@@ -1103,8 +877,7 @@ with tab3:
         ann_r     = erk.annualize_rets(r, periods_per_year=252)
         ann_v     = erk.annualize_vol(r, periods_per_year=252)
         skew      = erk.skewness(r)
-        kurt      = erk.kurtosis(r)          # raw kurtosis; normal = 3
-        # Annualise daily VaR/CVaR → multiply by √252
+        kurt      = erk.kurtosis(r)          
         cf_var    = erk.var_gaussian(r, level=5, modified=True) * _ann_scale
         cvar_hist = erk.cvar_historic(r, level=5)               * _ann_scale
         sharpe    = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
@@ -1128,54 +901,11 @@ with tab3:
                                       "Ann. CF VaR (5%)", "Ann. CVaR (5%)"])
             .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"]),
         use_container_width=True,
-        column_config={
-            "Skewness": st.column_config.Column(
-                "Skewness",
-                help=(
-                    "Measures asymmetry of the return distribution. "
-                    "0 = symmetric (normal). Negative skew means more frequent "
-                    "large losses than large gains — bad for portfolios."
-                ),
-            ),
-            "Kurtosis": st.column_config.Column(
-                "Kurtosis",
-                help=(
-                    "Raw kurtosis of the return distribution. "
-                    "3 = normal distribution. Values above 3 indicate fat tails — "
-                    "extreme gains/losses occur more often than a normal model would predict."
-                ),
-            ),
-            "Ann. CF VaR (5%)": st.column_config.Column(
-                "Ann. CF VaR (5%)",
-                help=(
-                    "Cornish-Fisher Value at Risk at the 5% level, annualised (×√252). "
-                    "Adjusts the standard Gaussian VaR for the observed skewness and kurtosis "
-                    "of the return distribution. Represents the annualised threshold loss "
-                    "that is exceeded only 5% of the time. "
-                    "Higher = worse tail risk."
-                ),
-            ),
-            "Ann. CVaR (5%)": st.column_config.Column(
-                "Ann. CVaR (5%)",
-                help=(
-                    "Historic Conditional VaR (Expected Shortfall) at the 5% level. "
-                    "Answers: given that we are in the worst 5% of outcomes, "
-                    "what is the average loss? CVaR is always expressed as a "
-                    "percentage of portfolio value — a higher number means deeper "
-                    "average losses in bad tail scenarios."
-                ),
-            ),
-        },
     )
 
     st.divider()
 
-    # ── Section 2: 1-Year Monte Carlo Return Forecast ────────────────────────
     st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
-    st.caption(
-        "Uses the same correlated GBM paths from Tab 3 but applied to each "
-        "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
-    )
 
     strategy_weights = {
         "Equal-Weighted":   pd.Series(ew_w, index=tick_rets.columns),
@@ -1206,7 +936,6 @@ with tab3:
         use_container_width=True,
     )
 
-    # Dot-plot
     fig_comp = go.Figure()
     for strat_name, row in comparison.items():
         fig_comp.add_trace(go.Scatter(
@@ -1231,9 +960,6 @@ with tab3:
     )
     st.plotly_chart(fig_comp, use_container_width=True)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# FOOTER  (covariance note lives inside tab1; disclaimer shown on every tab)
-# ─────────────────────────────────────────────────────────────────────────────
 st.divider()
 st.caption(
     "⚠️ **Disclaimer**: This app is for educational and personal research purposes only. "
