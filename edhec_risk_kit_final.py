@@ -625,6 +625,7 @@ def backtest_ws(r, estimation_window=60, weighting=weight_ew, verbose=False, **k
     # convert List of weights to DataFrame
     weights = pd.DataFrame(weights, index=r.iloc[estimation_window:].index, columns=r.columns)
     returns = (weights * r).sum(axis="columns",  min_count=1) #mincount is to generate NAs if all inputs are NAs
+    returns = returns.dropna()
     return returns
 
 def sample_cov(r, **kwargs):
