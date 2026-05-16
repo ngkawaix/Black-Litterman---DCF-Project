@@ -619,8 +619,8 @@ with tab0:
         for a stock through DCF analysis, how do you translate that conviction 
         into a disciplined portfolio sizing decision?
     
-        Most optimisation frameworks either ignore forward-looking views entirely — 
-        optimising purely on historical covariance — or apply them naively, producing 
+        Most optimisation frameworks either ignore forward-looking views entirely, 
+        optimising purely on historical covariance, or apply them naively, producing 
         extreme, unstable weights that no sensible investor would act on. This app 
         implements the **Black-Litterman (BL) model** to bridge that gap. BL blends 
         an investor's forward-looking views with the market-implied equilibrium return — 
@@ -634,7 +634,7 @@ with tab0:
         deliberate choice: implementation forces a level of precision that 
         reading alone does not.
     
-        **A note on scope:** this framework assumes the investor's objective is 
+        **Project Scope:** This framework assumes the investor's objective is 
         wealth accumulation via a long-only equity sleeve. Institutions with 
         payment obligations — sovereign wealth funds managing reserve portfolios, 
         for instance — would typically adopt a liability-driven approach instead, 
@@ -1106,7 +1106,7 @@ with tab3:
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
-        **Critcial Model Caveats**: As BL weights are derived from the full historical window, 
+        **Critical Model Caveats**: As BL weights are derived from the full historical window, 
         this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
         A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
         However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
