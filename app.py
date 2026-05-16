@@ -1022,17 +1022,21 @@ with tab3:
         tick_rets, tick_capweights, estimation_window
     )
 
+    valid_start_date = tick_rets.index[estimation window]
+
     # BL: static weights applied to full history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
-    bl_r        = (tick_rets * bl_static_w.values).sum(axis=1).loc[ew_r.index[0]:]
+    bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
 
     btr = pd.DataFrame({
-        "Equal-Weighted":          ew_r,
-        "Cap-Weighted":            cw_r,
-        "Global Mean Variance":         gmv_r,
-        "Risk Parity":             erc_r,
-        "BL (static)": bl_r,
-    }).dropna()
+            "Equal-Weighted":          pd.Series(ew_r).squeeze(),
+            "Cap-Weighted":            pd.Series(cw_r).squeeze(),
+            "Global Mean Variance":    pd.Series(gmv_r).squeeze(),
+            "Risk Parity":             pd.Series(erc_r).squeeze(),
+            "BL (static)":             pd.Series(bl_r).squeeze(),
+        })
+
+    btr = btr.loc[valid_start_date:].dropna()
 
     bl_estimation_start = tick_rets.index[0].date()
     bl_estimation_end   = tick_rets.index[-1].date()
