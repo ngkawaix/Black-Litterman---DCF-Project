@@ -488,21 +488,17 @@ with st.sidebar:
 
     # --- Backtest estimation window ---
     st.subheader("4. Backtest Estimation Window")
-   estimation_window_help = (
-    "Controls how many years of historical data are used to estimate "
-    "covariance and weights at each rolling rebalance step.\n\n"
-    "**3 years** captures a full market cycle and is the recommended default.\n\n"
-    "**5 years** is most stable but may be stale for a sector that re-priced "
-    "structurally in 2023.\n\n"
-    "Note: a longer window delays the backtest start date "
-    "by the same amount – the first rebalance can only happen once a full "
-    "window of data is available.\n\n"
-    "1 year = 252 trading days. Feeds into EW, CW, GMV, and Risk Parity rolling backtests."
-)
+
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
         min_value=1, max_value=7, value=3, step=1,
-        help=estimation_window_help
+        help=("Controls how many years of historical data are used to estimate covariance and weights at "
+              "each rolling rebalance step to prevent look-ahead bias for backtests. "
+              "Default: 3 years captures a full market cycle and is the recommended default.\n\n"
+              "5 years is the most stable but comes at the cost of reducing the backtest period. \n\n"
+              "Note: A longer estimation window delays the backtest start date by the same amount such "
+              that the first debalance can only happen once a full window of data is available."
+              )
     )
     estimation_window = estimation_window_yrs * 252
 
