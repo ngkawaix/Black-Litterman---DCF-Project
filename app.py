@@ -367,7 +367,7 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 
 
 # --- Data Range Selection ---
-_META_IPO_FLOOR = date(2012, 6, 1)
+_FLOOR = date(2012, 6, 1)
 _MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
 
 st.sidebar.markdown("#### 📅 Data Range")
@@ -381,7 +381,7 @@ st.sidebar.caption(
 data_start_date = st.sidebar.date_input(
     "Historical data start date",
     value=date(2015, 1, 1),
-    min_value=_META_IPO_FLOOR,
+    min_value=_FLOOR,
     max_value=_MAX_START,
     key="data_start_date",
 )
@@ -746,17 +746,17 @@ with tab1:
     fig.add_trace(go.Bar(
         name="Market-Implied (π)", x=sorted_tickers,
         y=pi.reindex(sorted_tickers).values,
-        marker_color="steelblue", opacity=0.7,
+        marker_color="#c7e9b4", opacity=0.7,
     ))
     fig.add_trace(go.Bar(
         name="View (Q)", x=sorted_tickers,
         y=(total_return_views - RF).reindex(sorted_tickers).values,
-        marker_color="lightcoral", opacity=0.7,
+        marker_color="#41b6c4", opacity=0.7,
     ))
     fig.add_trace(go.Bar(
         name="BL Posterior", x=sorted_tickers,
         y=mu_bl.reindex(sorted_tickers).values,
-        marker_color="seagreen", opacity=0.9,
+        marker_color="#253494", opacity=0.9,
     ))
     fig.update_layout(
         barmode="group",
@@ -804,7 +804,7 @@ with tab1:
     fig_tree = px.treemap(
         nonzero, path=["Ticker"], values="BL Optimised",
         title="BL Weight Allocation",
-        color="BL Optimised", cmap="YlGnBu",
+        color="BL Optimised", color_continuous_scale="YlGnBu",
     )
     fig_tree.update_traces(textinfo="label+percent entry")
     st.plotly_chart(fig_tree, use_container_width=True)
@@ -812,11 +812,11 @@ with tab1:
     fig2 = go.Figure()
     fig2.add_trace(go.Bar(
         name="BL Optimised", x=weight_df.index, y=weight_df["BL Optimised"],
-        marker_color="steelblue",
+        marker_color="#253494",
     ))
     fig2.add_trace(go.Bar(
         name="Cap-Weighted", x=weight_df.index, y=weight_df["Cap-Weighted"],
-        marker_color="lightcoral",
+        marker_color="#41b6c4",
     ))
     fig2.update_layout(
         barmode="group", title="BL vs Cap-Weighted Allocation",
