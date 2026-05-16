@@ -1073,10 +1073,6 @@ with tab_thesis:
 
     st.divider()
 
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-
     # ── Section 3: Conviction Map ──────────────────────────────────────────────
     st.markdown("#### 3. Conviction Map")
     st.caption(
