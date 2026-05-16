@@ -1164,7 +1164,6 @@ with tab3:
         }
 
     summary_df = pd.DataFrame(summary_rows).T
-    s
     st.dataframe(
         summary_df.style
             .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown",
