@@ -507,9 +507,9 @@ with st.sidebar:
 
     tau = st.slider(
         "τ  Prior Uncertainty",
-        min_value=0.01, max_value=0.10, value=0.02, step=0.01,
+        min_value=0.01, max_value=0.10, value=0.025, step=0.01,
         help=("Tau is the uncertainty in the prior returns benchmark. For this model, the Cap-Weighted allocation returns are the benchmark"
-              "Standard valus is 0.025 as used by He-Litterman. Smaller means you trust the market more."
+              "Standard value is 0.025 as used by He-Litterman. Smaller means you trust the market more."
               )
     )
     
@@ -606,27 +606,25 @@ with tab0:
         and knowledge that I have acquired over the last three months from EDHEC's Advanced
         Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
         with the aim of answering question: Having derived the 1Y price target of a stock
-        through DCF analysis, how does one use this knowledge to size thier portfolios?
+        through DCF analysis, how does one use this knowledge to size their portfolios?
 
         **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
         because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
         or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
         The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
         asks the investor what their confidence levels are for these views, relative to the market's implied returns. 
-        Crucially, this method allows investors to incorporate their views to guide portfolio allocations and intergrate DCF analysis 
+        Crucially, this method allows investors to incorporate their views to guide portfolio allocations and integrate DCF analysis 
         into one cohesive framework. This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
         It stress-test those allocations against real market crashes, and benchmark it against other strategies. 
 
         **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth presevation. Sovereign Funds with payout obligations would pursue a different objective entirely,
+        rather than wealth preservation. Sovereign Funds with payout obligations would pursue a different objective entirely,
         adopting a liability driven investing as its basis and optimising for duration matching of bond coupon payouts.
-        This strategy does not take thoese repayment schedules into account, but can be used for the "riskier" equity
-        allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies to enforce downside
-        protections.
+        This strategy does not take those repayment schedules into account, but can be used for the "riskier" equity
+        allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies.
         
         This project is still a work in progress. I plan to incorporate DCF assumptions as inputs to this model to
-        experiment with the resulting allocations from DCF models directly. I plan to also incorporate the
-        CPPI mechanics into this application soon. Stay tuned!
+        experiment with the resulting allocations from DCF models directly. Stay tuned!
         """
     )
 
@@ -636,7 +634,7 @@ with tab0:
     st.markdown(
         """
         The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen using four criterias: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
+        fundamental screen using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
         below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
         market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
@@ -665,7 +663,7 @@ with tab0:
         Most portfolio optimisers have a fundamental problem: feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
         unstable allocations (i.e. prone to error maximisation where even small estimation errors
-        result in highly concentrated porfolios where no sensible investor would put their money into).
+        result in highly concentrated portfolios where no sensible investor would put their money into).
 
         **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
@@ -815,7 +813,7 @@ with tab1:
         "BL Optimised":    bl_w_series,
         "Cap-Weighted":    cw_w_s,
         "Equal-Weighted":  ew_w,
-        "Global Mean Variance": gmv_w,
+        "Global Minimum Variance": gmv_w,
         "Risk Parity":     erc_w,
     }).sort_values("BL Optimised", ascending=False)
 
@@ -876,7 +874,7 @@ with tab2:
         and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk; 
         each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
         Correlations are preserved via Cholesky decomposition to better reflect the performance of correlated assets. 
-        Since many of the stocks in the universe are in the tech field, this is the apporpriate approach.
+        Since many of the stocks in the universe are in the tech field, this is the appropriate approach.
 
         **What the correlated GBM simulations cannot capture is the clustering of extreme events.** In real markets, crashes are not randomly distributed. 
         Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. 
@@ -1045,13 +1043,14 @@ with tab3:
         EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
-        This is a gross simplification as true BL weights would require a fresh set of views at every rebalance date. 
-        The chart is therefore best read as 'how would this portfolio have held up' rather than a like-for-like backtest.
+        
+        **Important Caveat**: As BL weights are derived from the full historical window, 
+        this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest
 
-        I complement this analysis in part 2 with a forward-looking distribution using the correlated GBM
-        I had used in the "Simulation and Stress-Tests" section. The limitation of this analysis is that it assumes that
-        the portfolio weights follow a correlated GBM pathway, but more robust techniques employing Machine Learning
-        exists. I plan to employ these techniques after taking more courses on Machine Learning for Asset Management. 
+        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation.
+        Nevetheless, even this analysis is limited given that it assumes that the portfolio weights follow a correlated GBM pathway, 
+        which, while robust, is too uniform for mapping periods of sustained uncertainty and large drawdowns. More robust techniques employing 
+        Machine Learning exist and is an area I plan to expand in the future. 
         """
     )
     st.divider()
@@ -1071,7 +1070,7 @@ with tab3:
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
             "Cap-Weighted":            pd.Series(cw_r).squeeze(),
-            "Global Mean Variance":    pd.Series(gmv_r).squeeze(),
+            "Global Minimum Variance":    pd.Series(gmv_r).squeeze(),
             "Risk Parity":             pd.Series(erc_r).squeeze(),
             "BL (static)":             pd.Series(bl_r).squeeze(),
         }).loc[valid_start_date:].dropna()
@@ -1098,7 +1097,7 @@ with tab3:
         # Ordered light → dark along the YlGnBu ramp; BL gets extra weight to stand out
         "Equal-Weighted":       ("#fecc5c",  1.4, "solid"),   # warm yellow
         "Cap-Weighted":         ("#a1dab4",  1.4, "solid"),   # light mint-green
-        "Global Mean Variance": ("#41b6c4",  1.4, "solid"),   # teal
+        "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy — hero line
     }
@@ -1200,14 +1199,14 @@ with tab3:
     # ── Section 2: 1-Year Monte Carlo Return Forecast ────────────────────────
     st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
     st.caption(
-        "Uses the same correlated GBM paths from Tab 3 but applied to each "
+        "Uses the same correlated GBM paths from the Simulation & Stress Tests tab but applied to each "
         "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
     )
 
     strategy_weights = {
         "Equal-Weighted":   pd.Series(ew_w, index=tick_rets.columns),
         "Cap-Weighted":     cw_w_s,
-        "Global Mean Variance":  pd.Series(gmv_w, index=tick_rets.columns),
+        "Global Minimum Variance":  pd.Series(gmv_w, index=tick_rets.columns),
         "Risk Parity":      pd.Series(erc_w, index=tick_rets.columns),
         "Black-Litterman":      bl_w_series,
     }
