@@ -572,28 +572,33 @@ with tab0:
     st.markdown("#### About this Project")
     st.markdown(
         """
-        I started this self-guided project to better understand investment management
-        and to guide the sizing of my own portfolio allocations. It implements the skills
+        **I started this self-guided project to better understand investment management
+        and to guide the sizing of my own portfolio allocations.** It implements the skills
         and knowledge that I have acquired over the last three months from EDHEC's Advanced
         Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
         with the aim of answering question: Having derived the 1Y price target of a stock
         through DCF analysis, how does one use this knowledge to size thier portfolios?
 
-        This app uses the Black Litterman (BL) Model to size portfolio allocations. It uses this model
-        because of its two main advantages over other strategies. 
-        
-        Firstly, it is a forward-looking portfolio optimiser. Most backtested strategies like Global Minimum Variance (GMV) 
-        or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
-        asks how much conviction you should act on, relative to the market implied returns. 
-        
-        Secondly, it allows the incorporation of an investors views to guide allocations, allowing
-        for the intergration of DCF analysis into one cohesive framework. This app lets you build that allocation 
-        based on some modelling assumptions from the side-bar. It stress-test those allocations against real market crashes, 
-        and benchmark it against other strategies. My hope is that others may find this tool useful for their own investments.
+        **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
+        because of its advantages over other strategies. Firstly, it is a forward-looking portfolio optimiser. 
+        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity are purely backward-looking, 
+        optimising on historical data and assuming the past repeats. The Black-Litterman (BL) Model is different.
+        It takes a forward-looking view on what each stock is worth and asks the investor what their confidence levels
+        are for these views, relative to the market's implied returns. Crucially, this method allows investors to
+        incorporate their views to guide portfolio allocations and intergrate DCF analysis into one cohesive framework.
+        This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
+        It stress-test those allocations against real market crashes, and benchmark it against other strategies. 
 
-        This project is still a work in progress and I plan to incorporate more
-        robust DCF assumptions as inputs to experiment with the resulting allocations.
+        **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
+        rather than wealth presevation. Sovereign Funds with payout obligations would pursue a different objective entirely,
+        adopting a liability driven investing as its basis and optimising for duration matching of bond coupon payouts.
+        This strategy does not take thoese repayment schedules into account, but can be used for the "riskier" equity
+        allocations in conjuction with Constant Proportion Portfolio Insurance (CPPI) strategies to enforce downside
+        protections.
+        
+        This project is still a work in progress. I plan to incorporate DCF assumptions as inputs to this model to
+        experiment with the resulting allocations from DCF models directly. I plan to also incorporate the
+        CPPI mechanics into this application soon. Stay tuned!
         """
     )
 
