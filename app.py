@@ -23,7 +23,7 @@ import requests
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime
+from datetime import datetime, date
 from scipy.optimize import minimize
 
 # Custom EDHEC Risk Kit Module from EDHEC Course
@@ -364,12 +364,35 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
+
+
+# --- Data Range Selection ---
+_META_IPO_FLOOR = date(2012, 6, 1)
+_MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
+
+st.sidebar.markdown("#### 📅 Data Range")
+st.sidebar.caption(
+    "**Minimum: 2012-06-01** — one month after META's IPO (the most recent in the universe).  \n"
+    "**Recommended default: 2015-01-01** — captures multiple market regimes "
+    "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
+    "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).  \n"
+    "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
+)
+data_start_date = st.sidebar.date_input(
+    "Historical data start date",
+    value=date(2015, 1, 1),
+    min_value=_META_IPO_FLOOR,
+    max_value=_MAX_START,
+    key="data_start_date",
+)
+st.sidebar.divider()
+
 # Load consensus data before entering the sidebar block so it's available
 # when rendering per-ticker inputs.  TTL=24 h keeps it fresh without
 # hammering the API on every widget interaction.
 # Price data is loaded here (before the sidebar) so load_ticker_metadata
 # can use it to build cap-weight DataFrames in the same pass.
-price_data, tick_rets = load_market_data(TICKERS)
+price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
 tick_capweights, consensus_data, recent_earnings = load_ticker_metadata(price_data, TICKERS)
 
 # Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
@@ -677,16 +700,16 @@ with tab1:
         Starting from DCF price targets, it computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
         confidence settings, and produces the BL posterior return that the
-        optimiser actually uses. The final section shows how those posterior returns
-        translate into optimal portfolio weights via a long-only Max Sharpe
-        optimisation. You can see directly how a change in a price target or
+        optimiser uses. The final section shows how those posterior returns
+        translate into optimal portfolio weights via a long-only (no shorting allowed) 
+        Max Sharpe optimisation. You can see directly how a change in a price target or
         confidence slider flows through to a change in position size.
         """
     )
 
     st.divider()
 
-    # ── Section 1: Return Decomposition ──────────────────────────────────────
+    # ── Section 1: Decomposition of Returns ──────────────────────────────────────
     st.markdown("#### 1. Decomposition of Returns")
     st.caption(
         "Each column is one layer of the BL process. "
@@ -728,7 +751,7 @@ with tab1:
     fig.add_trace(go.Bar(
         name="View (Q)", x=sorted_tickers,
         y=(total_return_views - RF).reindex(sorted_tickers).values,
-        marker_color="orange", opacity=0.7,
+        marker_color="lightcoral", opacity=0.7,
     ))
     fig.add_trace(go.Bar(
         name="BL Posterior", x=sorted_tickers,
@@ -781,7 +804,7 @@ with tab1:
     fig_tree = px.treemap(
         nonzero, path=["Ticker"], values="BL Optimised",
         title="BL Weight Allocation",
-        color="BL Optimised", color_continuous_scale="Blues",
+        color="BL Optimised", cmap="YlGnBu",
     )
     fig_tree.update_traces(textinfo="label+percent entry")
     st.plotly_chart(fig_tree, use_container_width=True)
@@ -801,6 +824,19 @@ with tab1:
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
     st.plotly_chart(fig2, use_container_width=True)
+
+    st.divider()
+    st.caption(
+        "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
+        "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
+        "prior — where all pairwise correlations are set to the cross-sectional average — "
+        "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
+        "stocks the sample covariance matrix is prone to estimation noise and "
+        "near-singularity, which causes unconstrained optimisers to produce extreme, "
+        "unstable weights. Shrinking toward the structured prior regularises the matrix, "
+        "reduces its condition number, and makes the optimisation numerically well-behaved "
+        "without requiring a larger asset universe to stabilise the estimate."
+    )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 -- Simulation & Stress Tests
@@ -909,7 +945,7 @@ with tab2:
     st.caption(
         "Applies the BL optimal weights to *actual* historical returns during "
         "known market shocks. This shows how this allocation *would* have "
-        "performed -- not a forecast."
+        "performed and is not a forecast."
     )
 
     w_stress = bl_w_series.reindex(tick_rets.columns).fillna(0).values
@@ -1041,50 +1077,73 @@ with tab3:
     # Summary stats
     summary_rows = {}
     for col in btr.columns:
-        r      = btr[col].dropna()
-        ann_r  = erk.annualize_rets(r, periods_per_year=252)
-        ann_v  = erk.annualize_vol(r, periods_per_year=252)
-        skew  = erk.skewness(r)
-        kurtosis  = erk.kurtosis(r)
-        cf_var = erk.var_gaussian(r, level=5, modified=True)
-        cvar_hist = erk.cvar_historic(r, level=5)
-        sharpe = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
-        cp     = (1 + r).cumprod()
-        mdd    = (cp / cp.cummax() - 1).min()
+        r         = btr[col].dropna()
+        ann_r     = erk.annualize_rets(r, periods_per_year=252)
+        ann_v     = erk.annualize_vol(r, periods_per_year=252)
+        skew      = erk.skewness(r)
+        kurt      = erk.kurtosis(r)          # raw kurtosis; normal = 3
+        # Annualise daily VaR/CVaR → multiply by √252
+        cf_var    = erk.var_gaussian(r, level=5, modified=True) * _ann_scale
+        cvar_hist = erk.cvar_historic(r, level=5)               * _ann_scale
+        sharpe    = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
+        cp        = (1 + r).cumprod()
+        mdd       = (cp / cp.cummax() - 1).min()
         summary_rows[col] = {
-            "Ann. Return":  ann_r,
-            "Ann. Vol":     ann_v,
-            "Sharpe Ratio": sharpe,
-            "Max Drawdown": mdd,
-            "Skewness": skew,
-            "Kurtosis": kurtosis,
-            "Corner Fisher VaR (5%)": cf_var,
-            "Historic CVaR (5%)": cvar_hist
+            "Ann. Return":           ann_r,
+            "Ann. Vol":              ann_v,
+            "Sharpe Ratio":          sharpe,
+            "Max Drawdown":          mdd,
+            "Skewness":              skew,
+            "Kurtosis":              kurt,
+            "Ann. CF VaR (5%)":      cf_var,
+            "Ann. CVaR (5%)":        cvar_hist,
         }
 
     summary_df = pd.DataFrame(summary_rows).T
     st.dataframe(
         summary_df.style
-            .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown", "Corner Fisher VaR (5%)", "Historic CVaR (5%)"])
+            .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown",
+                                      "Ann. CF VaR (5%)", "Ann. CVaR (5%)"])
             .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"]),
         use_container_width=True,
         column_config={
             "Skewness": st.column_config.Column(
                 "Skewness",
-                help="0 indicates normally distributed returns."
+                help=(
+                    "Measures asymmetry of the return distribution. "
+                    "0 = symmetric (normal). Negative skew means more frequent "
+                    "large losses than large gains — bad for portfolios."
+                ),
             ),
             "Kurtosis": st.column_config.Column(
-                "Kutrosis",
-                help="3 indicates normally distributed returns. Higher values mean a higher risk of exterme tail events."
+                "Kurtosis",
+                help=(
+                    "Raw kurtosis of the return distribution. "
+                    "3 = normal distribution. Values above 3 indicate fat tails — "
+                    "extreme gains/losses occur more often than a normal model would predict."
+                ),
             ),
-            "Corner Fisher VaR (5%)": st.column_config.Column(
-                "Corner Fisher VaR (5%)",
-                help="Value at Risk adjusted for Skewness and Kurtosis. Represents the minimum expected loss on the worst 5% of days."
+            "Ann. CF VaR (5%)": st.column_config.Column(
+                "Ann. CF VaR (5%)",
+                help=(
+                    "Cornish-Fisher Value at Risk at the 5% level, annualised (×√252). "
+                    "Adjusts the standard Gaussian VaR for the observed skewness and kurtosis "
+                    "of the return distribution. Represents the annualised threshold loss "
+                    "that is exceeded only 5% of the time. "
+                    "Higher = worse tail risk."
+                ),
             ),
-            "Historic CVaR (5%)": st.column_config.Column(
-                "Historic CVaR (5%)",
-                help="Conditional Value at Risk (Expected Shortfall). Represents the average expected loss **beyond** the 5% VaR threshold during the worst 5% of days."
-                )}
+            "Ann. CVaR (5%)": st.column_config.Column(
+                "Ann. CVaR (5%)",
+                help=(
+                    "Historic Conditional VaR (Expected Shortfall) at the 5% level. "
+                    "Answers: given that we are in the worst 5% of outcomes, "
+                    "what is the average loss? CVaR is always expressed as a "
+                    "percentage of portfolio value — a higher number means deeper "
+                    "average losses in bad tail scenarios."
+                ),
+            ),
+        },
     )
 
     st.divider()
@@ -1151,20 +1210,9 @@ with tab3:
     st.plotly_chart(fig_comp, use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FOOTER
+# FOOTER  (covariance note lives inside tab1; disclaimer shown on every tab)
 # ─────────────────────────────────────────────────────────────────────────────
 st.divider()
-st.caption(
-    "⚙️ **Note on the Covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
-    "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-    "prior — where all pairwise correlations are set to the cross-sectional average — "
-    "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
-    "stocks the sample covariance matrix is prone to estimation noise and "
-    "near-singularity, which causes unconstrained optimisers to produce extreme, "
-    "unstable weights. Shrinking toward the structured prior regularises the matrix, "
-    "reduces its condition number, and makes the optimisation numerically well-behaved "
-    "without requiring a larger asset universe to stabilise the estimate."
-)
 st.caption(
     "⚠️ **Disclaimer**: This app is for educational and personal research purposes only. "
     "Nothing here constitutes financial advice. All data is sourced from Yahoo Finance and FRED. "
