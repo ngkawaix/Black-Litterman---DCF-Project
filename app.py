@@ -50,7 +50,7 @@ TICKERS = sorted([
 
 # My base case price targets
 BASE_TARGETS = {
-    "AAPL": 305.00, "ADBE": 328.00, "AMAT": 444.00,
+    "AAPL": 305.00, "ADBE": 328.00, "AMAT": 486.00,
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
@@ -61,7 +61,7 @@ BASE_TARGETS = {
 # FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
 
 BASE_CONFIDENCE = {
-    # Updated May 2026 — reflects latest analyst narratives and earnings.
+    # Updated May 2026 - reflects latest analyst narratives and earnings.
     # AAPL  ↓ tariff uncertainty + supply chain mid-transition to India
     # ADBE  ↓ AI commoditisation fears; stock -42% from 52-week high
     # AMAT  ↓ revenue -3.5% YoY last quarter; China headwinds persist
@@ -75,167 +75,6 @@ BASE_CONFIDENCE = {
     "MA":   0.50, "META": 0.70, "MSCI": 0.55,
     "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.75,
     "TSM":  0.65, "V":    0.65,
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# DCF MODEL OUTPUTS  (populate as each WSP model is completed)
-#
-# Each stock needs:
-#   thesis          — 1–3 sentence investment rationale visible in the app
-#   wacc            — discount rate used in the model (e.g. 0.09 = 9%)
-#   terminal_growth — base-case long-run growth rate (perpetuity method)
-#   exit_multiple   — base-case exit EBITDA multiple
-#
-# Football field rows (each is a [low, high] price range):
-#   perpetuity_range  — DCF equity value per share at g_low → g_high (base WACC)
-#   multiple_range    — DCF equity value per share at multiple_low → multiple_high (base WACC)
-#   week52_range      — 52-week [low, high] pulled from Yahoo Finance
-#
-# Point estimates (bear/base/bull derive from sensitivity tables):
-#   bear  — low-WACC or low-growth corner of sensitivity table
-#   base  — central WACC × central g/multiple
-#   bull  — high-WACC or high-growth corner
-#
-# Leave all fields as None until the model is done; the tab auto-hides
-# any stock where base is still None.
-# ─────────────────────────────────────────────────────────────────────────────
-DCF_MODELS = {
-    "AAPL": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "ADBE": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "AMAT": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "AMZN": {   # ← IN PROGRESS
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "ASML": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "CPRT": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "FICO": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "GOOGL": {  # ← IN PROGRESS
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "LRCX": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "MA": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "META": {   # ← IN PROGRESS
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "MSCI": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "MSFT": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "NFLX": {   # ← IN PROGRESS
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "NVDA": {   # ← IN PROGRESS
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "TSM": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
-    "V": {
-        "thesis": None,
-        "wacc": None, "terminal_growth": None, "exit_multiple": None,
-        "perpetuity_range": (None, None),
-        "multiple_range":   (None, None),
-        "week52_range":     (None, None),
-        "bear": None, "base": None, "bull": None,
-    },
 }
 
 STRESS_PERIODS = {
@@ -262,7 +101,7 @@ def load_market_data(tickers, start="2012-01-01"):
         st.warning(
             f"⚠️ Could not download price data for: **{', '.join(failed)}**. "
             "These tickers have been excluded from this run. "
-            "Yahoo Finance likely rate-limited pull request — refresh in a minute to retry.",
+            "Yahoo Finance likely rate-limited pull request - refresh in a minute to retry.",
         )
         price_data = price_data.drop(columns=failed)
 
@@ -354,7 +193,7 @@ def load_ticker_metadata(tickers):
             pass
         recent_earnings[ticker] = flagged
 
-        time.sleep(0.2)   
+        time.sleep(0.25)   
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
@@ -366,7 +205,7 @@ def load_ticker_metadata(tickers):
         mcap_series = mcap_series.fillna(median_cap)
         st.sidebar.warning(
             f"⚠️ Could not fetch market cap for: **{', '.join(missing)}**. "
-            "Filled with median of available caps — cap-weight strategy may be slightly off. "
+            "Filled with median of available caps - cap-weight strategy may be slightly off. "
             "Yahoo Finance likely rate-limited the pull; will retry on next cache refresh (24h)."
         )
 
@@ -391,7 +230,7 @@ def load_benchmark_data():
     Downloads SPY (S&P 500 ETF) daily returns from 2012 onward.
     SPY is used rather than ^GSPC so that auto_adjust=True captures
     dividend reinvestment, giving total return rather than price return.
-    Cached for 24 hours — same cadence as ticker metadata.
+    Cached for 24 hours - same cadence as ticker metadata.
     """
     spx = yf.download("SPY", start="2012-01-01", auto_adjust=True, progress=False)
     spx = spx["Close"].squeeze()
@@ -404,7 +243,7 @@ def run_backtests(_tick_rets, _tick_capweights, estimation_window):
     """
     Runs all four rolling-window backtests and returns a returns DataFrame.
     Results are cached against the price data hash, so re-running only happens
-    when new market data is fetched — not on every slider or input interaction.
+    when new market data is fetched - not on every slider or input interaction.
 
     Underscore-prefixed args tell Streamlit to hash by object identity rather
     than value (DataFrames are not directly hashable).
@@ -628,7 +467,7 @@ with st.sidebar:
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
-    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days — consensus may have been revised.")
+    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days - consensus may have been revised.")
     st.caption("**Last Updated: 15 May 2026**")
     user_targets    = {}
     user_confidence = {}
@@ -758,115 +597,10 @@ st.caption(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FOOTBALL FIELD CHART HELPER
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_football_field(ticker, dcf, current_price):
-    """
-    Horizontal bar chart mirroring the WSP football field layout.
-
-    Rows (in order):
-      1. DCF — Perpetuity Growth  (perpetuity_range low → high at base WACC)
-      2. DCF — Exit EBITDA Multiple (multiple_range low → high at base WACC)
-      3. 52-Week Market Range      (week52_range low → high)
-
-    A dashed vertical line marks the live current price.
-    Bear / Base / Bull point estimates are overlaid as markers on every row.
-
-    Any row whose low or high is None is silently skipped — safe to call
-    even with partially populated DCF_MODELS entries.
-    """
-    row_labels, row_lows, row_highs, row_colors = [], [], [], []
-
-    candidates = [
-        ("DCF — Perpetuity Growth",    dcf.get("perpetuity_range"), "#2166ac"),
-        ("DCF — Exit EBITDA Multiple", dcf.get("multiple_range"),   "#4dac26"),
-        ("52-Week Market Range",       dcf.get("week52_range"),     "#b8860b"),
-    ]
-    for label, rng, color in candidates:
-        if rng and rng[0] is not None and rng[1] is not None:
-            row_labels.append(label)
-            row_lows.append(rng[0])
-            row_highs.append(rng[1])
-            row_colors.append(color)
-
-    if not row_labels:
-        return None
-
-    fig = go.Figure()
-
-    # Invisible base bars (shift the visible bar to start at low)
-    fig.add_trace(go.Bar(
-        name="",
-        y=row_labels,
-        x=row_lows,
-        orientation="h",
-        marker_color="rgba(0,0,0,0)",
-        showlegend=False,
-        hoverinfo="skip",
-    ))
-
-    # Visible range bars
-    for label, low, high, color in zip(row_labels, row_lows, row_highs, row_colors):
-        fig.add_trace(go.Bar(
-            name=label,
-            y=[label],
-            x=[high - low],
-            base=[low],
-            orientation="h",
-            marker_color=color,
-            opacity=0.65,
-            hovertemplate=f"<b>{label}</b><br>Low: $%{{base:.2f}}<br>High: $%{{x:.2f}}<extra></extra>",
-        ))
-
-    # Bear / Base / Bull markers overlaid on every row
-    scenario_cfg = [
-        ("Bear", dcf.get("bear"), "#d73027", "triangle-left",  12),
-        ("Base", dcf.get("base"), "#1a1a2e",  "diamond",       13),
-        ("Bull", dcf.get("bull"), "#1a9850", "triangle-right", 12),
-    ]
-    for s_label, val, color, symbol, size in scenario_cfg:
-        if val is not None:
-            fig.add_trace(go.Scatter(
-                x=[val] * len(row_labels),
-                y=row_labels,
-                mode="markers",
-                name=s_label,
-                marker=dict(color=color, size=size, symbol=symbol,
-                            line=dict(width=1, color="white")),
-                hovertemplate=f"<b>{s_label}</b>: ${val:.2f}<extra></extra>",
-            ))
-
-    # Current price vertical line
-    if current_price:
-        fig.add_vline(
-            x=current_price,
-            line_color="#333333",
-            line_dash="dash",
-            line_width=1.5,
-            annotation_text=f"  Current ${current_price:.0f}",
-            annotation_font_size=11,
-            annotation_position="top left",
-        )
-
-    fig.update_layout(
-        barmode="stack",
-        height=240,
-        margin=dict(l=10, r=20, t=30, b=20),
-        xaxis_title="Equity Value per Share (USD)",
-        yaxis=dict(autorange="reversed"),
-        legend=dict(orientation="h", yanchor="bottom", y=1.04, x=0),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-    )
-    return fig
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, tab4 = st.tabs([
+tab0, tab1, tab2, tab3, = st.tabs([
     "📖 Introduction",
-    "🔍 Investment Theses",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
@@ -878,41 +612,54 @@ tab0, tab1, tab2, tab3, tab4 = st.tabs([
 # TAB 0 -- Introduction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab0:
-
     st.markdown("#### About this Project")
     st.markdown(
         """
-        **I started this self-guided project to better understand investment management
-        and to guide the sizing of my own portfolio allocations.** It implements the skills
-        and knowledge that I have acquired over the last three months from EDHEC's Advanced
-        Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
-        with the aim of answering one question: Having derived the 1Y price target of a stock
-        through DCF analysis, how does one use this knowledge to size their portfolios?
-
-        **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
-        because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
-        or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        The Black-Litterman (BL) Model is different. It is a forward-looking allocator and derives a portfolio allocation from
-        a blend between the market-implied returns and an investor's forward-looking views. Crucially, this method allows 
-        investors to incorporate their views to guide portfolio allocations and integrate DCF analysis into one cohesive framework. 
-        
-        This app lets you build that allocation dynamically. As you change the preset model assumptions in the side bar, 
-        based on some modelling assumptions from the side-bar, the portfolio allocations will change. The stress tests also
-        dynamically fill in and the BL weights are benchmarked against other strategies. 
-
-        **A limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth preservation. Sovereign Funds with payment schedules to meet  would pursue a different objective entirely,
-        adopting a more liability-driven investing strategy, choosing to optimise for duration matching of bond coupon payouts.
-        Nevetheless, this tool remains useful for sizing the "riskier" equity allocations, though it can be adjusted to incorporate
-        bond cash flows as part of an asset return regime. The mediating mechanism which this allocation between "risky" (equities) and
-        "less risky" assets (bonds) is the Constant Proportion Portfolio Insurance (CPPI), and is another natural expansion of this app
-        to help manage a multi-portfolio portfolio.
-        
-        This project is still a work in progress and I plan to continue adding new features. Currently, I am working on 
-        incorporating DCF assumptions as verifiable inputs into the side bar, merging the BL model with DCF modeling.
-
-        *Last Updated: 16 May 2026*
+        **The question this tool answers:** Once you derive a 12-month price target 
+        for a stock through DCF analysis, how do you translate that conviction 
+        into a disciplined portfolio sizing decision?
+    
+        Most optimisation frameworks either ignore forward-looking views entirely, 
+        optimising purely on historical covariance, or apply them naively, producing 
+        extreme, unstable weights that no sensible investor would act on. This app 
+        implements the **Black-Litterman (BL) model** to bridge that gap. BL blends 
+        an investor's forward-looking views with the market-implied equilibrium return - 
+        the expected return that would justify current market-cap weights under CAPM - 
+        producing allocations that are both forward-looking and anchored to 
+        what the market collectively believes.
+    
+        The project draws on coursework from EDHEC's Advanced Portfolio Construction 
+        and Analysis and Wall Street Prep's DCF Modelling programme. It employs
+        the skills and knowledge that I have learned in those courses into an
+        app I hope others will find useful.
+    
+        **Project Scope:** This framework assumes the investor's objective is 
+        wealth accumulation via a long-only equity sleeve. Institutions with 
+        payment obligations - sovereign wealth funds managing reserve portfolios, 
+        for instance - would typically adopt a liability-driven approach instead, 
+        optimising for duration matching rather than Sharpe maximisation. 
+        Within a broader multi-asset framework, this tool is most naturally 
+        read as sizing the higher-conviction equity allocation, with the 
+        split between the risky and risk-free sleeves governed separately - 
+        for example, via a Constant Proportion Portfolio Insurance (CPPI) structure.
+    
+        Individual DCF models for Amazon, Nvidia, Google, Netflix, and Meta - 
+        with bear / base / bull scenarios and WACC sensitivity tables - are 
+        currently in progress. Once complete, the derived price targets will 
+        replace the current consensus-anchored inputs above, and a dedicated 
+        investment thesis tab will document the assumptions behind each view.
+    
+        *Last updated: 16 May 2026*
         """
+    )
+    
+    st.info(
+    "**Suggested reading order:** Introduction (you are here) → "
+    "**Views & Weights** to see how price targets feed through the model → "
+    "**Simulation & Stress Tests** for tail risk → "
+    "**Strategy Comparison** to benchmark BL against alternatives. "
+    "All model assumptions are adjustable in the sidebar.",
+    icon="🗺️",
     )
 
     st.divider()
@@ -925,13 +672,13 @@ with tab0:
         below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
         market cap of $10 billion**. ROIC was chosen as the primary quality
         filter because it measures how efficiently a company converts capital
-        into profit — sustained high ROIC over multiple years is one of the
+        into profit - sustained high ROIC over multiple years is one of the
         most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
         to screen for profitable generating companies, this method would screen out high quality companies like
         AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
 
         The resulting universe is concentrated in technology, semiconductors,
-        payments infrastructure, and financial data — sectors where
+        payments infrastructure, and financial data - sectors where
         capital-light business models and high switching costs tend to produce
         the kind of high quality businesses with durable moats. Two names
         warrant a note: FICO carries negative book equity due to sustained
@@ -958,12 +705,12 @@ with tab0:
 
         The model has two inputs:
 
-        - **The market prior (π)** — what the market implies everyone should expect,
+        - **The market prior (π)** - what the market implies everyone should expect,
           derived by reverse-engineering the CAPM: if every investor holds the market
           portfolio, what expected returns would justify current prices and weights?
           This is the baseline the model starts from.
 
-        - **Analyst views (Q)** — the excess return implied by each DCF price target
+        - **Analyst views (Q)** - the excess return implied by each DCF price target
           (total return minus the risk-free rate). This is the forward-looking judgment layer.
 
         It then blends them using a precision-weighted average. *Precision* is inverse
@@ -982,12 +729,12 @@ with tab0:
 
         | Symbol | Name | What it means |
         |--------|------|---------------|
-        | **μ_BL** | Posterior expected return | The model's final blended return estimate — what feeds into the optimiser |
+        | **μ_BL** | Posterior expected return | The model's final blended return estimate - what feeds into the optimiser |
         | **π** (pi) | Market-implied equilibrium return | What the market collectively expects, derived from cap weights and risk aversion |
         | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
-        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together — captures correlation risk |
+        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together - captures correlation risk |
         | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
-        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix — one view per stock |
+        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix - one view per stock |
         | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
 
         **The intuition:** The formula is a tug-of-war between π and Q, refereed by
@@ -995,215 +742,16 @@ with tab0:
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
         its inverse shrinks, and the posterior barely moves from equilibrium. The
         covariance Σ ensures that stocks with shared risk exposures influence each
-        other — a high-conviction view on NVDA nudges the posterior for TSM too,
+        other - a high-conviction view on NVDA nudges the posterior for TSM too,
         because they co-move. The table in the next tab shows this blending in action.
         """
     )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 -- Investment Theses & DCF Valuation
+# TAB 1 -- Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.html("<div style='height: 18px;'></div>")
-
-    # ── Which stocks have a completed model? ──────────────────────────────────
-    completed = [t for t in TICKERS if DCF_MODELS[t]["base"] is not None]
-
-    if not completed:
-        # ── PLACEHOLDER STATE — shown until the first DCF is finished ─────────
-        st.info(
-            "**Work in progress.** Individual DCF models are being built out as part of "
-            "Wall Street Prep's modelling programme. This tab will auto-populate as each "
-            "model is completed — starting with Amazon, Nvidia, Alphabet, Netflix, and Meta.",
-            icon="🔧",
-        )
-        st.markdown(
-            """
-            #### What this tab will show
-
-            For each completed model, you will find:
-
-            - **Investment thesis** — a concise rationale covering the business model,
-              competitive moat, and the key variant view driving the price target above
-              or below consensus.
-            - **DCF assumptions** — discount rate (WACC), terminal growth rate,
-              exit EBITDA multiple, and the bear / base / bull price targets derived
-              from the sensitivity table.
-            - **Football field chart** — a horizontal bar chart showing the equity
-              value range under each valuation methodology (perpetuity growth, exit
-              multiple, and 52-week market range), with the current price overlaid
-              as a reference line. The same layout used in the WSP model.
-            - **BL confidence linkage** — a note explaining how the DCF conviction
-              (the distance of the price target from consensus and the tightness of
-              the sensitivity range) translates into the confidence slider values
-              used in the Black-Litterman model on the next tab.
-
-            The bear / base / bull price targets produced here will replace the
-            current consensus-anchored inputs in the Views & Weights tab once
-            all five priority models are complete.
-            """
-        )
-
-        # ── Preview skeleton for one stock to show the intended layout ─────────
-        st.divider()
-        st.markdown("#### Layout Preview — *NVDA (illustrative placeholder)*")
-        st.caption(
-            "The card below shows the intended structure. All values are illustrative "
-            "and will be replaced with actual model outputs."
-        )
-
-        col_l, col_r = st.columns([1, 2])
-        with col_l:
-            st.markdown("**Investment Thesis**")
-            st.markdown(
-                "*To be completed.* Nvidia's near-term revenue is underpinned by "
-                "data-centre GPU demand from hyperscalers building out AI training "
-                "infrastructure. The key variant view is whether CUDA's software moat "
-                "sustains pricing power as AMD and custom silicon mature — the base case "
-                "assumes it does through the forecast horizon."
-            )
-            st.markdown("**Key DCF Assumptions**")
-            st.dataframe(
-                pd.DataFrame({
-                    "Parameter": ["WACC", "Terminal Growth (g)", "Exit EBITDA Multiple",
-                                  "Bear", "Base", "Bull"],
-                    "Value": ["—", "—", "—", "—", "—", "—"],
-                }).set_index("Parameter"),
-                use_container_width=True,
-            )
-        with col_r:
-            st.markdown("**Valuation Football Field**")
-            st.caption("Chart will render here once model outputs are populated.")
-            placeholder_fig = go.Figure()
-            placeholder_fig.add_annotation(
-                text="Football field chart — populates when DCF model is complete",
-                x=0.5, y=0.5, xref="paper", yref="paper",
-                showarrow=False, font=dict(size=13, color="#888888"),
-            )
-            placeholder_fig.update_layout(
-                height=240,
-                plot_bgcolor="rgba(0,0,0,0)",
-                paper_bgcolor="rgba(0,0,0,0)",
-                xaxis=dict(visible=False),
-                yaxis=dict(visible=False),
-                margin=dict(l=10, r=10, t=10, b=10),
-            )
-            st.plotly_chart(placeholder_fig, use_container_width=True)
-
-    else:
-        # ── LIVE STATE — shown once at least one model is complete ────────────
-        st.markdown(
-            f"**{len(completed)} of {len(TICKERS)} models complete.** "
-            "Select a stock to view its investment thesis, DCF assumptions, "
-            "and valuation football field. The confidence values used in the "
-            "Black-Litterman model are derived from the tightness of each "
-            "stock's sensitivity range — explained in the linkage note below each chart."
-        )
-
-        selected = st.selectbox(
-            "Select stock", completed,
-            format_func=lambda t: f"{t}",
-        )
-
-        dcf     = DCF_MODELS[selected]
-        cur_px  = tick_data.get(selected, {}).get("current_price")
-
-        st.divider()
-        col_l, col_r = st.columns([1, 2])
-
-        with col_l:
-            # ── Investment thesis ─────────────────────────────────────────────
-            st.markdown(f"#### {selected} — Investment Thesis")
-            thesis = dcf.get("thesis") or "*Thesis not yet written.*"
-            st.markdown(thesis)
-
-            # ── Key assumptions table ─────────────────────────────────────────
-            st.markdown("**Key DCF Assumptions**")
-            wacc    = dcf.get("wacc")
-            tg      = dcf.get("terminal_growth")
-            mult    = dcf.get("exit_multiple")
-            bear    = dcf.get("bear")
-            base    = dcf.get("base")
-            bull    = dcf.get("bull")
-
-            assumptions = pd.DataFrame({
-                "Parameter": [
-                    "WACC",
-                    "Terminal Growth Rate (g)",
-                    "Exit EBITDA Multiple",
-                    "Bear — Price Target",
-                    "Base — Price Target",
-                    "Bull — Price Target",
-                ],
-                "Value": [
-                    f"{wacc:.1%}" if wacc else "—",
-                    f"{tg:.1%}"   if tg   else "—",
-                    f"{mult:.1f}x" if mult else "—",
-                    f"${bear:.2f}" if bear else "—",
-                    f"${base:.2f}" if base else "—",
-                    f"${bull:.2f}" if bull else "—",
-                ],
-            }).set_index("Parameter")
-            st.dataframe(assumptions, use_container_width=True)
-
-            # ── BL confidence linkage note ────────────────────────────────────
-            st.markdown("**Black-Litterman Confidence Linkage**")
-            conf = BASE_CONFIDENCE.get(selected, 0.5)
-            if bear and bull and base:
-                pct_range = abs(bull - bear) / base
-                st.caption(
-                    f"The bear-to-bull range spans **{pct_range:.0%}** of the base "
-                    f"price target. A wider range signals more fundamental uncertainty "
-                    f"and maps to a lower BL confidence weight. Current confidence "
-                    f"for {selected}: **{conf:.0%}**."
-                )
-            else:
-                st.caption(
-                    f"Confidence linkage note will populate once bear/base/bull "
-                    f"targets are set. Current BL confidence for {selected}: **{conf:.0%}**."
-                )
-
-        with col_r:
-            # ── Football field chart ──────────────────────────────────────────
-            st.markdown("#### Valuation Football Field")
-            fig = plot_football_field(selected, dcf, cur_px)
-            if fig:
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.caption("Chart will render once valuation ranges are populated.")
-
-        # ── Summary table — all completed stocks ─────────────────────────────
-        st.divider()
-        st.markdown("#### Summary — All Completed Models")
-        summary_rows = []
-        for t in completed:
-            d = DCF_MODELS[t]
-            summary_rows.append({
-                "Ticker": t,
-                "WACC":   d.get("wacc"),
-                "Term. Growth": d.get("terminal_growth"),
-                "Exit Multiple": d.get("exit_multiple"),
-                "Bear":  d.get("bear"),
-                "Base":  d.get("base"),
-                "Bull":  d.get("bull"),
-                "BL Confidence": BASE_CONFIDENCE.get(t),
-            })
-        summary_df = pd.DataFrame(summary_rows).set_index("Ticker")
-        st.dataframe(
-            summary_df.style
-                .format("{:.1%}", subset=["WACC", "Term. Growth", "BL Confidence"],
-                        na_rep="—")
-                .format("{:.1f}x", subset=["Exit Multiple"], na_rep="—")
-                .format("${:.2f}", subset=["Bear", "Base", "Bull"], na_rep="—"),
-            use_container_width=True,
-        )
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 -- Views, Returns & Weights
-# ══════════════════════════════════════════════════════════════════════════════
-with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1227,7 +775,7 @@ with tab2:
         "**DCF-Implied Return** is the raw DCF-implied return. "
         "**Q** subtracts the risk-free rate to get the excess return fed into the model. "
         "**π** is the market equilibrium baseline. "
-        "**BL Posterior** is the blended output — the return the optimiser actually uses."
+        "**BL Posterior** is the blended output - the return the optimiser actually uses."
     )
 
     view_df = pd.DataFrame({
@@ -1340,7 +888,7 @@ with tab2:
     st.caption(
         "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
         "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-        "prior — where all pairwise correlations are set to the cross-sectional average — "
+        "prior - where all pairwise correlations are set to the cross-sectional average - "
         "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
         "stocks the sample covariance matrix is prone to estimation noise and "
         "near-singularity, which causes unconstrained optimisers to produce extreme, "
@@ -1350,9 +898,9 @@ with tab2:
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 -- Simulation & Stress Tests
+# TAB 2 -- Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
-with tab3:
+with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1364,7 +912,7 @@ with tab3:
 
         **Critical Model Caveats**: While the correlated GBM captures *typical* market uncertainty, it fundamentally assumes a Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical correlations** that occur during severe market drawdowns. 
-        In a free-fall market, diversification benefits often vanish—a tail-risk reality that standard GBM systematically understates. 
+        In a free-fall market, diversification benefits often vanish-a tail-risk reality that standard GBM systematically understates. 
         Consequently, the Monte Carlo simulation represents a baseline for normal market regimes, while the historical stress test provides 
         the necessary reality check for tail risk. A more robust approach would be to employ Machine Learning to model fat tail risks and is 
         an area for further development for this project.
@@ -1385,7 +933,7 @@ with tab3:
 
     final_values = port_paths[-1]
 
-    # Summary stats — expressed as 1Y return (final value – 1) with $10k terminal context
+    # Summary stats - expressed as 1Y return (final value – 1) with $10k terminal context
     mean_ret   = float(np.mean(final_values))   - 1
     median_ret = float(np.median(final_values)) - 1
     p5_ret     = float(np.percentile(final_values,  5)) - 1
@@ -1399,7 +947,7 @@ with tab3:
     m4.metric("95th Percentile",  f"{p95_ret:+.1%}",  delta=f"${(1 + p95_ret)*10_000:,.0f} on $10k",  delta_color="off")
     m5.metric("Uncertainty Band", f"{spread:.1%}",     delta="95th − 5th pct width",                   delta_color="off")
 
-    # Fan chart and histogram — side by side
+    # Fan chart and histogram - side by side
     col_fan, col_hist = st.columns([3, 2])
 
     # Fan chart -- portfolio paths
@@ -1497,34 +1045,33 @@ with tab3:
 
         # SPY benchmark for the same period
         spx_period = spx_rets.loc[start:end]
-        spx_period_return = float((1 + spx_period).prod() - 1) if not spx_period.empty else None
-        excess_return = (total_period_return - spx_period_return) if spx_period_return is not None else None
+        spx_period_return = float((1 + spx_period).prod() - 1)
+        excess_return = (total_period_return - spx_period_return)
         cumprod_spx = (1 + spx_period).cumprod()
-        max_dd_spx = float((cumprod_spx / cumprod_spx.cummax() - 1).min()) if not spx_period.empty else None
+        max_dd_spx = float((cumprod_spx / cumprod_spx.cummax() - 1).min())
 
         stress_rows[name] = {
             "Period Return":    total_period_return,
-            "S&P 500 (SPY)":   spx_period_return,
+            "S&P 500 (SPY) Return":   spx_period_return,
             "Excess Return":    excess_return,
             "Trading Days":     len(bl_period_rets),
             "Ann. Return":      ann_rets_bl_period,
             "Ann. Vol":         ann_vol_bl_period,
             "Sharpe Ratio":     sharpe_bl_period,
             "Max Drawdown":     max_dd_bl,
-            "SPY Max Drawdown": max_dd_spx,
+            "SPY Max Drawdown": max_dd_spx 
         }
 
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
         stress_df.sort_values("Max Drawdown", ascending=True)
             .style
-            .format("{:.2%}", subset=["Period Return", "S&P 500 (SPY)", "Excess Return",
+            .format("{:.2%}", subset=["Period Return", "S&P 500 (SPY) Return", "Excess Return",
                                       "Ann. Return", "Ann. Vol", "Max Drawdown", "SPY Max Drawdown"])
             .format("{:.0f}", subset=["Trading Days"])
             .format("{:.2f}", subset=["Sharpe Ratio"])
             .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmax=0.0)
-            .background_gradient(subset=["SPY Max Drawdown"], cmap="Reds_r", vmax=0.0)
-            .background_gradient(subset=["Excess Return"], cmap="RdYlGn", vmin=-0.10, vmax=0.10),
+            .background_gradient(subset=["SPY Max Drawdown"], cmap="Reds_r", vmax=0.0),
         use_container_width=True,
     )
 
@@ -1546,9 +1093,9 @@ with tab3:
     st.plotly_chart(fig_stress, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 -- Strategy Comparison
+# TAB 3 -- Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
-with tab4:
+with tab3:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1558,7 +1105,7 @@ with tab4:
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
-        **Critcial Model Caveats**: As BL weights are derived from the full historical window, 
+        **Critical Model Caveats**: As BL weights are derived from the full historical window, 
         this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
         A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
         However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
@@ -1598,7 +1145,7 @@ with tab4:
     )
     c2.caption(
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
-        f"Starts {estimation_window_yrs} year(s) after data begins — the minimum needed for the first rolling estimate."
+        f"Starts {estimation_window_yrs} year(s) after data begins - the minimum needed for the first rolling estimate."
     )
     
     # Wealth Index Plot with starting $10,000 invested
@@ -1610,7 +1157,7 @@ with tab4:
         "Cap-Weighted":         ("#a1dab4",  1.4, "solid"),   # light mint-green
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
-        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy — hero line
+        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
     }
 
     fig_wealth = go.Figure()
@@ -1671,14 +1218,14 @@ with tab4:
                 help=(
                     "Measures asymmetry of the return distribution. "
                     "0 = symmetric (normal). Negative skew means more frequent "
-                    "large losses than large gains — bad for portfolios."
+                    "large losses than large gains - bad for portfolios."
                 ),
             ),
             "Kurtosis": st.column_config.Column(
                 "Kurtosis",
                 help=(
                     "Raw kurtosis of the return distribution. "
-                    "3 = normal distribution. Values above 3 indicate fat tails — "
+                    "3 = normal distribution. Values above 3 indicate fat tails - "
                     "extreme gains/losses occur more often than a normal model would predict."
                 ),
             ),
@@ -1698,7 +1245,7 @@ with tab4:
                     "Historic Conditional VaR (Expected Shortfall) at the 5% level. "
                     "Answers: given that we are in the worst 5% of outcomes, "
                     "what is the average loss? CVaR is always expressed as a "
-                    "percentage of portfolio value — a higher number means deeper "
+                    "percentage of portfolio value - a higher number means deeper "
                     "average losses in bad tail scenarios."
                 ),
             ),
