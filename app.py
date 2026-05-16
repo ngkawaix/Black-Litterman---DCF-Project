@@ -1081,7 +1081,7 @@ with tab3:
 
     # BL: static weights applied to history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
-    bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)]
+    bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
 
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
