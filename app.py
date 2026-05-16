@@ -874,17 +874,18 @@ with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section stress tests the BL weights using (1) a correlated GBM monte carlo simulation, 
-        and (2) a historic stress test to backtest against historical shocks.** A correlated GBM treats future returns as a random walk; 
-        each day shock is drawn independently, scaled by historical volatility and the correlations between stocks.
-        Correlations are preserved via Cholesky decomposition to better reflect the performance of correlated assets. 
-        Since many of the stocks in the universe are in the tech field, this is the appropriate approach.
+        **This section evaluates Black-Litterman portfolio weights under market stress using two distinct methodologies:** 
+        1. **Correlated Geometric Brownian Motion (GBM) Monte Carlo Simulation**: Projects future returns as a random walk, 
+        preserving asset interdependencies via Cholesky decomposition. Given the heavy concentration of technology equities in this portfolio universe, 
+        accounting for these embedded correlations is essential for a realistic baseline.
+        2. **Historical Stress Testing: Backtests the portfolio against actual historical market shocks to evaluate performance during systemic crises.
 
-        **What the correlated GBM simulations cannot capture is the clustering of extreme events.** In real markets, crashes are not randomly distributed. 
-        Volatility spikes, correlations break down, and losses arrive in sequences that a Gaussian model systematically understates. 
-        The GBM simulations are hence best read as a baseline of what *typical* uncertainty looks like and not as a statement about tail risk. 
-        The historic stress tests ground that picture in what actually happened holding the BL portfolio. Together, they present a more complete
-        picture of the risks associated from holding the BL weights.
+        **Critical Model Caveats**: While the correlated GBM captures *typical* market uncertainty, it fundamentally assumes a Gaussian distribution. 
+        It cannot model **volatility clustering** or the **breakdown of historical correlations** that occur during severe market drawdowns. 
+        In a free-fall market, diversification benefits often vanish—a tail-risk reality that standard GBM systematically understates. 
+        Consequently, the Monte Carlo simulation represents a baseline for normal market regimes, while the historical stress test provides 
+        the necessary reality check for tail risk. A more robust approach would be to employ Machine Learning to model fat tail risks and is 
+        an area for further development for this project.
         """
     )
     st.divider()
@@ -1063,12 +1064,9 @@ with tab3:
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
         **Important Caveat**: As BL weights are derived from the full historical window, 
-        this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest
-
-        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation.
-        Nevetheless, even this analysis is limited given that it assumes that the portfolio weights follow a correlated GBM pathway, 
-        which, while robust, is too uniform for mapping periods of sustained uncertainty and large drawdowns. More robust techniques employing 
-        Machine Learning exist and is an area I plan to expand in the future. 
+        this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
+        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. However, even this has limitations
+        as outlined in the Simulation & Stress Test tab.
         """
     )
     st.divider()
