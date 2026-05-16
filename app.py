@@ -580,13 +580,12 @@ with tab0:
         through DCF analysis, how does one use this knowledge to size thier portfolios?
 
         **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
-        because of its advantages over other strategies. Firstly, it is a forward-looking portfolio optimiser. 
-        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity are purely backward-looking, 
-        optimising on historical data and assuming the past repeats. The Black-Litterman (BL) Model is different.
-        It takes a forward-looking view on what each stock is worth and asks the investor what their confidence levels
-        are for these views, relative to the market's implied returns. Crucially, this method allows investors to
-        incorporate their views to guide portfolio allocations and intergrate DCF analysis into one cohesive framework.
-        This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
+        because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
+        or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
+        The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
+        asks the investor what their confidence levels are for these views, relative to the market's implied returns. 
+        Crucially, this method allows investors to incorporate their views to guide portfolio allocations and intergrate DCF analysis 
+        into one cohesive framework. This app lets you build that allocation  based on some modelling assumptions from the side-bar. 
         It stress-test those allocations against real market crashes, and benchmark it against other strategies. 
 
         **A clear limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
