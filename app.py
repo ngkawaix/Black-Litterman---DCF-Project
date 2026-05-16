@@ -858,15 +858,11 @@ with tab0:
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_thesis:
     st.html("<div style='height: 18px;'></div>")
-    st.markdown("#### Investment Theses & Confidence Rationale")
     st.markdown(
         """
-        This tab documents the reasoning behind each position in the portfolio — specifically,
-        why a stock was included and how confident I am in the price target I've assigned it.
-        Confidence is not a measure of whether a stock will go up; it is the weight given to
-        my view *relative to what the market already implies* in the Black-Litterman framework.
-        A low confidence means the model stays close to the market-cap equilibrium for that stock;
-        a high confidence means the model tilts meaningfully toward my DCF-derived view.
+        **This section documents the initial confidence levels set in the application and charts
+        them onto a conviction map to better allow the user to understand the inputs they 
+        are making before obtaining the BL optimised weights.**
 
         **Current status:** Confidence levels are informed by analyst narratives and the most
         recent earnings reports. Individual DCF models for Amazon, Nvidia, Google, Netflix, and
