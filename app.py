@@ -113,22 +113,10 @@ def load_market_data(tickers, start="2012-01-01"):
 
 
 @st.cache_data(show_spinner="Fetching ticker metadata (mcap, consensus, earnings)…", ttl=86400)
-def load_ticker_metadata(_price_data, tickers):
+def load_ticker_metadata(tickers):
     """
     Single-pass fetch for all per-ticker metadata: market cap, analyst
     consensus target, analyst count, and recent-earnings flag.
-
-    Replaces the previous separate load_mcap_weights and
-    load_consensus_and_earnings functions, halving the number of API calls
-    (one .info + one .calendar per ticker instead of up to three .info calls).
-    A 0.2 s sleep between tickers keeps Yahoo Finance from rate-limiting
-    the Streamlit Cloud shared IP.
-
-    Returns
-    -------
-    mcap_weights_df : pd.DataFrame  -- cap-weight matrix matching price_data index
-    consensus       : dict          -- {ticker: {"mean": float|None, "n_analysts": int|None}}
-    recent_earnings : dict          -- {ticker: bool}
     """
     import time
 
@@ -185,21 +173,16 @@ def load_ticker_metadata(_price_data, tickers):
 
         time.sleep(0.2)   # stay well within Yahoo Finance's rate limit
 
-    # Build cap-weight DataFrame
+    # Build cap-weight Series (to be built into DataFrame dynamically later)
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
     if missing:
         avg = mcap_series.dropna().mean()
         mcap_series[missing] = avg if pd.notna(avg) and avg > 0 else 1.0
+    
     weights = mcap_series / mcap_series.sum()
-    idx     = _price_data.index
-    mcap_weights_df = pd.DataFrame(
-        [weights.reindex(tickers).values] * len(idx),
-        index=idx, columns=tickers,
-    )
 
-    return mcap_weights_df, consensus, recent_earnings
-
+    return weights, consensus, recent_earnings
 
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
@@ -364,8 +347,6 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
-
-
 # --- Data Range Selection ---
 _FLOOR = date(2012, 6, 1)
 _MAX_START      = (datetime.today() - pd.Timedelta(days=365 * 3)).date()
@@ -387,13 +368,17 @@ data_start_date = st.sidebar.date_input(
 )
 st.sidebar.divider()
 
-# Load consensus data before entering the sidebar block so it's available
-# when rendering per-ticker inputs.  TTL=24 h keeps it fresh without
-# hammering the API on every widget interaction.
-# Price data is loaded here (before the sidebar) so load_ticker_metadata
-# can use it to build cap-weight DataFrames in the same pass.
 price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
-tick_capweights, consensus_data, recent_earnings = load_ticker_metadata(price_data, TICKERS)
+
+# Fetch the cached weights series and metadata
+weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
+
+# Build the cap-weight DataFrame dynamically with the fresh index
+idx = price_data.index
+tick_capweights = pd.DataFrame(
+    [weights_series.reindex(TICKERS).values] * len(idx),
+    index=idx, columns=TICKERS,
+)
 
 # Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
 if tick_rets.empty:
