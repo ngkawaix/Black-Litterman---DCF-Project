@@ -447,7 +447,7 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "**How these are set:** Base targets are rough estimates in-line with the Street View. "
+        "**How these are set:** 1-Year price targets are rough estimates in-line with the Street View. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
         "may lag recent revisions - treat them as directional references only. "
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
@@ -1063,7 +1063,7 @@ with tab3:
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
-        **Critcial Model Caveat**: As BL weights are derived from the full historical window, 
+        **Critcial Model Caveats**: As BL weights are derived from the full historical window, 
         this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
         A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
         However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
@@ -1085,7 +1085,7 @@ with tab3:
 
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
-            "Cap-Weighted":            pd.Series(cw_r).squeeze(),
+            "Cap-Weighted":            pd.Series(cw_r).squeeze()
             "Global Minimum Variance":    pd.Series(gmv_r).squeeze(),
             "Risk Parity":             pd.Series(erc_r).squeeze(),
             "BL (static)":             pd.Series(bl_r).squeeze(),
@@ -1136,7 +1136,7 @@ with tab3:
     )
     st.plotly_chart(fig_wealth, use_container_width=True)
 
-    # Summary stats
+    # Summary Stats
     _ann_scale = np.sqrt(252)
     
     summary_rows = {}
@@ -1164,6 +1164,7 @@ with tab3:
         }
 
     summary_df = pd.DataFrame(summary_rows).T
+    s
     st.dataframe(
         summary_df.style
             .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown",
