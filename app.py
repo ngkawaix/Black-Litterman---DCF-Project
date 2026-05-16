@@ -1085,7 +1085,7 @@ with tab3:
 
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
-            "Cap-Weighted":            pd.Series(cw_r).squeeze()
+            "Cap-Weighted":            pd.Series(cw_r).squeeze(),
             "Global Minimum Variance":    pd.Series(gmv_r).squeeze(),
             "Risk Parity":             pd.Series(erc_r).squeeze(),
             "BL (static)":             pd.Series(bl_r).squeeze(),
