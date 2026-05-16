@@ -1208,11 +1208,6 @@ with tab_thesis:
 
     st.divider()
 
-    # ── Section 3: Optimised Weights ──────────────────────────────────────────
-    st.markdown("#### 3. Optimised Portfolio Weights")
-    st.caption(
-        "The BL posterior returns from Section 1 feed directly into a long-only (no shorting) "
-
     # ── Section 4: DCF Models (placeholder) ───────────────────────────────────
     st.markdown("#### 3. Individual DCF Models")
     st.info(
