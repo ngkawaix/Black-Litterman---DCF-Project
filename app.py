@@ -1004,7 +1004,7 @@ with tab2:
         kurt_bl_period = erk.kurtosis(bl_period_rets)
         cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252)
         cvar_bl_period = erk.cvar_historic(bl_period_rets, level=5) * np.sqrt(252)
-        sharpe_bl_period = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
+        sharpe_bl_period = erk.sharpe_ratio(bl_period_rets, riskfree_rate=RF, periods_per_year=252)
         cumprod_bl = (1 + bl_period_rets).cumprod()
         max_dd_bl = (cumprod_bl / cumprod_bl.cummax() - 1).min()
         stress_rows[name] = {
