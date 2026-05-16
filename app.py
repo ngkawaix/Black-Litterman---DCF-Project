@@ -878,7 +878,7 @@ with tab2:
         1. **Correlated Geometric Brownian Motion (GBM) Monte Carlo Simulation**: Projects future returns as a random walk, 
         preserving asset interdependencies via Cholesky decomposition. Given the heavy concentration of technology equities in this portfolio universe, 
         accounting for these embedded correlations is essential for a realistic baseline.
-        2. **Historical Stress Testing: Backtests the portfolio against actual historical market shocks to evaluate performance during systemic crises.
+        2. **Historical Stress Testing**: Backtests the portfolio against actual historical market shocks to evaluate performance during systemic crises.
 
         **Critical Model Caveats**: While the correlated GBM captures *typical* market uncertainty, it fundamentally assumes a Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical correlations** that occur during severe market drawdowns. 
@@ -1063,10 +1063,10 @@ with tab3:
         each period using only data available at that point in time, so there is no look-ahead bias.
         The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
         
-        **Important Caveat**: As BL weights are derived from the full historical window, 
+        **Critcial Model Caveat**: As BL weights are derived from the full historical window, 
         this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
-        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. However, even this has limitations
-        as outlined in the Simulation & Stress Test tab.
+        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
+        However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
         """
     )
     st.divider()
