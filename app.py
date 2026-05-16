@@ -497,7 +497,7 @@ with st.sidebar:
               "Default: 3 years captures a full market cycle and is the recommended default.\n\n"
               "5 years is the most stable but comes at the cost of reducing the backtest period. \n\n"
               "Note: A longer estimation window delays the backtest start date by the same amount such "
-              that the first debalance can only happen once a full window of data is available."
+              "that the first debalance can only happen once a full window of data is available."
               )
     )
     estimation_window = estimation_window_yrs * 252
