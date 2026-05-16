@@ -611,11 +611,13 @@ with tab0:
         **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
         because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
         or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
-        asks the investor what their confidence levels are for these views, relative to the market's implied returns. 
-        Crucially, this method allows investors to incorporate their views to guide portfolio allocations and integrate DCF analysis 
-        into one cohesive framework. This app lets you build that allocation based on some modelling assumptions from the side-bar,
-        stress-test those allocations against real market crashes, and benchmark it against other strategies. 
+        The Black-Litterman (BL) Model is different. It is a forward-looking allocator and derives a portfolio allocation from
+        a blend between the market-implied returns and an investor's forward-looking views. Crucially, this method allows 
+        investors to incorporate their views to guide portfolio allocations and integrate DCF analysis into one cohesive framework. 
+        
+        This app lets you build that allocation dynamically. As you change the preset model assumptions in the side bar, 
+        based on some modelling assumptions from the side-bar, the portfolio allocations will change. The stress tests also
+        dynamically fill in and the BL weights are benchmarked against other strategies. 
 
         **A limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
         rather than wealth preservation. Sovereign Funds with payment schedules to meet  would pursue a different objective entirely,
