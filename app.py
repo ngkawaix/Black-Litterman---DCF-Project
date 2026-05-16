@@ -94,16 +94,16 @@ EARNINGS_HIGHLIGHTS = {
     "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
     "ADBE": "Net new ARR missed for a second consecutive quarter — Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
     "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
-    "AMZN": "AWS re-accelerated on AI inference and model-training demand, reinforcing the cloud thesis. Operating margin expanded to a record — clear inflection from investment phase to profitable scale.",
+    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand — fastest growth in 15 quarters. Operating margin hit a record 13.1% — clear inflection from investment phase to profitable scale.",
     "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
     "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A — rare quality among mid-cap industrials.",
     "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
-    "GOOGL": "Search and YouTube outperformed; Cloud accelerated on AI infrastructure demand. Gemini monetisation showing early signals — GenAI cost-per-query remains the key margin watch item.",
+    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals — GenAI cost-per-query is the key margin watch item.",
     "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
     "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data — payments outlook resilient.",
     "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew — Llama-driven Reels ranking cited as the key engagement driver.",
     "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
-    "MSFT": "Azure beat estimates — Copilot integrations driving consumption-based upsell across enterprise. Operating margin held; AI infrastructure investment absorbed without material margin dilution.",
+    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% — AI infrastructure spend absorbed without material dilution.",
     "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised — content investment funded internally without balance sheet strain.",
     "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B — US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
     "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
@@ -1038,6 +1038,7 @@ with tab_thesis:
             ),
             "Last Earnings": st.column_config.TextColumn(
                 "Last Earnings",
+                width="small",
                 help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
             ),
             "Earnings Highlights": st.column_config.TextColumn(
@@ -1050,6 +1051,7 @@ with tab_thesis:
             ),
             "Next Earnings": st.column_config.TextColumn(
                 "Next Earnings",
+                width="small",
                 help=(
                     "Estimated date of the next earnings release (Yahoo Finance calendar). "
                     "May span a range — verify against company investor relations pages."
@@ -1057,6 +1059,7 @@ with tab_thesis:
             ),
             "Confidence": st.column_config.NumberColumn(
                 "Confidence",
+                width="small",
                 help=(
                     "Idzorek confidence: how strongly this stock's price target view "
                     "overrides the market-implied equilibrium return in the BL model. "
