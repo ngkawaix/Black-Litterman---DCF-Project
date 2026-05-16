@@ -1004,19 +1004,20 @@ with tab_thesis:
     thesis_df = pd.DataFrame(
         index=TICKERS,
         data={
+            "Confidence":          pd.Series(conf_vals),
             "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
             "Last Earnings":       val_metrics["Last Earnings"],
             "Earnings Highlights": pd.Series(
                 {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
             ),
             "Next Earnings":       val_metrics["Next Earnings"],
-            "Confidence":          pd.Series(conf_vals),
         }
     ).sort_values("Confidence", ascending=False)
 
     styled_thesis = (
         thesis_df.style
         .format("{:.0%}", subset=["Confidence"])
+        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
     )
 
     st.dataframe(
