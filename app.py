@@ -1234,7 +1234,7 @@ with tab1:
         .format("{:.0%}",    subset=["Confidence", "Q − π", "Gap to B/E", "BL Posterior"])
         .format("${:,.2f}",  subset=["Target ($)", "Break-even ($)"])
         .background_gradient(subset=["Confidence"], cmap="YlGnBu")
-        .applymap(
+        .map(
             lambda v: "color: #1D9E75; font-weight: 500;" if "Bullish" in str(v) else
                       "color: #D85A30; font-weight: 500;" if "Bearish" in str(v) else "",
             subset=["BL Direction"],
