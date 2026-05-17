@@ -69,12 +69,12 @@ BASE_CONFIDENCE = {
     # LRCX  ↑ revenue +28% YoY; high-margin recurring revenue insulates cycle risk
     # META  ↑ fastest-growing AI hyperscaler; ad integration playing out in numbers
     # NVDA  ↑ Q4 FY2026 $68B rev (+73% YoY); Q1 FY2027 guided ~$78B
-    "AAPL": 0.40, "ADBE": 0.30, "AMAT": 0.35,
-    "AMZN": 0.50, "ASML": 0.35, "CPRT": 0.40,
-    "FICO": 0.35, "GOOGL":0.50, "LRCX": 0.65,
-    "MA":   0.50, "META": 0.70, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.50,
-    "TSM":  0.50, "V":    0.60,
+    "AAPL": 0.20, "ADBE": 0.25, "AMAT": 0.15,
+    "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
+    "FICO": 0.45, "GOOGL":0.15, "LRCX": 0.10,
+    "MA":   0.55, "META": 0.65, "MSCI": 0.55,
+    "MSFT": 0.60, "NFLX": 0.55, "NVDA": 0.10,
+    "TSM":  0.25, "V":    0.50,
 }
 
 # ── DCF Override Dict ─────────────────────────────────────────────────────────
