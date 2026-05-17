@@ -90,22 +90,22 @@ DCF_OVERRIDES: dict[str, float] = {}
 # Two-sentence summary of the most recent earnings report for each stock.
 EARNINGS_HIGHLIGHTS = {
     "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
-    "ADBE": "Net new ARR missed for a second consecutive quarter — Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
+    "ADBE": "Net new ARR missed for a second consecutive quarter - Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
     "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
-    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand — fastest growth in 15 quarters. Operating margin hit a record 13.1% — clear inflection from investment phase to profitable scale.",
+    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand - fastest growth in 15 quarters. Operating margin hit a record 13.1% - clear inflection from investment phase to profitable scale.",
     "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
-    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A — rare quality among mid-cap industrials.",
+    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A - rare quality among mid-cap industrials.",
     "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
-    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals — GenAI cost-per-query is the key margin watch item.",
+    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals - GenAI cost-per-query is the key margin watch item.",
     "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
-    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data — payments outlook resilient.",
-    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew — Llama-driven Reels ranking cited as the key engagement driver.",
+    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data - payments outlook resilient.",
+    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew - Llama-driven Reels ranking cited as the key engagement driver.",
     "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
-    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% — AI infrastructure spend absorbed without material dilution.",
-    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised — content investment funded internally without balance sheet strain.",
-    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B — US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
+    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% - AI infrastructure spend absorbed without material dilution.",
+    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised - content investment funded internally without balance sheet strain.",
+    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B - US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
     "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
-    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume — gradually shifting mix to higher margins.",
+    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
 }
 
 STRESS_PERIODS = {
@@ -951,7 +951,7 @@ with tab1:
                     return "🟡"
             except Exception:
                 pass
-        return "—"
+        return "-"
 
     conf_vals   = {}
     conf_source = {}
@@ -1098,8 +1098,8 @@ with tab1:
     st.markdown("#### 2. Broad Analyst Theses")
     st.caption(
         "Sorted by conviction, highest first. "
-        "🟢 = reported in the last 30 days — estimates are fresh. "
-        "🟡 = reporting within 30 days — consensus may shift. "
+        "🟢 = reported in the last 30 days - estimates are fresh. "
+        "🟡 = reporting within 30 days - consensus may shift. "
         "**Confidence** = how strongly the view overrides the market prior in the BL model."
     )
 
@@ -1110,7 +1110,7 @@ with tab1:
             "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
             "Last Earnings":       val_metrics["Last Earnings"],
             "Earnings Highlights": pd.Series(
-                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
+                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "-") for tkr in TICKERS}
             ),
             "Next Earnings":       val_metrics["Next Earnings"],
         }
@@ -1131,12 +1131,12 @@ with tab1:
                 "Status",
                 width="small",
                 help=(
-                    "🟢 Earnings reported within the last 30 days — "
+                    "🟢 Earnings reported within the last 30 days - "
                     "data is fresh and analyst estimates are likely current. "
                     "Higher confidence is appropriate given recent clarity.\n\n"
-                    "🟡 Earnings due within the next 30 days — "
+                    "🟡 Earnings due within the next 30 days - "
                     "consensus targets and forward estimates may shift after the release.\n\n"
-                    "— No near-term earnings signal."
+                    "- No near-term earnings signal."
                 ),
             ),
             "Last Earnings": st.column_config.TextColumn(
@@ -1157,7 +1157,7 @@ with tab1:
                 width="small",
                 help=(
                     "Estimated date of the next earnings release (Yahoo Finance calendar). "
-                    "May span a range — verify against company investor relations pages."
+                    "May span a range - verify against company investor relations pages."
                 ),
             ),
             "Confidence": st.column_config.NumberColumn(
@@ -1230,7 +1230,7 @@ with tab1:
                 "EV/EBITDA",
                 help=(
                     "Enterprise Value divided by Earnings Before Interest, Tax, Depreciation & Amortisation. "
-                    "A capital-structure-neutral multiple — useful for comparing companies "
+                    "A capital-structure-neutral multiple - useful for comparing companies "
                     "with different levels of debt or depreciation policy."
                 ),
             ),
@@ -1633,7 +1633,7 @@ with tab4:
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
             "Controls the CPPI wrapper applied to the BL portfolio in Section 3. "
-            "The floor ratchets up with the portfolio's high-water mark and never falls — "
+            "The floor ratchets up with the portfolio's high-water mark and never falls - "
             "gains are locked in as the portfolio grows."
         )
         _col_m, _col_mdd = st.columns(2)
@@ -1668,7 +1668,6 @@ with tab4:
     # BL: static weights applied to history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
     bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
-    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = 
 
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
@@ -1679,7 +1678,7 @@ with tab4:
             "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
         }).loc[valid_start_date:].dropna()
 
-    # Load CPI into Wealth Index
+    # Run CPPI and load into Wealth Index
     cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, m = m_cppi, max_drawdown = mdd_cppi)
     btr["CPPI (BL)"] = cppi_r
 
@@ -1872,7 +1871,7 @@ with tab4:
     st.markdown("#### 3. CPPI Drawdown Protection Analysis")
     st.caption(
         "Wraps the BL static portfolio inside a CPPI rule. "
-        "The floor is a high-water mark floor — it rises with the portfolio peak and never falls, "
+        "The floor is a high-water mark floor - it rises with the portfolio peak and never falls, "
         "locking in gains. Equity exposure is cut automatically as the portfolio approaches the floor. "
         f"Current settings: multiplier m = **{m_cppi:.1f}**, max drawdown floor = **{mdd_cppi:.0%}**."
     )
@@ -1903,7 +1902,7 @@ with tab4:
         line=dict(color="#7B2D8B", width=2.2),
     ))
     fig_cppi.update_layout(
-        title=f"CPPI (BL) vs BL — $10,000 invested (m = {m_cppi:.1f}, floor = {mdd_cppi:.0%} MDD)",
+        title=f"CPPI (BL) vs BL - $10,000 invested (m = {m_cppi:.1f}, floor = {mdd_cppi:.0%} MDD)",
         xaxis_title="Date",
         yaxis_title="Portfolio Value ($)",
         height=420,
@@ -1941,7 +1940,7 @@ with tab4:
     )
     st.plotly_chart(fig_alloc, use_container_width=True)
     st.caption(
-        "When equity allocation drops sharply to zero, the portfolio has hit the floor — "
+        "When equity allocation drops sharply to zero, the portfolio has hit the floor - "
         "**cash lock-in**. Once locked, the strategy stays in the safe asset permanently "
         "for that path. This is a known property of CPPI, not a bug."
     )
@@ -1954,7 +1953,7 @@ with tab4:
         f"Runs the CPPI rule across all {n_scenarios:,} GBM scenarios from the simulation tab "
         f"at each multiplier value (floor fixed at {mdd_cppi:.0%} MDD). "
         "Shows the fraction of paths where the portfolio breaches the floor before the simulation ends. "
-        "Higher multipliers amplify returns but increase gap risk — this chart quantifies that tradeoff."
+        "Higher multipliers amplify returns but increase gap risk - this chart quantifies that tradeoff."
     )
 
     with st.spinner("Computing gap risk surface…"):
@@ -1992,10 +1991,10 @@ with tab4:
     )
     st.plotly_chart(fig_gap, use_container_width=True)
     st.caption(
-        "🟢 < 5% breach rate — conservative.  "
-        "🟡 5–15% — moderate gap risk.  "
-        "🔴 > 15% — high gap risk.  "
-        "Note: GBM assumes Gaussian returns and understates tail risk — "
+        "🟢 < 5% breach rate - conservative.  "
+        "🟡 5–15% - moderate gap risk.  "
+        "🔴 > 15% - high gap risk.  "
+        "Note: GBM assumes Gaussian returns and understates tail risk - "
         "true breach rates in a severe crisis are likely higher than shown."
     )
 
