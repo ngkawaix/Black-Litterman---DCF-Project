@@ -1618,13 +1618,13 @@ with tab4:
     st.markdown(
         """
         **This tab benchmarks the BL portfolio against four alternative allocation 
-        strategies across three lenses: (1) a historical wealth index, (2) a forward-looking 
+        strategies across three lenses**: (1) a historical wealth index, (2) a forward-looking 
         Monte Carlo return forecast, (3) and a CPPI drawdown protection analysis.
         
         The historical wealth index uses a rolling backtest with the estimation window
         set in the sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, 
-        and Risk Parity are all properly rolled — weights are re-estimated at each step 
-        using only data available at that point, so there is no look-ahead bias. 
+        and Risk Parity are all properly rolled with weights being re-estimated at each step 
+        using only data available at that point, so there is no look-ahead bias.
         Black-Litterman is shown differently: as a static allocation, applying the current optimal 
         weights to the full history. This is an intentional design choice rather than an oversight. 
         Because BL weights are derived from a forward-looking view on price targets rather than 
