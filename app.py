@@ -408,30 +408,29 @@ def run_cppi(risky_r, rf, multiplier, max_drawdown, initial_value = 1, n_periods
 
     return cppi_r, account_val, floor_val, risky_alloc
 
-def cppi_gap_risk(port_paths, rf, multiplier, max_drawdown, initial_value = 1, n_periods = 252):
+def cppi_gap_risk(port_paths, rf, multipliers, max_drawdown, initial_value = 1, n_periods = 252):
     daily_rf = rf / n_periods
     path_rets  = np.diff(port_paths, axis=0) / port_paths[:1] # derive port path returns from absolute path values
     n_steps, n_scen = path_rets.shape
     results = {}
     
-    for m in multiplier:
+    for m in multipliers:
         breaches = 0
         for j in range(n_scen):
             port_v = hwm = initial_value
             for i in range(n_steps):
-                hwm = max(hwm, v)
+                hwm = max(hwm, port_v)
                 floor = (1 - max_drawdown) * hwm
                 cushion = max(port_v - floor, 0.0)
-                risky_exposure = min(multiplier * cushion, port_v)
+                risky_exposure = min(m * cushion, port_v)
                 safe_exposure = port_v - risky_exposure
-                port_v = risky_exposure * (1 + path_rets[i, j]) + (safe_exposure) * (1 + daily_rf)
-                if v < floor * 0.999:   # small tolerance for floating-point noise
+                port_v = risky_exposure * (1 + path_rets[i, j]) + safe_exposure * (1 + daily_rf)
+                if port_v < floor * 0.999:
                     breaches += 1
                     break
         results[m] = breaches / n_scen
 
     return results
-
 # ─────────────────────────────────────────────────────────────────────────────
 # BLACK-LITTERMAN HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
