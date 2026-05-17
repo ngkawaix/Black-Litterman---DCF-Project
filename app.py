@@ -1647,7 +1647,7 @@ with tab4:
         )
         mdd_cppi = _col_mdd.slider(
             "Max Drawdown Floor (%)",
-            min_value=5.0, max_value=40.0, value=20.0, step=5.0,
+            min_value=5.0, max_value=40.0, value=15.0, step=5.0,
             help=(
                 "Maximum tolerated drawdown from the portfolio's all-time high. "
                 "Floor = (1 − this value) × high-water mark. "
@@ -1946,55 +1946,87 @@ with tab4:
 
     st.divider()
 
-    # ── Gap risk surface ──────────────────────────────────────────────────────
-    st.markdown("##### Gap Risk Surface")
+    # ── CPPI Performance During Stress Periods ────────────────────────────────
+    st.markdown("##### CPPI Protection During Historical Stress Periods")
     st.caption(
-        f"Runs the CPPI rule across all {n_scenarios:,} GBM scenarios from the simulation tab "
-        f"at each multiplier value (floor fixed at {mdd_cppi:.0%} MDD). "
-        "Shows the fraction of paths where the portfolio breaches the floor before the simulation ends. "
-        "Higher multipliers amplify returns but increase gap risk - this chart quantifies that tradeoff."
+        "The most meaningful test of a floor strategy is not a Gaussian simulation — it is whether "
+        "the protection held during the real fat-tail events that GBM cannot reproduce: "
+        "correlation spikes, overnight gap-downs, and liquidity crises. "
+        "The table below applies the same CPPI rule to each historical stress window and compares "
+        "the drawdown of the protected portfolio against the unprotected BL allocation."
     )
 
-    with st.spinner("Computing gap risk surface…"):
-        _multipliers  = [1.0, 2.0, 3.0, 4.0, 5.0]
-        _gap_results  = cppi_gap_risk(
-            port_paths   = port_paths,
+    _stress_cppi_rows = {}
+    for _name, (_start, _end) in STRESS_PERIODS.items():
+        _period_rets = btr["BL (static)"].loc[_start:_end].dropna()
+        if len(_period_rets) < 5:
+            continue
+
+        # Run CPPI over this isolated window
+        _c_r, _c_acct, _c_floor, _c_alloc = run_cppi(
+            risky_r      = _period_rets,
             rf           = RF,
-            multipliers  = _multipliers,
+            multiplier   = m_cppi,
             max_drawdown = mdd_cppi,
         )
 
-    fig_gap = go.Figure()
-    fig_gap.add_trace(go.Bar(
-        x=[f"m = {int(m)}" for m in _gap_results.keys()],
-        y=list(_gap_results.values()),
-        marker_color=[
-            "#55A868" if r < 0.05 else
-            "#fecc5c" if r < 0.15 else
-            "#C44E52"
-            for r in _gap_results.values()
-        ],
-        text=[f"{r:.1%}" for r in _gap_results.values()],
-        textposition="outside",
-    ))
-    fig_gap.update_layout(
-        title=f"Floor Breach Rate by Multiplier (MDD Floor: {mdd_cppi:.0%})",
-        xaxis_title="CPPI Multiplier (m)",
-        yaxis_title="Floor Breach Rate",
-        yaxis_tickformat=".0%",
-        yaxis_range=[0, max(list(_gap_results.values()) + [0.25])],
-        height=360,
-        showlegend=False,
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
+        _bl_cp    = (1 + _period_rets).cumprod()
+        _cppi_cp  = (1 + _c_r).cumprod()
+
+        _bl_total   = float(_bl_cp.iloc[-1] - 1)
+        _cppi_total = float(_cppi_cp.iloc[-1] - 1)
+
+        _bl_mdd   = float((_bl_cp   / _bl_cp.cummax()   - 1).min())
+        _cppi_mdd = float((_cppi_cp / _cppi_cp.cummax() - 1).min())
+
+        _floor_breached = bool((_c_acct < _c_floor * 0.999).any())
+        _min_alloc      = float(_c_alloc.min())
+        _cash_locked    = _min_alloc < 0.001
+
+        _stress_cppi_rows[_name] = {
+            "BL Return":         _bl_total,
+            "CPPI Return":       _cppi_total,
+            "Return Difference": _cppi_total - _bl_total,
+            "BL Max Drawdown":   _bl_mdd,
+            "CPPI Max Drawdown": _cppi_mdd,
+            "DD Reduction":      _cppi_mdd - _bl_mdd,
+            "Floor Breached":    "⚠️ Yes" if _floor_breached else "✅ No",
+            "Cash Lock-in":      "🔒 Yes" if _cash_locked    else "No",
+        }
+
+    _stress_cppi_df = pd.DataFrame(_stress_cppi_rows).T
+
+    st.dataframe(
+        _stress_cppi_df.style
+            .format("{:.2%}", subset=["BL Return", "CPPI Return", "Return Difference",
+                                       "BL Max Drawdown", "CPPI Max Drawdown", "DD Reduction"])
+            .background_gradient(subset=["CPPI Max Drawdown"], cmap="Reds_r",  vmax=0.0)
+            .background_gradient(subset=["BL Max Drawdown"],   cmap="Reds_r",  vmax=0.0)
+            .background_gradient(subset=["DD Reduction"],      cmap="RdYlGn", vmin=-0.1, vmax=0.0),
+        use_container_width=True,
+        column_config={
+            "DD Reduction": st.column_config.Column(
+                "DD Reduction",
+                help="CPPI Max Drawdown minus BL Max Drawdown. Negative = CPPI suffered less. "
+                     "In a genuine gap-down event the floor may still breach if the single-day "
+                     "move exceeds the cushion - this is the residual gap risk CPPI cannot eliminate.",
+            ),
+            "Floor Breached": st.column_config.Column(
+                "Floor Breached",
+                help=f"Whether the CPPI portfolio fell below its HWM floor ((1 − {mdd_cppi:.0%}) × peak) "
+                     "at any point during the stress window.",
+            ),
+            "Cash Lock-in": st.column_config.Column(
+                "Cash Lock-in",
+                help="Whether equity exposure reached zero during the period. Once locked into cash, "
+                     "the CPPI strategy stays there for the remainder of that window.",
+            ),
+        },
     )
-    st.plotly_chart(fig_gap, use_container_width=True)
     st.caption(
-        "🟢 < 5% breach rate - conservative.  "
-        "🟡 5–15% - moderate gap risk.  "
-        "🔴 > 15% - high gap risk.  "
-        "Note: GBM assumes Gaussian returns and understates tail risk - "
-        "true breach rates in a severe crisis are likely higher than shown."
+        f"Settings: multiplier m = **{m_cppi:.1f}**, floor = **{mdd_cppi:.0%}** max drawdown from HWM. "
+        "Unlike a GBM-based gap risk test, these results use actual daily returns and capture "
+        "real correlation breakdowns and volatility clustering — the tail-risk regimes that matter most."
     )
 
     st.divider()
