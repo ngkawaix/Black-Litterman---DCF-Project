@@ -70,10 +70,10 @@ BASE_CONFIDENCE = {
     # META  ↑ fastest-growing AI hyperscaler; ad integration playing out in numbers
     # NVDA  ↑ Q4 FY2026 $68B rev (+73% YoY); Q1 FY2027 guided ~$78B
     "AAPL": 0.40, "ADBE": 0.30, "AMAT": 0.35,
-    "AMZN": 0.65, "ASML": 0.65, "CPRT": 0.50,
-    "FICO": 0.35, "GOOGL":0.65, "LRCX": 0.65,
+    "AMZN": 0.50, "ASML": 0.35, "CPRT": 0.50,
+    "FICO": 0.35, "GOOGL":0.50, "LRCX": 0.65,
     "MA":   0.50, "META": 0.70, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.60, "NVDA": 0.75,
+    "MSFT": 0.60, "NFLX": 0.50, "NVDA": 0.75,
     "TSM":  0.65, "V":    0.60,
 }
 
