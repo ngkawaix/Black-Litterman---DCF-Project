@@ -369,6 +369,76 @@ def run_backtests(_tick_rets, _tick_capweights, estimation_window):
     )
     return ew_r, cw_r, gmv_r, erc_r
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CPPI HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+def run_cppi(risky_r, rf, multiplier, max_drawdown, initial_value = 1, n_periods = 252):
+    """
+    CPPI sleeve with a high-water mark drawdown floor
+    """
+    
+    safe_r = rf / n_periods
+    dates = risky_r.index
+    n = len(dates)
+    
+    account = np.zeros(n)
+    floors = np.zeros(n) 
+    alloc = np.zeros(n)
+
+    port_v = hwm = initial_value
+
+    for i in range(n):
+        hwm = max(hwm, port_v) # checks if portfolio value exceeds the highwater mark
+        floor = (1- max_drawdown) * hwm
+        cushion = max(port_v - floor, 0.0)
+        risky_exposure = min(m * cushion, port_v)
+        safe_exposure =  port_v - risky_exposure
+        port_v = risky_ratio * (1 + risky_r.iloc[i]) + safe_ratio * (1 + safe_r)
+        account[i] = port_v
+        floors[i] = floor
+        alloc[i] = risky_exposure / port_v if port_v > 0 else 0.0
+
+    account_val = pd.Series(account, index = dates)
+    floor val = pd.Series(floors, index = dates)
+    risky_alloc = pd.Series(alloc, index = dates)
+
+    # Create an array of port_vals to derive cppi_r
+    prev_vals = np.concatenate([[initial_value], account[:-1]]) 
+    cppi_r    = pd.Series(account / prev_vals - 1, index=dates)
+
+    return cppi_r, account_val, floor_val, risky_alloc
+
+def cppi_gap_risk(port_paths, rf, multiplier, max_drawdown, initial_value = 1, n_periods = 252):
+    daily_rf = rf / n_periods
+    path_rets  = np.diff(port_paths, axis=0) / port_paths[:1] # derive port path returns from absolute path values
+    n_steps, n_scen = path_rets.shape
+    results = {}
+    
+    for m in multipliers:
+        breaches = 0
+        for j in range(n_scen):
+            port_v = hwm = initial_value
+            for i in range(n_steps):
+                hwm = max(hwm, v)
+                floor = (1 - max_drawdown) * hwm
+                cushion = max(v - floor, 0.0)
+                e = min(m * cushion,     for m in multipliers:
+        breaches = 0
+        for j in range(n_scen):
+            v = hwm = initial_value
+            for i in range(n_steps):
+                hwm = max(hwm, v)
+                floor = (1 - max_drawdown) * hwm
+                cushion = max(port_v - floor, 0.0)
+                risky_exposure = min(m * cushion, port_v)
+                safe_exposure = port_v - risky_exposure
+                port_v = risky_exposure * (1 + path_rets[i, j]) + (safe_exposure) * (1 + daily_rf)
+                if v < floor * 0.999:   # small tolerance for floating-point noise
+                    breaches += 1
+                    break
+        results[m] = breaches / n_scen
+
+    return results
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BLACK-LITTERMAN HELPERS
@@ -485,8 +555,7 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
     w         = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     port_paths = (all_paths * w).sum(axis=2)
     return all_paths, port_paths
-
-
+    
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1567,6 +1636,34 @@ with tab4:
         """
     )
     st.divider()
+
+    # ── CPPI Parameters ───────────────────────────────────────────────────────
+    with st.expander("⚙️ CPPI Parameters", expanded=True):
+        st.caption(
+            "Controls the CPPI wrapper applied to the BL portfolio in Section 3. "
+            "The floor ratchets up with the portfolio's high-water mark and never falls — "
+            "gains are locked in as the portfolio grows."
+        )
+        _col_m, _col_mdd = st.columns(2)
+        m_cppi = _col_m.slider(
+            "Multiplier (m)",
+            min_value=1.0, max_value=5.0, value=3.0, step=0.5,
+            help=(
+                "Scales equity exposure relative to the available cushion. "
+                "Higher m = more upside participation but more gap risk. "
+                "At m=1, equity exposure never exceeds the cushion itself."
+            ),
+        )
+        mdd_cppi = _col_mdd.slider(
+            "Max Drawdown Floor (%)",
+            min_value=5.0, max_value=40.0, value=20.0, step=5.0,
+            help=(
+                "Maximum tolerated drawdown from the portfolio's all-time high. "
+                "Floor = (1 − this value) × high-water mark. "
+                "A tighter floor provides more protection but triggers cash lock-in more frequently."
+            ),
+        ) / 100
+
         
     st.markdown("#### 1. Historical Wealth Index")
 
@@ -1579,6 +1676,7 @@ with tab4:
     # BL: static weights applied to history, aligned to rolling start date
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
     bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
+    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = 
 
     btr = pd.DataFrame({
             "Equal-Weighted":          pd.Series(ew_r).squeeze(),
@@ -1588,6 +1686,10 @@ with tab4:
             "BL (static)":             pd.Series(bl_r).squeeze(),
             "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
         }).loc[valid_start_date:].dropna()
+
+    # Load CPI into Wealth Index
+    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, m = m_cppi, max_drawdown = mdd_cppi)
+    btr["CPPI (BL)"] = cppi_r
 
     bl_estimation_start = tick_rets.index[0].date()
     bl_estimation_end   = tick_rets.index[-1].date()
@@ -1604,7 +1706,6 @@ with tab4:
         f"Starts {estimation_window_yrs} year(s) after data begins - the minimum needed for the first rolling estimate."
     )
     
-    # Wealth Index Plot with starting $10,000 invested
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
@@ -1614,7 +1715,9 @@ with tab4:
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
-        "S&P 500 (SPY)":         ("#888888",  1.6, "solid"),
+        "BL (static) w CPPI":            ("#7B2D8B",  2.0, "solid"),    # purple dashed - protection overlay
+        "S&P 500 (SPY)":         ("#888888",  1.4, "solid"),
+        
     }
 
     fig_wealth = go.Figure()
@@ -1635,9 +1738,8 @@ with tab4:
     )
     st.plotly_chart(fig_wealth, use_container_width=True)
 
-    # Summary Stats
+    # Summary Statistics for Backtest
     _ann_scale = np.sqrt(252)
-    
     summary_rows = {}
     for col in btr.columns:
         r         = btr[col].dropna()
@@ -1775,6 +1877,138 @@ with tab4:
     )
     st.plotly_chart(fig_comp, use_container_width=True)
 
+    st.markdown("#### 3. CPPI Drawdown Protection Analysis")
+    st.caption(
+        "Wraps the BL static portfolio inside a CPPI rule. "
+        "The floor is a high-water mark floor — it rises with the portfolio peak and never falls, "
+        "locking in gains. Equity exposure is cut automatically as the portfolio approaches the floor. "
+        f"Current settings: multiplier m = **{m_cppi:.1f}**, max drawdown floor = **{mdd_cppi:.0%}**."
+    )
+
+    # ── CPPI vs BL wealth index with floor overlay ────────────────────────────
+    _init       = 10_000
+    _cppi_w     = cppi_account  * _init
+    _cppi_fl_w  = cppi_floor    * _init
+    _bl_w       = (1 + btr["BL (static)"]).cumprod() * _init
+
+    fig_cppi = go.Figure()
+    fig_cppi.add_trace(go.Scatter(
+        x=_bl_w.index, y=_bl_w.values,
+        mode="lines", name="BL (static)",
+        line=dict(color="#253494", width=1.5, dash="dot"),
+        opacity=0.55,
+    ))
+    fig_cppi.add_trace(go.Scatter(
+        x=_cppi_fl_w.index, y=_cppi_fl_w.values,
+        mode="lines", name="HWM Floor",
+        line=dict(color="#C44E52", width=1.2, dash="dash"),
+        fill="tozeroy",
+        fillcolor="rgba(196, 78, 82, 0.04)",
+    ))
+    fig_cppi.add_trace(go.Scatter(
+        x=_cppi_w.index, y=_cppi_w.values,
+        mode="lines", name="CPPI (BL)",
+        line=dict(color="#7B2D8B", width=2.2),
+    ))
+    fig_cppi.update_layout(
+        title=f"CPPI (BL) vs BL — $10,000 invested (m = {m_cppi:.1f}, floor = {mdd_cppi:.0%} MDD)",
+        xaxis_title="Date",
+        yaxis_title="Portfolio Value ($)",
+        height=420,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig_cppi, use_container_width=True)
+
+    # ── Equity allocation over time ───────────────────────────────────────────
+    _eq_pct = (cppi_alloc * 100).clip(0, 100)
+    fig_alloc = go.Figure()
+    fig_alloc.add_trace(go.Scatter(
+        x=_eq_pct.index, y=_eq_pct.values,
+        mode="lines", name="Equity %",
+        line=dict(color="#7B2D8B", width=1.5),
+        fill="tozeroy",
+        fillcolor="rgba(123, 45, 139, 0.12)",
+    ))
+    fig_alloc.add_hline(
+        y=100, line_dash="dot",
+        line_color="rgba(130,130,130,0.4)",
+        annotation_text="100% equity",
+        annotation_position="bottom right",
+    )
+    fig_alloc.update_layout(
+        title="Equity Allocation Over Time (% of portfolio)",
+        xaxis_title="Date",
+        yaxis_title="Equity Allocation (%)",
+        yaxis_range=[0, 112],
+        height=280,
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig_alloc, use_container_width=True)
+    st.caption(
+        "When equity allocation drops sharply to zero, the portfolio has hit the floor — "
+        "**cash lock-in**. Once locked, the strategy stays in the safe asset permanently "
+        "for that path. This is a known property of CPPI, not a bug."
+    )
+
+    st.divider()
+
+    # ── Gap risk surface ──────────────────────────────────────────────────────
+    st.markdown("##### Gap Risk Surface")
+    st.caption(
+        f"Runs the CPPI rule across all {n_scenarios:,} GBM scenarios from the simulation tab "
+        f"at each multiplier value (floor fixed at {mdd_cppi:.0%} MDD). "
+        "Shows the fraction of paths where the portfolio breaches the floor before the simulation ends. "
+        "Higher multipliers amplify returns but increase gap risk — this chart quantifies that tradeoff."
+    )
+
+    with st.spinner("Computing gap risk surface…"):
+        _multipliers  = [1.0, 2.0, 3.0, 4.0, 5.0]
+        _gap_results  = cppi_gap_risk(
+            port_paths   = port_paths,
+            rf           = RF,
+            multipliers  = _multipliers,
+            max_drawdown = mdd_cppi,
+        )
+
+    fig_gap = go.Figure()
+    fig_gap.add_trace(go.Bar(
+        x=[f"m = {int(m)}" for m in _gap_results.keys()],
+        y=list(_gap_results.values()),
+        marker_color=[
+            "#55A868" if r < 0.05 else
+            "#fecc5c" if r < 0.15 else
+            "#C44E52"
+            for r in _gap_results.values()
+        ],
+        text=[f"{r:.1%}" for r in _gap_results.values()],
+        textposition="outside",
+    ))
+    fig_gap.update_layout(
+        title=f"Floor Breach Rate by Multiplier (MDD Floor: {mdd_cppi:.0%})",
+        xaxis_title="CPPI Multiplier (m)",
+        yaxis_title="Floor Breach Rate",
+        yaxis_tickformat=".0%",
+        yaxis_range=[0, max(list(_gap_results.values()) + [0.25])],
+        height=360,
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig_gap, use_container_width=True)
+    st.caption(
+        "🟢 < 5% breach rate — conservative.  "
+        "🟡 5–15% — moderate gap risk.  "
+        "🔴 > 15% — high gap risk.  "
+        "Note: GBM assumes Gaussian returns and understates tail risk — "
+        "true breach rates in a severe crisis are likely higher than shown."
+    )
+
+    st.divider()
+    
     st.caption(
         "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
         "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
