@@ -1679,7 +1679,7 @@ with tab4:
         }).loc[valid_start_date:].dropna()
 
     # Run CPPI and load into Wealth Index
-    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, m = m_cppi, max_drawdown = mdd_cppi)
+    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, multiplier = m_cppi, max_drawdown = mdd_cppi)
     btr["CPPI (BL)"] = cppi_r
 
     bl_estimation_start = tick_rets.index[0].date()
