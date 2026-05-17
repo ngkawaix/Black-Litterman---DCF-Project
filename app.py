@@ -1215,8 +1215,6 @@ with tab1:
             "Break-even ($)":   _be,
             "Gap to B/E":       _gap_pct,
             "BL Posterior":     _post,
-            "Status":           _earnings_status(_tkr),
-            "Earnings Highlights": EARNINGS_HIGHLIGHTS.get(_tkr, "—"),
             "Confidence Rationale": CONFIDENCE_RATIONALE.get(_tkr, "—"),
         }
  
