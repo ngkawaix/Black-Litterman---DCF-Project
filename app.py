@@ -867,6 +867,7 @@ with tab1:
         the conviction map in part 1.
 
         Adjust the sliders for the confidence is the slider to sanity check your convictions.
+        """
     )
     st.divider()
 
@@ -877,7 +878,7 @@ with tab1:
     soon_cutoff  = today + pd.Timedelta(days=30)
 
     def _earnings_status(tkr):
-        """🟢 = reported < 30 days ago / 🟡 = reporting within 30 days / — otherwise."""
+        """Green circle = reported < 30 days ago / Yellow = reporting within 30 days / dash otherwise."""
         if recent_earnings.get(tkr, False):
             return "🟢"
         next_e = val_metrics.loc[tkr, "Next Earnings"]
