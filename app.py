@@ -1708,7 +1708,7 @@ with tab4:
     )
 
     st.caption(
-        "Summary Statistcs assume all strategies have Direct Reivestment Plan (DRIP) enabled."
+        "**Note**:Summary Statistcs assume all strategies have Direct Reivestment Plan (DRIP) enabled."
     )
     st.divider()
 
