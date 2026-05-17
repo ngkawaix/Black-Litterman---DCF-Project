@@ -1087,89 +1087,150 @@ with tab1:
     st.plotly_chart(_fg, use_container_width=True)
 
     st.divider()
-
-    # ── Section 2: Broad Analyst Theses  ────────────────────────────────────────
-    st.markdown("#### 2. Broad Analyst Theses")
+ 
+    # ── Section 3: Confidence Levels & Rationale ─────────────────────────────
+    st.markdown("#### 2. Confidence Levels & Rationale")
     st.caption(
-        "Sorted by conviction, highest first. "
-        "🟢 = reported in the last 30 days - estimates are fresh. "
-        "🟡 = reporting within 30 days - consensus may shift. "
-        "**Confidence** = how strongly the view overrides the market prior in the BL model."
+        "Sorted by **break-even gap** (most bullish first). "
+        "The break-even gap shows how far your target is above (+) or below (−) the "
+        "market-implied equilibrium price. Combined with confidence, this determines "
+        "how strongly the BL model overweights (green) or underweights (red) each stock. "
+        "🟢 = earnings reported within 30 days.  🟡 = earnings due within 30 days."
     )
-
-    thesis_df = pd.DataFrame(
-        index=TICKERS,
-        data={
-            "Confidence":          pd.Series(conf_vals),
-            "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
-            "Last Earnings":       val_metrics["Last Earnings"],
-            "Earnings Highlights": pd.Series(
-                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "-") for tkr in TICKERS}
-            ),
-            "Next Earnings":       val_metrics["Next Earnings"],
+ 
+    # Build the per-ticker rows using live BL outputs
+    _conf_rows = {}
+    for _tkr in TICKERS:
+        _pi_val  = float(pi.get(_tkr, 0)) if _tkr in pi.index else 0.0
+        _cp      = float(current_prices.get(_tkr, 0)) if _tkr in current_prices.index else 0.0
+        _tgt     = float(user_targets.get(_tkr, 0))
+        _be      = _cp * (1 + _pi_val + RF)
+        _gap_pct = (_tgt - _be) / _be if _be > 0 else 0.0
+        _q_val   = float((total_return_views - RF).get(_tkr, 0)) if _tkr in total_return_views.index else 0.0
+        _q_pi    = _q_val - _pi_val
+        _post    = float(mu_bl.get(_tkr, 0)) if _tkr in mu_bl.index else 0.0
+        _cv      = DCF_OVERRIDES.get(_tkr, BASE_CONFIDENCE.get(_tkr, 0.0))
+ 
+        _conf_rows[_tkr] = {
+            "Confidence":       _cv,
+            "BL Direction":     "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
+            "Q − π":            _q_pi,
+            "Target ($)":       _tgt,
+            "Break-even ($)":   _be,
+            "Gap to B/E":       _gap_pct,
+            "BL Posterior":     _post,
+            "Status":           _earnings_status(_tkr),
+            "Earnings Highlights": EARNINGS_HIGHLIGHTS.get(_tkr, "—"),
+            "Confidence Rationale": CONFIDENCE_RATIONALE.get(_tkr, "—"),
         }
-    ).sort_values("Confidence", ascending=False)
-
-    styled_thesis = (
-        thesis_df.style
-        .format("{:.0%}", subset=["Confidence"])
-        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
+ 
+    _conf_df = (
+        pd.DataFrame(_conf_rows)
+        .T
+        .sort_values("Gap to B/E", ascending=False)
     )
-
+ 
+    _pct_cols   = ["Confidence", "Q − π", "Gap to B/E", "BL Posterior"]
+    _dollar_cols = ["Target ($)", "Break-even ($)"]
+ 
+    _styled_conf = (
+        _conf_df.style
+        .format("{:.0%}",    subset=["Confidence", "Q − π", "Gap to B/E", "BL Posterior"])
+        .format("${:,.2f}",  subset=["Target ($)", "Break-even ($)"])
+        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
+        .applymap(
+            lambda v: "color: #1D9E75; font-weight: 500;" if "Bullish" in str(v) else
+                      "color: #D85A30; font-weight: 500;" if "Bearish" in str(v) else "",
+            subset=["BL Direction"],
+        )
+        .applymap(
+            lambda v: "color: #1D9E75;" if isinstance(v, float) and v > 0 else
+                      "color: #D85A30;" if isinstance(v, float) and v < 0 else "",
+            subset=["Gap to B/E", "Q − π"],
+        )
+    )
+ 
     st.dataframe(
-        styled_thesis,
+        _styled_conf,
         use_container_width=True,
-        height=680,
+        height=700,
         column_config={
-            "Status": st.column_config.TextColumn(
-                "Status",
-                width="small",
-                help=(
-                    "🟢 Earnings reported within the last 30 days - "
-                    "data is fresh and analyst estimates are likely current. "
-                    "Higher confidence is appropriate given recent clarity.\n\n"
-                    "🟡 Earnings due within the next 30 days - "
-                    "consensus targets and forward estimates may shift after the release.\n\n"
-                    "- No near-term earnings signal."
-                ),
-            ),
-            "Last Earnings": st.column_config.TextColumn(
-                "Last Earnings",
-                width="small",
-                help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
-            ),
-            "Earnings Highlights": st.column_config.TextColumn(
-                "Earnings Highlights",
-                width="large",
-                help=(
-                    "Two-sentence summary of the most recent earnings report. "
-                    "These narratives directly inform the confidence level assigned to each stock."
-                ),
-            ),
-            "Next Earnings": st.column_config.TextColumn(
-                "Next Earnings",
-                width="small",
-                help=(
-                    "Estimated date of the next earnings release (Yahoo Finance calendar). "
-                    "May span a range - verify against company investor relations pages."
-                ),
-            ),
             "Confidence": st.column_config.NumberColumn(
                 "Confidence",
                 width="small",
                 help=(
-                    "Idzorek confidence: how strongly this stock's price target view "
-                    "overrides the market-implied equilibrium return in the BL model. "
-                    "0% = ignore the view entirely; 100% = full conviction over the prior. "
-                    "Higher confidence is appropriate where earnings clarity is recent (🟢)."
+                    "Idzorek confidence (0–100%). Controls how strongly the price target "
+                    "view overrides the market equilibrium in the BL model. "
+                    "Direction matters: for Bullish stocks higher confidence overweights; "
+                    "for Bearish stocks higher confidence underweights. "
+                    "0% = ignore view entirely; 100% = full conviction over the prior."
+                ),
+            ),
+            "BL Direction": st.column_config.TextColumn(
+                "Direction",
+                width="small",
+                help="Whether your price target implies Q > π (Bullish) or Q < π (Bearish).",
+            ),
+            "Q − π": st.column_config.NumberColumn(
+                "Q − π",
+                width="small",
+                help=(
+                    "Gap between your excess-return view (Q) and the market-implied equilibrium "
+                    "return (π). Positive = bullish signal. Negative = bearish signal. "
+                    "This is the x-axis of the Conviction Map."
+                ),
+            ),
+            "Target ($)": st.column_config.NumberColumn("Target ($)", width="small"),
+            "Break-even ($)": st.column_config.NumberColumn(
+                "Break-even ($)",
+                width="small",
+                help=(
+                    "Minimum price target for Q to exceed π (bullish). "
+                    "Computed as: Current Price × (1 + π + rf). "
+                    "If your target is below this, raising confidence will underweight the stock."
+                ),
+            ),
+            "Gap to B/E": st.column_config.NumberColumn(
+                "Gap to B/E",
+                width="small",
+                help=(
+                    "How far your target is above (+) or below (−) the break-even price, "
+                    "expressed as a percentage. Matches the x-axis of the Break-even Chart above."
+                ),
+            ),
+            "BL Posterior": st.column_config.NumberColumn(
+                "BL Posterior",
+                width="small",
+                help="The blended BL expected return fed into the optimiser.",
+            ),
+            "Status": st.column_config.TextColumn(
+                "Status",
+                width="small",
+                help=(
+                    "🟢 Earnings reported within last 30 days — data is fresh. "
+                    "🟡 Earnings due within 30 days — consensus may shift. "
+                    "–  No near-term earnings signal."
+                ),
+            ),
+            "Earnings Highlights": st.column_config.TextColumn(
+                "Earnings Highlights",
+                width="large",
+                help="Summary of the most recent earnings report and key forward indicators.",
+            ),
+            "Confidence Rationale": st.column_config.TextColumn(
+                "Confidence Rationale",
+                width="large",
+                help=(
+                    "BL-specific justification for the confidence level: explains the "
+                    "Q−π direction, the break-even context, and why this confidence is "
+                    "appropriate given current earnings, business quality, and risk."
                 ),
             ),
         },
     )
-
     st.divider()
 
-        # ── Section 3: Valuation Snapshot ─────────────────────────────────────────
+    # ── Section 3: Valuation Snapshot ─────────────────────────────────────────
     st.markdown("#### 3. Valuation Snapshot")
     st.caption(
         f"Ratios sourced from Yahoo Finance (24h cache). "
