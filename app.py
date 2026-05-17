@@ -860,13 +860,15 @@ with tab1:
         return of a stock. For example, for a stock like NVDA which has a high market implied return (π) of 27.19% 
         and a relatively lower excess return view (Q) of 16.04% based on consensus 1=year analyst price targets 
         (see in section 1 of the Views, Returns & Weights tab), indicating a higher confidence indicates that we believe
-        that NVDA's expected return in one year should be **lower** than what the market is currently pricing in. Conversely,
-        a stock like META which has a higher Q to π would mean that a higer confidence we believe that META's expected
-        return in one year should be **higher** than what the market is currently pricing in. Hence, the confidence levels
-        should be set relative to what market implied return. You can see the default allocaitons most clearly in
-        the conviction map in part 1.
-
-        Adjust the sliders for the confidence is the slider to sanity check your convictions.
+        that NVDA's expected return in one year should be **lower** than what the market is currently pricing in.
+        Consequently, raising the confidence on NVDA, with the analyst price target of 275, would result in a lower
+        blended bl posterior return and a higher bl weight allocation. The converse is true for stocks with 
+        analyst price targets which have a Q than π.
+        
+        In summary, all stocks on the left of the conviction map (in red) have lower analyst "upside" than what 
+        the market currently implies . Conversely, all stocks on the right (in green) have a higher analyst "upside"
+        than what the market currently implies. A higher confidence for a stock on the left side means underweighing that
+        stock while a higher confidence for a stock on the right side means overweighing that stock.
         """
     )
     st.divider()
