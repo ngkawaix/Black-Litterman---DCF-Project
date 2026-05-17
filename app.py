@@ -29,9 +29,6 @@ from scipy.optimize import minimize
 # Custom EDHEC Risk Kit Module from EDHEC Course
 import edhec_risk_kit_final as erk
 
-# DCF Valuation Module
-from dcf import run_automated_dcf
-
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG  (must be the very first Streamlit call)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -328,95 +325,6 @@ def load_valuation_metrics(tickers):
     return pd.DataFrame(rows).T
 
 
-@st.cache_data(show_spinner="Running automated DCF models…", ttl=86400)
-def load_dcf_targets(
-    tickers,
-    growth_rate      = 0.08,
-    terminal_growth  = 0.03,
-    forecast_years   = 5,
-    ebitda_exit_mult = 20.0,
-    midyear_adj      = False,
-):
-    """
-    Runs run_automated_dcf for each ticker, averages the perpetuity and
-    EBITDA-multiple intrinsic values, then rolls forward one year at the
-    model-derived WACC to produce a 1-year price target.
-
-    Global default assumptions are used for all tickers until individual
-    DCF models are finalised. The sidebar number inputs are seeded with
-    these targets but remain fully overridable.
-
-    Returns
-    -------
-    targets : dict[str, float | None]  ticker → 1Y price target (None if failed)
-    details : dict[str, dict]          ticker → breakdown for display in tab2
-    failed  : list[str]                tickers where DCF errored or returned None
-    """
-    import time
-
-    targets = {}
-    details = {}
-    failed  = []
-
-    for ticker in tickers:
-        try:
-            result = run_automated_dcf(
-                ticker_symbol    = ticker,
-                growth_rate      = growth_rate,
-                terminal_growth  = terminal_growth,
-                forecast_years   = forecast_years,
-                ebitda_exit_mult = ebitda_exit_mult,
-                midyear_adj      = midyear_adj,
-            )
-
-            # run_automated_dcf returns an error string on failure
-            if isinstance(result, str):
-                failed.append(ticker)
-                targets[ticker] = None
-                continue
-
-            summary     = result["summary"]
-            ivps_perp   = summary.get("Intrinsic Value — Perpetuity ($)")
-            ivps_ebitda = summary.get("Intrinsic Value — EBITDA Multiple ($)")
-
-            # Average whichever methods succeeded
-            if ivps_perp is not None and ivps_ebitda is not None:
-                avg_ivps = (ivps_perp + ivps_ebitda) / 2
-            elif ivps_perp is not None:
-                avg_ivps = ivps_perp
-            elif ivps_ebitda is not None:
-                avg_ivps = ivps_ebitda
-            else:
-                failed.append(ticker)
-                targets[ticker] = None
-                continue
-
-            # Parse WACC string e.g. "9.50%" → float
-            wacc_str = summary.get("Applied WACC", "0.00%")
-            wacc     = float(wacc_str.strip("%")) / 100
-
-            # Roll intrinsic value forward one year at WACC:
-            # as one year passes, all future cash flows are one year closer,
-            # so the present value grows by approximately WACC.
-            target_1y       = round(avg_ivps * (1 + wacc), 2)
-            targets[ticker] = target_1y
-            details[ticker] = {
-                "IVPS — Perpetuity ($)":      ivps_perp,
-                "IVPS — EBITDA Multiple ($)": ivps_ebitda,
-                "Avg IVPS ($)":               round(avg_ivps, 2),
-                "WACC":                       wacc,
-                "1Y DCF Target ($)":          target_1y,
-            }
-
-        except Exception:
-            failed.append(ticker)
-            targets[ticker] = None
-
-        time.sleep(0.5)
-
-    return targets, details, failed
-
-
 @st.cache_data(show_spinner=False, ttl=86400)
 def load_benchmark_data():
     """
@@ -611,15 +519,7 @@ with st.sidebar:
     
     # Fetch the cached weights series and metadata
     weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
-
-    # DCF-derived 1-year price targets (seeded into sidebar inputs below)
-    dcf_targets, dcf_details, dcf_failed = load_dcf_targets(TICKERS)
-    if dcf_failed:
-        st.warning(
-            f"⚠️ DCF failed for: **{', '.join(dcf_failed)}**. "
-            "Falling back to hardcoded base targets for these tickers."
-        )
-
+    
     # Build the cap-weight DataFrame dynamically with the fresh index
     idx = price_data.index
     tick_capweights = pd.DataFrame(
@@ -662,10 +562,9 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "**How these are set:** 1-Year price targets are derived from an automated DCF model "
-        "(avg. of Gordon Growth and EBITDA exit multiple methods, rolled forward one year at WACC). "
-        "Global assumptions: 8% growth, 3% terminal growth, 5-year forecast, 20× EBITDA exit. "
-        "Consensus figures from Yahoo Finance are shown for reference. "
+        "**How these are set:** 1-Year price targets are rough estimates in-line with the Street View. "
+        "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
+        "may lag recent revisions - treat them as directional references only. "
         "**Confidence** (Idzorek method) weights your view vs. the market-implied "
         "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
     )
@@ -692,11 +591,10 @@ with st.sidebar:
                 else:
                     st.caption("Consensus: N/A")
 
-                _dcf_default = dcf_targets.get(ticker) or BASE_TARGETS[ticker]
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
-                    value=float(_dcf_default),
+                    value=float(BASE_TARGETS[ticker]),
                     step=1.0,
                     key=f"pt_{ticker}",
                 )
@@ -750,9 +648,9 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "📐 **DCF-derived targets** are computed automatically from an automated DCF model "
-        "using global assumptions. Per-stock WACC sensitivity and bear/base/bull scenarios "
-        "will be added as individual models are finalised."
+        "🔮 **DCF integration coming soon** -- once the Wall Street Prep models "
+        "are finalised, xlwings will pull targets directly from Excel into the "
+        "views matrix above."
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1304,15 +1202,15 @@ with tab1:
     # ── Section 4: DCF Models (placeholder) ───────────────────────────────────
     st.markdown("#### 3. Individual DCF Models")
     st.info(
-        "📐  **In progress.** The automated DCF (visible in the Views, Returns & Weights tab) "
-        "currently runs on global assumptions for all 17 tickers. Individual models with "
-        "per-stock WACC, bear / base / bull scenarios, and sensitivity tables are being built "
-        "for **Amazon, Nvidia, Google, Netflix, and Meta** as part of the Wall Street Prep DCF "
-        "programme. Once complete, football field diagrams will appear here and confidence levels "
-        "will be updated to reflect model-derived conviction (marked ⚡).\n\n"
-        "For the remaining 12 stocks, the automated DCF uses the same global growth assumptions "
-        "with confidence set conservatively to reflect the lower specificity of uniform "
-        "estimates versus a bottom-up model.",
+        "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
+        "and WACC sensitivity tables are being built for **Amazon, Nvidia, Google, "
+        "Netflix, and Meta** as part of the Wall Street Prep DCF programme. "
+        "Once complete, football field diagrams and the investment narrative for each "
+        "name will appear here, and their confidence levels in the table above will be "
+        "updated to reflect model-derived conviction (marked ⚡).\n\n"
+        "For the remaining 12 stocks, analyst consensus targets are used as the "
+        "view input, with confidence set conservatively to reflect the lower "
+        "specificity of street estimates versus a bottom-up model.",
         icon="🔬",
     )
 
@@ -1336,49 +1234,8 @@ with tab2:
 
     st.divider()
 
-    # ── Section 1: DCF-Derived Price Targets ─────────────────────────────────────
-    st.markdown("#### 1. DCF-Derived Price Targets")
-    st.caption(
-        "Global DCF assumptions: growth rate 8%, terminal growth 3%, forecast 5 years, "
-        "EBITDA exit multiple 20×. Each 1-year target is the average of the perpetuity "
-        "and EBITDA multiple intrinsic values, rolled forward one year at the model-derived WACC. "
-        "These seed the sidebar inputs and can be overridden manually."
-    )
-
-    if dcf_details:
-        dcf_rows = {}
-        for tkr, d in dcf_details.items():
-            dcf_rows[tkr] = {
-                "Current Price ($)":          float(current_prices.get(tkr, np.nan)),
-                "IVPS — Perpetuity ($)":      d.get("IVPS — Perpetuity ($)"),
-                "IVPS — EBITDA Multiple ($)": d.get("IVPS — EBITDA Multiple ($)"),
-                "Avg IVPS ($)":               d.get("Avg IVPS ($)"),
-                "WACC":                       d.get("WACC"),
-                "1Y DCF Target ($)":          d.get("1Y DCF Target ($)"),
-            }
-        dcf_display_df = pd.DataFrame(dcf_rows).T
-        dcf_display_df.index.name = "Ticker"
-        dollar_cols_dcf = [
-            "Current Price ($)", "IVPS — Perpetuity ($)",
-            "IVPS — EBITDA Multiple ($)", "Avg IVPS ($)", "1Y DCF Target ($)",
-        ]
-        st.dataframe(
-            dcf_display_df.style
-                .format("${:,.2f}", subset=dollar_cols_dcf, na_rep="N/A")
-                .format("{:.2%}",   subset=["WACC"],        na_rep="N/A")
-                .background_gradient(subset=["1Y DCF Target ($)"], cmap="YlGnBu"),
-            use_container_width=True,
-        )
-    if dcf_failed:
-        st.warning(
-            f"⚠️ DCF failed for: **{', '.join(dcf_failed)}**. "
-            "These tickers show hardcoded fallback targets in the sidebar."
-        )
-
-    st.divider()
-
-    # ── Section 2: Decomposition of Returns ──────────────────────────────────────
-    st.markdown("#### 2. Decomposition of Returns")
+    # ── Section 1: Decomposition of Returns ──────────────────────────────────────
+    st.markdown("#### 1. Decomposition of Returns")
     st.caption(
         "Each column is one layer of the BL process. "
         "**DCF-Implied Return** is the raw DCF-implied return. "
@@ -1437,8 +1294,8 @@ with tab2:
 
     st.divider()
 
-    # ── Section 3: Optimised Weights ──────────────────────────────────────────
-    st.markdown("#### 3. Optimised Portfolio Weights")
+    # ── Section 2: Optimised Weights ──────────────────────────────────────────
+    st.markdown("#### 2. Optimised Portfolio Weights")
     st.caption(
         "The BL posterior returns from Part 1 feed directly into a long-only (no shorting) "
         "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
