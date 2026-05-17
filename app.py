@@ -785,25 +785,22 @@ with tab0:
         with the aim of answering one question: Having derived the 1Y price target of a stock
         through DCF analysis, how does one use this knowledge to size their portfolios?
 
-        **This app uses the Black Litterman (BL) Model to size portfolio allocations.** It uses this model
-        because of its advantages over other strategies. Most backtested strategies like Global Minimum Variance (GMV) 
-        or Risk Parity are purely backward-looking, optimising on historical data and assuming the past repeats. 
-        The Black-Litterman (BL) Model is different. It takes a forward-looking view on what each stock is worth and 
-        asks the investor what their confidence levels are for these views, relative to the market's implied returns. 
-        Crucially, this method allows investors to incorporate their views to guide portfolio allocations and integrate DCF analysis 
-        into one cohesive framework. This app lets you build that allocation based on some modelling assumptions from the side-bar,
-        stress-test those allocations against real market crashes, and benchmark it against other strategies. 
+        **This app uses the Black Litterman (BL) Model to size portfolio allocations.** 
+        It uses this modelbecause of its advantages over other strategies. Most backtested strategies 
+        like Global Minimum Variance (GMV) or Risk Parity are purely backward-looking, optimising 
+        on historical data and assuming the past repeats. The Black-Litterman (BL) Model is different. 
+        It takes a forward-looking view on what each stock is worth and asks the investor what their 
+        confidence levels are for these views, relative to the market's implied returns. 
+        Crucially, this method allows investors to incorporate their views to guide portfolio 
+        allocations and integrate DCF analysis into one cohesive framework. This app lets you build 
+        that allocation based on some modelling assumptions from the side-bar, stress-test those allocations 
+        against real market crashes, and benchmark it against other strategies. 
 
-        **A limitation of this model is that it assumes that the investors goal is to pursue wealth accumulation**
-        rather than wealth preservation. Sovereign Funds with payment schedules to meet  would pursue a different objective entirely,
-        adopting a more liability-driven investing strategy, choosing to optimise for duration matching of bond coupon payouts.
-        Nevetheless, this tool remains useful for sizing the "riskier" equity allocations, though it can be adjusted to incorporate
-        bond cash flows as part of an asset return regime. The mediating mechanism which this allocation between "risky" (equities) and
-        "less risky" assets (bonds) is the Constant Proportion Portfolio Insurance (CPPI), and is another natural expansion of this app
-        to help manage a multi-portfolio portfolio.
-        
-        This project is still a work in progress and I plan to continue adding new features. Currently, I am working on 
-        incorporating DCF assumptions as verifiable inputs into the side bar, merging the BL model with DCF modeling.
+        **One limitation of this app is that it optimises for wealth accumulation rather than wealth preservation.** 
+        Institutions with fixed payment obligations (i.e. sovereign wealth funds) would instead adopt a 
+        liability-driven approach, matching asset duration to future cash outflows. The CPPI framework in the 
+        Strategy Comparison tab is one bridge between the two: it wraps the BL equity allocation inside a 
+        drawdown floor, allowing it to coexist with a capital preservation mandate.
 
         *Last Updated: 16 May 2026*
         """
@@ -911,25 +908,23 @@ with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section outlines the justifications for initial confidence levels set in the application.**
-        It also charts these confidence levels onto a conviction map to better allow the user to undertand
-        how to fill these inputs to derive BL optimised weights that match their convictions.
-
-        To understand how the confidence levels are set by default in the side bar, it is crucial
-        to understand the confidence levels set are defined relative to the market-implied
-        return of a stock. For example, for a stock like NVDA which has a high market implied return (π) of 27.19% 
-        and a relatively lower excess return view (Q) of 16.04% based on consensus 1=year analyst price targets 
-        (see in section 1 of the Views, Returns & Weights tab), indicating a higher confidence indicates that we believe
-        that NVDA's expected return in one year should be **lower** than what the market is currently pricing in.
-        Consequently, raising the confidence on NVDA, with the analyst price target of 275, would result in a lower
-        blended bl posterior return and a higher bl weight allocation. The converse is true for stocks with 
-        analyst price targets which have a Q than π.
+        **This section explains the default confidence levels set in the sidebar 
+        and how they interact with the model.**
         
-        In summary, all stocks on the left of the conviction map (in red) have lower analyst "upside" than what 
-        the market currently implies . Conversely, all stocks on the right (in green) have a higher analyst "upside"
-        than what the market currently implies. A higher confidence for a stock on the left side means underweighing that
-        stock while a higher confidence for a stock on the right side means overweighing that stock.
+        Confidence in the Black-Litterman Model is not absolute. It is always 
+        relative to the market. A confidence of 0 means: ignore your view entirely 
+        and defer to what the market implies. A confidence of 1 means: trust your 
+        view completely and let it override the market equilibrium.
+        
+        This matters because the direction of the effect depends on whether your 
+        price target is above or below what the market is already pricing in. 
+        Stocks on the right side of the Conviction Map below have analyst targets 
+        that imply more upside than the market expects, so higher confidence pushes 
+        the BL weight up. Stocks on the left have targets implying less upside than 
+        the market, so higher confidence pulls the weight down. 
+        The conviction map makes this visual.
         """
+
     )
     st.divider()
 
@@ -1283,7 +1278,7 @@ with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section walks through the full Black-Litterman pipeline in sequence.**
+        **This tab walks through the full Black-Litterman pipeline in sequence.**
         Starting from DCF price targets, it computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
         confidence settings, and produces the BL posterior return that the
@@ -1419,18 +1414,26 @@ with tab3:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section evaluates Black-Litterman portfolio weights under market stress using two distinct methodologies:** 
-        1. **Correlated Geometric Brownian Motion (GBM) Monte Carlo Simulation**: Projects future returns as a random walk, 
-        preserving asset interdependencies via Cholesky decomposition. Given the heavy concentration of technology equities in this portfolio universe, 
-        accounting for these embedded correlations is essential for a realistic baseline.
-        2. **Historical Stress Testing**: Backtests the portfolio against actual historical market shocks to evaluate performance during systemic crises.
+        **This tab evaluates Black-Litterman portfolio weights under market 
+        stress using two distinct methodologies:** 
+        1. **Correlated Geometric Brownian Motion (GBM) Monte Carlo Simulation**: 
+        Projects future returns as a random walk, preserving asset interdependencies 
+        via Cholesky decomposition. Given the heavy concentration of technology 
+        equities in this portfolio universe, accounting for these embedded correlations 
+        is essential for a realistic baseline.
+        2. **Historical Stress Testing**: Backtests the portfolio against actual 
+        historical market shocks to evaluate performance during systemic crises.
 
-        **Critical Model Caveats**: While the correlated GBM captures *typical* market uncertainty, it fundamentally assumes a Gaussian distribution. 
-        It cannot model **volatility clustering** or the **breakdown of historical correlations** that occur during severe market drawdowns. 
-        In a free-fall market, diversification benefits often vanish-a tail-risk reality that standard GBM systematically understates. 
-        Consequently, the Monte Carlo simulation represents a baseline for normal market regimes, while the historical stress test provides 
-        the necessary reality check for tail risk. A more robust approach would be to employ Machine Learning to model fat tail risks and is 
-        an area for further development for this project.
+        **Critical Model Caveats**: While the correlated GBM captures *typical* 
+        market uncertainty, it fundamentally assumes a Gaussian distribution. 
+        It cannot model **volatility clustering** or the **breakdown of historical 
+        correlations** that occur during severe market drawdowns. In a free-fall market, 
+        diversification benefits often vanish-a tail-risk reality that standard GBM 
+        systematically understates. Consequently, the Monte Carlo simulation represents 
+        a baseline for normal market regimes, while the historical stress test provides 
+        the necessary reality check for tail risk. A more robust approach would replace 
+        the Gaussian assumption with a model that allows for fatter tails and volatility 
+        clustering, such as a GARCH-based simulation, and is a natural extension of this work.
         """
     )
     st.divider()
@@ -1614,16 +1617,27 @@ with tab4:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section compares the BL Weights against other portfolio allocation strategies.**
-        It does this by using a rolling backtest using an estimation window (selected by the user) to rebalance weights at each step. 
-        EW, Cap-Weighted, GMV, and Risk Parity are properly rolled and weights are re-estimated
-        each period using only data available at that point in time, so there is no look-ahead bias.
-        The Black-Litterman is shown as a static allocation using the current optimal weights applied to the full history. 
+        **This tab benchmarks the BL portfolio against four alternative allocation 
+        strategies across three lenses: (1) a historical wealth index, (2) a forward-looking 
+        Monte Carlo return forecast, (3) and a CPPI drawdown protection analysis.
         
-        **Critical Model Caveats**: As BL weights are derived from the full historical window, 
-        this comparison is best read as an illustration of the model's mechanics rather than a fair like-for-like backtest. 
-        A fairer analysis would be by looking at the forward-looking returns using the correlated GBM simulation. 
-        However, even this methodology has limitations as outlined in the Simulation & Stress Test tab.
+        The historical wealth index uses a rolling backtest with the estimation window
+        set in the sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, 
+        and Risk Parity are all properly rolled — weights are re-estimated at each step 
+        using only data available at that point, so there is no look-ahead bias. 
+        Black-Litterman is shown differently: as a static allocation, applying the current optimal 
+        weights to the full history. This is an intentional design choice rather than an oversight. 
+        Because BL weights are derived from a forward-looking view on price targets rather than 
+        purely from historical patterns, applying them statically is the more natural representation 
+        of what the model is actually doing.
+        
+        Critical Model Caveat: The historical comparison is not a like-for-like backtest. 
+        The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
+        This comparison is best read as an illustration of the strategies' structural differences rather 
+        than a performance horse-race. The 1-Year Monte Carlo Return Forecast in Section 2 provides 
+        a more comparable forward-looking view, though as noted in the Simulation & Stress Tests tab, 
+        GBM paths assume Gaussian returns and should be treated as a baseline rather than a tail-risk estimate.
+        
         """
     )
     st.divider()
