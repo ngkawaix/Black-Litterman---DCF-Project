@@ -1239,7 +1239,7 @@ with tab1:
                       "color: #D85A30; font-weight: 500;" if "Bearish" in str(v) else "",
             subset=["BL Direction"],
         )
-        .applymap(
+        .map(
             lambda v: "color: #1D9E75;" if isinstance(v, float) and v > 0 else
                       "color: #D85A30;" if isinstance(v, float) and v < 0 else "",
             subset=["Gap to B/E", "Q − π"],
