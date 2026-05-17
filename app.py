@@ -88,8 +88,6 @@ DCF_OVERRIDES: dict[str, float] = {}
 
 # ── Earnings Highlights ───────────────────────────────────────────────────────
 # Two-sentence summary of the most recent earnings report for each stock.
-# These inform the confidence levels above. Review and update after each
-# earnings cycle. Source: company earnings releases and investor presentations.
 EARNINGS_HIGHLIGHTS = {
     "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
     "ADBE": "Net new ARR missed for a second consecutive quarter — Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
@@ -703,7 +701,7 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab0, tab_thesis, tab1, tab2, tab3 = st.tabs([
+tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "📖 Introduction",
     "💡 Investment Theses",
     "📋 Views, Returns & Weights",
@@ -714,7 +712,7 @@ tab0, tab_thesis, tab1, tab2, tab3 = st.tabs([
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 0 -- Introduction
+# TAB 0 - Introduction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab0:
     st.markdown("#### About this Project")
@@ -854,9 +852,9 @@ with tab0:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB THESIS -- Investment Theses
+# TAB1 - Investment Theses
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_thesis:
+with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -988,8 +986,8 @@ with tab_thesis:
 
     st.divider()
 
-    # ── Section 2: Thesis & Conviction ────────────────────────────────────────
-    st.markdown("#### 2. Thesis & Conviction")
+    # ── Section 2: Initial Confidence Levels ────────────────────────────────────────
+    st.markdown("#### 2. Initial Confidence Levels")
     st.caption(
         "Sorted by conviction, highest first. "
         "🟢 = reported in the last 30 days — estimates are fresh. "
@@ -1216,9 +1214,9 @@ with tab_thesis:
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 -- Views, Returns & Weights
+# TAB 2 - Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
-with tab1:
+with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1365,9 +1363,9 @@ with tab1:
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 -- Simulation & Stress Tests
+# TAB 3 - Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
-with tab2:
+with tab3:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1560,9 +1558,9 @@ with tab2:
     st.plotly_chart(fig_stress, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 -- Strategy Comparison
+# TAB 4 - Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
-with tab3:
+with tab4:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
