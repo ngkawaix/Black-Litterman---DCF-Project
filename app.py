@@ -399,7 +399,7 @@ def run_cppi(risky_r, rf, multiplier, max_drawdown, initial_value = 1, n_periods
         alloc[i] = risky_exposure / port_v if port_v > 0 else 0.0
 
     account_val = pd.Series(account, index = dates)
-    floor val = pd.Series(floors, index = dates)
+    floor_val = pd.Series(floors, index = dates)
     risky_alloc = pd.Series(alloc, index = dates)
 
     # Create an array of port_vals to derive cppi_r
