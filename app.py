@@ -1631,7 +1631,7 @@ with tab4:
         purely from historical patterns, applying them statically is the more natural representation 
         of what the model is actually doing.
         
-        Critical Model Caveat: The historical comparison is not a like-for-like backtest. 
+        **Critical Model Caveats**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
         This comparison is best read as an illustration of the strategies' structural differences rather 
         than a performance horse-race. The 1-Year Monte Carlo Return Forecast in Section 2 provides 
