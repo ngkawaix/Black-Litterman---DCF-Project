@@ -845,21 +845,28 @@ with tab0:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB1 - Investment Theses
+# TAB1 - Confidence
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This section documents the initial confidence levels set in the application and charts
-        them onto a conviction map to better allow the user to understand the inputs they 
-        are making before obtaining the BL optimised weights.**
+        **This section outlines the justifications for initial confidence levels set in the application.**
+        It also charts these confidence levels onto a conviction map to better allow the user to undertand
+        how to fill these inputs to derive BL optimised weights that match their convictions.
 
-        **Current status:** Confidence levels are informed by analyst narratives and the most
-        recent earnings reports. Individual DCF models for Amazon, Nvidia, Google, Netflix, and
-        Meta are in progress; once complete, those confidence levels will be updated and marked
-        with a ⚡ **DCF Model** badge to distinguish model-derived conviction from analyst estimates.
-        """
+        To understand how the confidence levels are set by default in the side bar, it is crucial
+        to understand the confidence levels set are defined relative to the market-implied
+        return of a stock. For example, for a stock like NVDA which has a high market implied return (π) of 27.19% 
+        and a relatively lower excess return view (Q) of 16.04% based on consensus 1=year analyst price targets 
+        (see in section 1 of the Views, Returns & Weights tab), indicating a higher confidence indicates that we believe
+        that NVDA's expected return in one year should be **lower** than what the market is currently pricing in. Conversely,
+        a stock like META which has a higher Q to π would mean that a higer confidence we believe that META's expected
+        return in one year should be **higher** than what the market is currently pricing in. Hence, the confidence levels
+        should be set relative to what market implied return. You can see the default allocaitons most clearly in
+        the conviction map in part 1.
+
+        Adjust the sliders for the confidence is the slider to sanity check your convictions.
     )
     st.divider()
 
@@ -892,176 +899,8 @@ with tab1:
             conf_vals[tkr]   = BASE_CONFIDENCE[tkr]
             conf_source[tkr] = "Analyst est."
 
-    # ── Section 1: Valuation Snapshot ─────────────────────────────────────────
-    st.markdown("#### 1. Valuation Snapshot")
-    st.caption(
-        f"Ratios sourced from Yahoo Finance (24h cache). "
-        f"Last Close as of **{price_data.index[-1].strftime('%d %b %Y')}**."
-    )
-
-    val_df = pd.DataFrame(
-        index=TICKERS,
-        data={
-            "Last Close ($)": last_close.reindex(TICKERS),
-            "P/E (TTM)":     val_metrics["P/E (TTM)"].astype(float, errors="ignore"),
-            "Fwd P/E":       val_metrics["Fwd P/E"].astype(float, errors="ignore"),
-            "EV/EBITDA":     val_metrics["EV/EBITDA"].astype(float, errors="ignore"),
-            "P/S":           val_metrics["P/S"].astype(float, errors="ignore"),
-            "P/B":           val_metrics["P/B"].astype(float, errors="ignore"),
-            "Beta":          val_metrics["Beta"].astype(float, errors="ignore"),
-        }
-    )
-
-    numeric_1dp = ["P/E (TTM)", "Fwd P/E", "EV/EBITDA", "P/S", "P/B", "Beta"]
-
-    styled_val = (
-        val_df.style
-        .format("${:,.2f}", subset=["Last Close ($)"])
-        .format("{:.1f}",   subset=numeric_1dp, na_rep="N/A")
-    )
-
-    st.dataframe(
-        styled_val,
-        use_container_width=True,
-        column_config={
-            "Last Close ($)": st.column_config.NumberColumn(
-                "Last Close ($)",
-                help="Most recent trading day closing price (Yahoo Finance).",
-            ),
-            "P/E (TTM)": st.column_config.NumberColumn(
-                "P/E (TTM)",
-                help=(
-                    "Trailing twelve-month price-to-earnings ratio. "
-                    "Share price divided by earnings per share over the last four quarters. "
-                    "Higher = market paying more per dollar of current earnings."
-                ),
-            ),
-            "Fwd P/E": st.column_config.NumberColumn(
-                "Fwd P/E",
-                help=(
-                    "Forward price-to-earnings ratio using next twelve months' consensus EPS estimates. "
-                    "A lower Fwd P/E than trailing P/E implies the market expects earnings to grow."
-                ),
-            ),
-            "EV/EBITDA": st.column_config.NumberColumn(
-                "EV/EBITDA",
-                help=(
-                    "Enterprise Value divided by Earnings Before Interest, Tax, Depreciation & Amortisation. "
-                    "A capital-structure-neutral multiple — useful for comparing companies "
-                    "with different levels of debt or depreciation policy."
-                ),
-            ),
-            "P/S": st.column_config.NumberColumn(
-                "P/S",
-                help=(
-                    "Price-to-Sales ratio: market cap divided by trailing twelve-month revenue. "
-                    "Useful for high-growth companies where earnings are minimal or reinvested."
-                ),
-            ),
-            "P/B": st.column_config.NumberColumn(
-                "P/B",
-                help=(
-                    "Price-to-Book ratio: market cap divided by book value of equity. "
-                    "Note: FICO's negative book equity (from sustained buybacks, not distress) "
-                    "makes this metric uninformative for that ticker."
-                ),
-            ),
-            "Beta": st.column_config.NumberColumn(
-                "Beta",
-                help=(
-                    "Sensitivity of the stock's returns to the broad market (S&P 500). "
-                    "Beta > 1 = amplifies market moves; Beta < 1 = dampens them. "
-                    "Estimated over the trailing 5 years of monthly returns."
-                ),
-            ),
-        },
-    )
-
-    st.divider()
-
-    # ── Section 2: Initial Confidence Levels ────────────────────────────────────────
-    st.markdown("#### 2. Initial Confidence Levels")
-    st.caption(
-        "Sorted by conviction, highest first. "
-        "🟢 = reported in the last 30 days — estimates are fresh. "
-        "🟡 = reporting within 30 days — consensus may shift. "
-        "**Confidence** = how strongly the view overrides the market prior in the BL model."
-    )
-
-    thesis_df = pd.DataFrame(
-        index=TICKERS,
-        data={
-            "Confidence":          pd.Series(conf_vals),
-            "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
-            "Last Earnings":       val_metrics["Last Earnings"],
-            "Earnings Highlights": pd.Series(
-                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
-            ),
-            "Next Earnings":       val_metrics["Next Earnings"],
-        }
-    ).sort_values("Confidence", ascending=False)
-
-    styled_thesis = (
-        thesis_df.style
-        .format("{:.0%}", subset=["Confidence"])
-        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
-    )
-
-    st.dataframe(
-        styled_thesis,
-        use_container_width=True,
-        height=680,
-        column_config={
-            "Status": st.column_config.TextColumn(
-                "Status",
-                width="small",
-                help=(
-                    "🟢 Earnings reported within the last 30 days — "
-                    "data is fresh and analyst estimates are likely current. "
-                    "Higher confidence is appropriate given recent clarity.\n\n"
-                    "🟡 Earnings due within the next 30 days — "
-                    "consensus targets and forward estimates may shift after the release.\n\n"
-                    "— No near-term earnings signal."
-                ),
-            ),
-            "Last Earnings": st.column_config.TextColumn(
-                "Last Earnings",
-                width="small",
-                help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
-            ),
-            "Earnings Highlights": st.column_config.TextColumn(
-                "Earnings Highlights",
-                width="large",
-                help=(
-                    "Two-sentence summary of the most recent earnings report. "
-                    "These narratives directly inform the confidence level assigned to each stock."
-                ),
-            ),
-            "Next Earnings": st.column_config.TextColumn(
-                "Next Earnings",
-                width="small",
-                help=(
-                    "Estimated date of the next earnings release (Yahoo Finance calendar). "
-                    "May span a range — verify against company investor relations pages."
-                ),
-            ),
-            "Confidence": st.column_config.NumberColumn(
-                "Confidence",
-                width="small",
-                help=(
-                    "Idzorek confidence: how strongly this stock's price target view "
-                    "overrides the market-implied equilibrium return in the BL model. "
-                    "0% = ignore the view entirely; 100% = full conviction over the prior. "
-                    "Higher confidence is appropriate where earnings clarity is recent (🟢)."
-                ),
-            ),
-        },
-    )
-
-    st.divider()
-
-    # ── Section 3: Conviction Map ──────────────────────────────────────────────
-    st.markdown("#### 3. Conviction Map")
+    # ── Section 1: Conviction Map ──────────────────────────────────────────────
+    st.markdown("#### 1. Conviction Map")
     st.caption(
         "Each stock plotted by how far your DCF view deviates from the market equilibrium (x-axis) "
         "and your confidence in that view (y-axis). Stocks to the right have bullish views (Q > π) "
@@ -1188,6 +1027,174 @@ with tab1:
         margin=dict(t=30),
     )
     st.plotly_chart(_fg, use_container_width=True)
+
+    st.divider()
+
+    # ── Section 2: Broad Analyst Theses  ────────────────────────────────────────
+    st.markdown("#### 2. Broad Analyst Theses")
+    st.caption(
+        "Sorted by conviction, highest first. "
+        "🟢 = reported in the last 30 days — estimates are fresh. "
+        "🟡 = reporting within 30 days — consensus may shift. "
+        "**Confidence** = how strongly the view overrides the market prior in the BL model."
+    )
+
+    thesis_df = pd.DataFrame(
+        index=TICKERS,
+        data={
+            "Confidence":          pd.Series(conf_vals),
+            "Status":              pd.Series({tkr: _earnings_status(tkr) for tkr in TICKERS}),
+            "Last Earnings":       val_metrics["Last Earnings"],
+            "Earnings Highlights": pd.Series(
+                {tkr: EARNINGS_HIGHLIGHTS.get(tkr, "—") for tkr in TICKERS}
+            ),
+            "Next Earnings":       val_metrics["Next Earnings"],
+        }
+    ).sort_values("Confidence", ascending=False)
+
+    styled_thesis = (
+        thesis_df.style
+        .format("{:.0%}", subset=["Confidence"])
+        .background_gradient(subset=["Confidence"], cmap="YlGnBu")
+    )
+
+    st.dataframe(
+        styled_thesis,
+        use_container_width=True,
+        height=680,
+        column_config={
+            "Status": st.column_config.TextColumn(
+                "Status",
+                width="small",
+                help=(
+                    "🟢 Earnings reported within the last 30 days — "
+                    "data is fresh and analyst estimates are likely current. "
+                    "Higher confidence is appropriate given recent clarity.\n\n"
+                    "🟡 Earnings due within the next 30 days — "
+                    "consensus targets and forward estimates may shift after the release.\n\n"
+                    "— No near-term earnings signal."
+                ),
+            ),
+            "Last Earnings": st.column_config.TextColumn(
+                "Last Earnings",
+                width="small",
+                help="Date of the most recently reported fiscal quarter end (Yahoo Finance).",
+            ),
+            "Earnings Highlights": st.column_config.TextColumn(
+                "Earnings Highlights",
+                width="large",
+                help=(
+                    "Two-sentence summary of the most recent earnings report. "
+                    "These narratives directly inform the confidence level assigned to each stock."
+                ),
+            ),
+            "Next Earnings": st.column_config.TextColumn(
+                "Next Earnings",
+                width="small",
+                help=(
+                    "Estimated date of the next earnings release (Yahoo Finance calendar). "
+                    "May span a range — verify against company investor relations pages."
+                ),
+            ),
+            "Confidence": st.column_config.NumberColumn(
+                "Confidence",
+                width="small",
+                help=(
+                    "Idzorek confidence: how strongly this stock's price target view "
+                    "overrides the market-implied equilibrium return in the BL model. "
+                    "0% = ignore the view entirely; 100% = full conviction over the prior. "
+                    "Higher confidence is appropriate where earnings clarity is recent (🟢)."
+                ),
+            ),
+        },
+    )
+
+    st.divider()
+
+        # ── Section 3: Valuation Snapshot ─────────────────────────────────────────
+    st.markdown("#### 3. Valuation Snapshot")
+    st.caption(
+        f"Ratios sourced from Yahoo Finance (24h cache). "
+        f"Last Close as of **{price_data.index[-1].strftime('%d %b %Y')}**."
+    )
+
+    val_df = pd.DataFrame(
+        index=TICKERS,
+        data={
+            "Last Close ($)": last_close.reindex(TICKERS),
+            "P/E (TTM)":     val_metrics["P/E (TTM)"].astype(float, errors="ignore"),
+            "Fwd P/E":       val_metrics["Fwd P/E"].astype(float, errors="ignore"),
+            "EV/EBITDA":     val_metrics["EV/EBITDA"].astype(float, errors="ignore"),
+            "P/S":           val_metrics["P/S"].astype(float, errors="ignore"),
+            "P/B":           val_metrics["P/B"].astype(float, errors="ignore"),
+            "Beta":          val_metrics["Beta"].astype(float, errors="ignore"),
+        }
+    )
+
+    numeric_1dp = ["P/E (TTM)", "Fwd P/E", "EV/EBITDA", "P/S", "P/B", "Beta"]
+
+    styled_val = (
+        val_df.style
+        .format("${:,.2f}", subset=["Last Close ($)"])
+        .format("{:.1f}",   subset=numeric_1dp, na_rep="N/A")
+    )
+
+    st.dataframe(
+        styled_val,
+        use_container_width=True,
+        column_config={
+            "Last Close ($)": st.column_config.NumberColumn(
+                "Last Close ($)",
+                help="Most recent trading day closing price (Yahoo Finance).",
+            ),
+            "P/E (TTM)": st.column_config.NumberColumn(
+                "P/E (TTM)",
+                help=(
+                    "Trailing twelve-month price-to-earnings ratio. "
+                    "Share price divided by earnings per share over the last four quarters. "
+                    "Higher = market paying more per dollar of current earnings."
+                ),
+            ),
+            "Fwd P/E": st.column_config.NumberColumn(
+                "Fwd P/E",
+                help=(
+                    "Forward price-to-earnings ratio using next twelve months' consensus EPS estimates. "
+                    "A lower Fwd P/E than trailing P/E implies the market expects earnings to grow."
+                ),
+            ),
+            "EV/EBITDA": st.column_config.NumberColumn(
+                "EV/EBITDA",
+                help=(
+                    "Enterprise Value divided by Earnings Before Interest, Tax, Depreciation & Amortisation. "
+                    "A capital-structure-neutral multiple — useful for comparing companies "
+                    "with different levels of debt or depreciation policy."
+                ),
+            ),
+            "P/S": st.column_config.NumberColumn(
+                "P/S",
+                help=(
+                    "Price-to-Sales ratio: market cap divided by trailing twelve-month revenue. "
+                    "Useful for high-growth companies where earnings are minimal or reinvested."
+                ),
+            ),
+            "P/B": st.column_config.NumberColumn(
+                "P/B",
+                help=(
+                    "Price-to-Book ratio: market cap divided by book value of equity. "
+                    "Note: FICO's negative book equity (from sustained buybacks, not distress) "
+                    "makes this metric uninformative for that ticker."
+                ),
+            ),
+            "Beta": st.column_config.NumberColumn(
+                "Beta",
+                help=(
+                    "Sensitivity of the stock's returns to the broad market (S&P 500). "
+                    "Beta > 1 = amplifies market moves; Beta < 1 = dampens them. "
+                    "Estimated over the trailing 5 years of monthly returns."
+                ),
+            ),
+        },
+    )
 
     st.divider()
 
