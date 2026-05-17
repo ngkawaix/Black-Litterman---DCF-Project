@@ -1584,6 +1584,7 @@ with tab4:
             "Global Minimum Variance":    pd.Series(gmv_r).squeeze(),
             "Risk Parity":             pd.Series(erc_r).squeeze(),
             "BL (static)":             pd.Series(bl_r).squeeze(),
+            "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
         }).loc[valid_start_date:].dropna()
 
     bl_estimation_start = tick_rets.index[0].date()
@@ -1611,6 +1612,7 @@ with tab4:
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
+        "S&P 500 (SPY):         ("#888888",  1.6, "dash"),
     }
 
     fig_wealth = go.Figure()
