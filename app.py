@@ -1612,7 +1612,7 @@ with tab4:
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
-        "S&P 500 (SPY):         ("#888888",  1.6, "dash"),
+        "S&P 500 (SPY)":         ("#888888",  1.6, "dash"),
     }
 
     fig_wealth = go.Figure()
