@@ -61,14 +61,6 @@ BASE_TARGETS = {
 # FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
 
 BASE_CONFIDENCE = {
-    # Updated May 2026 - reflects latest analyst narratives and earnings.
-    # AAPL  ↓ tariff uncertainty + supply chain mid-transition to India
-    # ADBE  ↓ AI commoditisation fears; stock -42% from 52-week high
-    # AMAT  ↓ revenue -3.5% YoY last quarter; China headwinds persist
-    # ASML  ↑ raised 2026 sales forecast Apr; EUV monopoly + AI tailwind clear
-    # LRCX  ↑ revenue +28% YoY; high-margin recurring revenue insulates cycle risk
-    # META  ↑ fastest-growing AI hyperscaler; ad integration playing out in numbers
-    # NVDA  ↑ Q4 FY2026 $68B rev (+73% YoY); Q1 FY2027 guided ~$78B
     "AAPL": 0.20, "ADBE": 0.25, "AMAT": 0.15,
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
     "FICO": 0.45, "GOOGL":0.15, "LRCX": 0.10,
@@ -85,6 +77,28 @@ BASE_CONFIDENCE = {
 # Example (do not uncomment until DCF work is finalised):
 #   "NVDA": 0.80, "META": 0.72, "AMZN": 0.68,
 DCF_OVERRIDES: dict[str, float] = {}
+
+# ── Earnings Highlights ───────────────────────────────────────────────────────
+# Two-sentence summary of the most recent earnings report for each stock.
+EARNINGS_HIGHLIGHTS = {
+    "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
+    "ADBE": "Net new ARR missed for a second consecutive quarter - Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
+    "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
+    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand - fastest growth in 15 quarters. Operating margin hit a record 13.1% - clear inflection from investment phase to profitable scale.",
+    "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
+    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A - rare quality among mid-cap industrials.",
+    "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
+    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals - GenAI cost-per-query is the key margin watch item.",
+    "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
+    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data - payments outlook resilient.",
+    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew - Llama-driven Reels ranking cited as the key engagement driver.",
+    "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
+    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% - AI infrastructure spend absorbed without material dilution.",
+    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised - content investment funded internally without balance sheet strain.",
+    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B - US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
+    "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
+    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
+}
 
 CONFIDENCE_RATIONALE = {
     "AAPL": (
