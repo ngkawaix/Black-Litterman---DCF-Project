@@ -417,14 +417,6 @@ def cppi_gap_risk(port_paths, rf, multiplier, max_drawdown, initial_value = 1, n
     for m in multipliers:
         breaches = 0
         for j in range(n_scen):
-            port_v = hwm = initial_value
-            for i in range(n_steps):
-                hwm = max(hwm, v)
-                floor = (1 - max_drawdown) * hwm
-                cushion = max(v - floor, 0.0)
-                e = min(m * cushion,     for m in multipliers:
-        breaches = 0
-        for j in range(n_scen):
             v = hwm = initial_value
             for i in range(n_steps):
                 hwm = max(hwm, v)
