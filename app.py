@@ -86,27 +86,109 @@ BASE_CONFIDENCE = {
 #   "NVDA": 0.80, "META": 0.72, "AMZN": 0.68,
 DCF_OVERRIDES: dict[str, float] = {}
 
-# ── Earnings Highlights ───────────────────────────────────────────────────────
-# Two-sentence summary of the most recent earnings report for each stock.
-EARNINGS_HIGHLIGHTS = {
-    "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
-    "ADBE": "Net new ARR missed for a second consecutive quarter - Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
-    "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
-    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand - fastest growth in 15 quarters. Operating margin hit a record 13.1% - clear inflection from investment phase to profitable scale.",
-    "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
-    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A - rare quality among mid-cap industrials.",
-    "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
-    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals - GenAI cost-per-query is the key margin watch item.",
-    "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
-    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data - payments outlook resilient.",
-    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew - Llama-driven Reels ranking cited as the key engagement driver.",
-    "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
-    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% - AI infrastructure spend absorbed without material dilution.",
-    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised - content investment funded internally without balance sheet strain.",
-    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B - US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
-    "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
-    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
+CONFIDENCE_RATIONALE = {
+    "AAPL": (
+        "Target ($305) implies Q = −2.2% — below the risk-free rate — against a market-implied "
+        "π of 14.5% (break-even: $355). Some bearishness is intentional given the tariff overhang "
+        "and supply chain transition, but 0.40 was excessive; 0.20 keeps a mild discount without "
+        "aggressively zeroing the second-largest position in the universe."
+    ),
+    "ADBE": (
+        "Target implies a bullish gap of +11.7% above break-even ($294). The structural AI "
+        "commoditisation risk is genuine — two consecutive ARR misses signal execution uncertainty. "
+        "0.25 is the lowest confidence among bullish names and appropriate until Firefly shows up "
+        "in ARR acceleration."
+    ),
+    "AMAT": (
+        "Target ($486) sits −9.4% below break-even ($537), making this an unintentional bearish "
+        "bet despite record Q2 earnings and Deutsche Bank raising PT to $550. Neutralised at 0.15 "
+        "pending a target refresh to ~$540+, which would flip this to a mild bullish view."
+    ),
+    "AMZN": (
+        "A near-accidental bearish gap of −1.5%: target $312 vs break-even $317. AWS +28% YoY and "
+        "record 13.1% operating margins do not warrant active underweighting. Reduced to 0.25 to "
+        "minimise the unintentional effect while preserving a small uncertainty buffer."
+    ),
+    "ASML": (
+        "EUV monopoly with demand visibility to 2027, but the analyst consensus target ($1,661) "
+        "falls −8.8% below break-even ($1,821) — any consensus-anchored target will be bearish in "
+        "BL terms. Neutralised at 0.10 to preserve equilibrium weight until a DCF-derived target "
+        "above $1,821 can be justified."
+    ),
+    "CPRT": (
+        "Target is +16.3% above break-even ($37), making this a bullish view. However, the stock "
+        "has declined ~50% from its 52-week high for reasons not fully explained by the current "
+        "earnings narrative — this is a knowledge gap. Confidence reduced to 0.20 until the cause "
+        "of the decline is understood."
+    ),
+    "FICO": (
+        "The largest positive gap in the portfolio: target +20.0% above break-even ($1,301). Strong "
+        "Q2 results with raised guidance and accelerating Scores revenue support an upgrade from "
+        "0.35 to 0.45. Even at conservative confidence, the magnitude of the Q−π gap (+23.7%) "
+        "produces a substantial posterior lift."
+    ),
+    "GOOGL": (
+        "Setting target = analyst consensus ($428) still places you −9.1% below break-even ($471). "
+        "A 0.50 confidence on that gap was actively underweighting a quality business with Search "
+        "+19% and Cloud +63% YoY. Neutralised to 0.15 — consider raising the target to $470+ "
+        "to express a genuinely neutral-to-bullish view."
+    ),
+    "LRCX": (
+        "Priority correction: the previous 0.65 confidence combined with a −12.0% break-even gap "
+        "was the single most damaging setting in the model. Revenue +28% YoY and ~35% recurring "
+        "service revenue contradict the bearish stance. Neutralised to 0.10 pending a target "
+        "refresh — break-even is $352; a target of $370–380 would flip this bullish."
+    ),
+    "MA": (
+        "Target is +14.1% above break-even ($570), one of the cleaner bullish setups. Trading near "
+        "its 52-week low with fresh Q1 earnings (revenue +12% YoY, dividend raised for 14th year) "
+        "and analyst consensus at $647. Modest upgrade from 0.50 to 0.55 is warranted by the "
+        "earnings clarity and low-vs-history valuation."
+    ),
+    "META": (
+        "Strongest bullish signal in the book: target +11.0% above break-even ($745) with "
+        "Q−π = +13.4%. Slight reduction from 0.70 to 0.65 reflects 2026 capex raised to "
+        "$125–145B and buybacks paused — this introduces FCF uncertainty into the thesis that "
+        "was not present at the prior confidence level."
+    ),
+    "MSCI": (
+        "Target is +4.7% above break-even ($654), a moderate bullish gap. 95%+ subscription "
+        "retention and early ESG recovery support 0.55. The zero BL allocation in the current "
+        "output is a max-Sharpe correlation artefact — not a confidence problem — and should "
+        "resolve if the max position size constraint is tightened to 12–15%."
+    ),
+    "MSFT": (
+        "Target is +13.3% above break-even ($496), with Azure +40% YoY, AI business at $37B ARR "
+        "(+123% YoY) and 46% operating margin held. The stock's pullback from $555 to $420 has "
+        "widened the gap, making this the second-highest conviction bullish position. 0.60 is "
+        "the highest confidence applied to any non-DCF name and is fully warranted here."
+    ),
+    "NFLX": (
+        "Target is +9.3% above break-even ($105). The ad-supported tier now accounts for ~40% "
+        "of new sign-ups and FCF guidance was raised. Modest reduction from 0.60 to 0.55 reflects "
+        "that this remains a street estimate with no DCF completed — conservative confidence is "
+        "appropriate pending deeper modelling."
+    ),
+    "NVDA": (
+        "Intentional neutralisation: NVDA's π = 27.2% is the highest in the universe (largest cap "
+        "weight + beta 1.7), and the current target of $270 implies Q = 16.0% — placing it −8.5% "
+        "below break-even at $295. Confidence set to 0.10 to let equilibrium dominate. A DCF "
+        "target above $295 is needed before meaningful bullish confidence is appropriate."
+    ),
+    "TSM": (
+        "Target is −4.1% below break-even ($483), making this a mild intentional bearish view. "
+        "Taiwan geopolitical risk is persistent and a structural discount is defensible. 0.25 "
+        "preserves that discount signal without making it a dominant underweight — half the "
+        "previous 0.50 confidence."
+    ),
+    "V": (
+        "Target is +7.2% above break-even ($372), a genuine bullish view. The zero BL allocation "
+        "is not a confidence issue — Visa and Mastercard are highly correlated and MA has a higher "
+        "posterior, so the max-Sharpe optimiser concentrates in MA and zeroes V. If both are "
+        "desired, tighten the max position size to 12–15%."
+    ),
 }
+
 
 STRESS_PERIODS = {
     "COVID Crash (Feb--Mar 2020)":        ("2020-02-19", "2020-03-23"),
