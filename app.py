@@ -414,15 +414,15 @@ def cppi_gap_risk(port_paths, rf, multiplier, max_drawdown, initial_value = 1, n
     n_steps, n_scen = path_rets.shape
     results = {}
     
-    for m in multipliers:
+    for m in multiplier:
         breaches = 0
         for j in range(n_scen):
-            v = hwm = initial_value
+            port_v = hwm = initial_value
             for i in range(n_steps):
                 hwm = max(hwm, v)
                 floor = (1 - max_drawdown) * hwm
                 cushion = max(port_v - floor, 0.0)
-                risky_exposure = min(m * cushion, port_v)
+                risky_exposure = min(multiplier * cushion, port_v)
                 safe_exposure = port_v - risky_exposure
                 port_v = risky_exposure * (1 + path_rets[i, j]) + (safe_exposure) * (1 + daily_rf)
                 if v < floor * 0.999:   # small tolerance for floating-point noise
