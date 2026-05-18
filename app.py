@@ -102,7 +102,7 @@ EARNINGS_HIGHLIGHTS = {
 
 CONFIDENCE_RATIONALE = {
     "AAPL": (
-        "Target sits 14% below the market-implied price — a deliberate mild bearish tilt on tariff overhang and supply chain transition risk. "
+        "Target sits 14% below the market-implied price, a deliberate mild bearish tilt on tariff overhang and supply chain transition risk. "
         "Confidence at 0.20 preserves the discount signal without aggressively underweighting the second-largest position in the universe."
     ),
     "ADBE": (
@@ -114,7 +114,7 @@ CONFIDENCE_RATIONALE = {
         "Confidence at 0.15 keeps the bearish tilt soft | Deutsche Bank's $550 PT raise and solid Q2 execution prevent a stronger discount."
     ),
     "AMZN": (
-        "Target falls 1.5% below the market-implied price — a near-accidental bearish gap that does not reflect a genuine bearish view. "
+        "Target falls 1.5% below the market-implied price, a near-accidental bearish gap that does not reflect a genuine bearish view. "
         "Confidence at 0.25 reflects confidence | AWS +28% YoY and record 13.1% operating margin do not warrant a discount."
     ),
     "ASML": (
@@ -154,19 +154,19 @@ CONFIDENCE_RATIONALE = {
         "Confidence at 0.60 reflects conviction that the selloff overweights short-term macro noise relative to the underlying business trajectory."
     ),
     "NFLX": (
-        "Target is 10% above the market-implied price on ad-supported tier momentum (~40% of new sign-ups) and raised FCF guidance. "
-        "Confidence at 0.55 rather than higher — this remains a street estimate with no completed DCF model."
+        "Target is 10% above the market, implied price on ad-supported tier momentum (~40% of new sign-ups) and raised FCF guidance. "
+        "Confidence at 0.55 rather than higher; this remains a street estimate with no completed DCF model."
     ),
     "NVDA": (
-        "Target is 8.5% below the market-implied price — an intentional neutralisation given NVDA carries the highest π in the universe (largest cap weight, beta 1.7) and the current target implies meaningful underperformance. "
+        "Target is 8.5% below the market-implied price, an intentional neutralisation given NVDA carries the highest π in the universe (largest cap weight, beta 1.7) and the current target implies meaningful underperformance. "
         "Confidence at 0.10 to let equilibrium dominate; a DCF-derived target above the break-even of $295 is needed before meaningful bullish confidence is warranted."
     ),
     "TSM": (
-        "Target is 4% below the market-implied price — a deliberate discount for persistent Taiwan geopolitical risk. "
+        "Target is 4% below the market-implied price, a deliberate discount for persistent Taiwan geopolitical risk. "
         "Confidence at 0.25, halved from its previous level, preserves the signal without making TSM a dominant underweight."
     ),
     "V": (
-        "Target is 7% above the market-implied price — a genuine bullish view on cross-border recovery and a value-added services mix shift toward higher margins. "
+        "Target is 7% above the market-implied price, a genuine bullish view on cross-border recovery and a value-added services mix shift toward higher margins. "
         "The zero BL allocation reflects optimiser concentration in the higher-posterior MA rather than low conviction; tightening the max position size to 12–15% would reinstate both."
     ),
 }
