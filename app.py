@@ -874,29 +874,34 @@ with tab0:
     st.markdown("#### About this Project")
     st.markdown(
         """
-        **I started this self-guided project to better understand investment management
-        and to guide the sizing of my own portfolio allocations.** It implements the skills
-        and knowledge that I have acquired over the last three months from EDHEC's Advanced
-        Portfolio Construction and Analysis and Wall Street Prep's DCF Modelling Course - all
-        with the aim of answering one question: Having derived the 1Y price target of a stock
-        through DCF analysis, how does one use this knowledge to size their portfolios?
+        **I started this self-guided project to better understand investment 
+        management and to guide the sizing of my own portfolio allocations.** 
+        It implements the skillsand knowledge that I have acquired over the last 
+        three months from *EDHEC's Advanced Portfolio Construction and Analysis* 
+        and *Wall Street Prep's DCF Modelling Course* - all with the aim of 
+        answering one question: Having derived the 1Y price target of a stock through 
+        DCF analysis, how does one use this knowledge to size their portfolios?
 
         **This app uses the Black Litterman (BL) Model to size portfolio allocations.** 
-        It uses this modelbecause of its advantages over other strategies. Most backtested strategies 
-        like Global Minimum Variance (GMV) or Risk Parity are purely backward-looking, optimising 
-        on historical data and assuming the past repeats. The Black-Litterman (BL) Model is different. 
-        It takes a forward-looking view on what each stock is worth and asks the investor what their 
-        confidence levels are for these views, relative to the market's implied returns. 
-        Crucially, this method allows investors to incorporate their views to guide portfolio 
-        allocations and integrate DCF analysis into one cohesive framework. This app lets you build 
-        that allocation based on some modelling assumptions from the side-bar, stress-test those allocations 
-        against real market crashes, and benchmark it against other strategies. 
+        It uses this model because of its advantages over other strategies. 
+        Most backtested strategies like Global Minimum Variance (GMV) or Risk Parity are 
+        purely backward-looking, optimising on historical data and assuming the past repeats. 
+        The Black-Litterman (BL) Model is different. It takes a forward-looking view on 
+        what each stock is worth and asks the investor what their confidence levels 
+        are for these views, relative to the market's implied returns. Crucially, this 
+        method allows investors to incorporate their views to guide portfolio allocations 
+        and integrate DCF analysis into one cohesive framework. This app lets you build 
+        that allocation based on some modelling assumptions from the side-bar, stress-test 
+        those allocations against real market crashes, and benchmark it against other 
+        strategies. 
 
-        **One limitation of this app is that it optimises for wealth accumulation rather than wealth preservation.** 
-        Institutions with fixed payment obligations (i.e. sovereign wealth funds) would instead adopt a 
-        liability-driven approach, matching asset duration to future cash outflows. The CPPI framework in the 
-        Strategy Comparison tab is one bridge between the two: it wraps the BL equity allocation inside a 
-        drawdown floor, allowing it to coexist with a capital preservation mandate.
+        **One limitation of this app is that it optimises for wealth accumulation rather 
+        than wealth preservation.** Institutions with fixed payment obligations 
+        (i.e. sovereign wealth funds) would instead adopt a liability-driven approach, 
+        matching asset duration to future cash outflows. The CPPI framework in the 
+        Strategy Comparison tab is one bridge between the two: it wraps the BL equity 
+        allocation inside a drawdown floor, allowing it to coexist with a capital 
+        preservation mandate.
 
         *Last Updated: 16 May 2026*
         """
