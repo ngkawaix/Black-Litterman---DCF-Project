@@ -2013,8 +2013,18 @@ with tab4:
     )
 
     # Dot-plot
+
+    _dotplot_colours = {
+        "Equal-Weighted":          "#fecc5c",
+        "Cap-Weighted":            "#a1dab4",
+        "Global Minimum Variance": "#41b6c4",
+        "Risk Parity":             "#2c7fb8",
+        "Black-Litterman":         "#253494",
+    }
+    
     fig_comp = go.Figure()
     for strat_name, row in comparison.items():
+        _c = _dotplot_colours.get(strat_name, "#888888")
         fig_comp.add_trace(go.Scatter(
             x=[strat_name],
             y=[row["Expected Return"]],
