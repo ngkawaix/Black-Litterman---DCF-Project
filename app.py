@@ -2033,6 +2033,68 @@ with tab5:
 
     st.divider()
 
+    # ── Quarterly Allocation Snapshots ───────────────────────────────────────
+    st.markdown("##### Quarterly Equity Allocation Snapshots")
+    st.caption(
+        "Quarter-end equity allocation (% of portfolio) derived from the CPPI strategy. "
+        "Green = fully invested (≥ 80%), amber = partially de-risked (30–80%), "
+        "red = near or at cash lock-in (< 30%). Values reflect the allocation *entering* the next quarter."
+    )
+
+    _alloc_aligned  = cppi_alloc.reindex(btr.index).clip(0, 1)
+    _quarterly_alloc = _alloc_aligned.resample("QE").last() * 100
+    _q_labels        = _quarterly_alloc.index.to_period("Q").astype(str)
+
+    _bar_colours = [
+        "#55A868" if v >= 80 else "#fecc5c" if v >= 30 else "#C44E52"
+        for v in _quarterly_alloc.values
+    ]
+
+    fig_q = go.Figure()
+    fig_q.add_trace(go.Bar(
+        x=_q_labels,
+        y=_quarterly_alloc.values,
+        marker_color=_bar_colours,
+        text=[f"{v:.0f}%" for v in _quarterly_alloc.values],
+        textposition="outside",
+        textfont=dict(size=9),
+        hovertemplate="<b>%{x}</b><br>Equity Allocation: %{y:.1f}%<extra></extra>",
+    ))
+    fig_q.add_hline(
+        y=80, line_dash="dot",
+        line_color="rgba(85, 168, 104, 0.45)",
+        annotation_text="80% threshold",
+        annotation_position="bottom right",
+        annotation_font_size=10,
+    )
+    fig_q.add_hline(
+        y=30, line_dash="dot",
+        line_color="rgba(196, 78, 82, 0.45)",
+        annotation_text="30% threshold",
+        annotation_position="bottom right",
+        annotation_font_size=10,
+    )
+    fig_q.update_layout(
+        xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
+        yaxis=dict(title="Equity Allocation (%)", range=[0, 115]),
+        height=380,
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(t=20, b=60),
+    )
+    st.plotly_chart(fig_q, use_container_width=True)
+
+    # Summary counts
+    _n_green  = int((_quarterly_alloc >= 80).sum())
+    _n_amber  = int(((_quarterly_alloc >= 30) & (_quarterly_alloc < 80)).sum())
+    _n_red    = int((_quarterly_alloc < 30).sum())
+    _n_total  = len(_quarterly_alloc)
+    _sc1, _sc2, _sc3 = st.columns(3)
+    _sc1.metric("🟢 Fully invested quarters",   f"{_n_green} / {_n_total}",  f"{_n_green/_n_total:.0%} of backtest")
+    _sc2.metric("🟡 Partially de-risked",        f"{_n_amber} / {_n_total}",  f"{_n_amber/_n_total:.0%} of backtest")
+    _sc3.metric("🔴 Near / at cash lock-in",     f"{_n_red}   / {_n_total}",  f"{_n_red/_n_total:.0%} of backtest")
+
     # ── CPPI Performance During Stress Periods ────────────────────────────────
     st.markdown("##### CPPI Protection During Historical Stress Periods")
     st.caption(
