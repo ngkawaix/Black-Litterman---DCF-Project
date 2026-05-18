@@ -874,12 +874,12 @@ with tab0:
     st.markdown("#### How to navigate this app")
     _nav_cols = st.columns(6)
     _nav_cards = [
+        ("⚙️", "Sidebar",                 "Adjust model parameters"),
         ("🧮", "DCF Models",              "Where the price targets come from — coming soon"),
         ("💡", "Confidence",              "How strongly each view is held relative to the market"),
         ("📋", "Views & Weights",         "How BL blends those views into a portfolio allocation"),
         ("📈", "Simulation & Stress",     "Tail risk and historical drawdowns on the allocation"),
         ("🔀", "Strategy Comparison",     "BL benchmarked against simpler allocation strategies"),
-        ("⚙️", "Sidebar",                 "Adjust price targets, confidence, and model parameters"),
     ]
     for _col, (_emoji, _title, _desc) in zip(_nav_cols, _nav_cards):
         with _col:
