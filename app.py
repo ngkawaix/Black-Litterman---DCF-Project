@@ -1983,11 +1983,11 @@ with tab5:
     ))
     fig_cppi.add_trace(go.Scatter(
         x=_cppi_w.index, y=_cppi_w.values,
-        mode="lines", name="CPPI (BL)",
+        mode="lines", name="BL (CPPI)",
         line=dict(color="#7B2D8B", width=2.2),
     ))
     fig_cppi.update_layout(
-        title=f"CPPI (BL) vs BL - $10,000 invested (m = {m_cppi:.1f}, floor = {mdd_cppi:.0%} MDD)",
+        title=f"BL (CPPI) vs BL (Unprotected) - $10,000 invested (m = {m_cppi:.1f}, floor = {mdd_cppi:.0%} MDD)",
         xaxis_title="Date",
         yaxis_title="Portfolio Value ($)",
         height=420,
