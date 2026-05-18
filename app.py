@@ -1194,7 +1194,7 @@ with tab2:
  
     # Build the per-ticker rows using live BL outputs
     _conf_rows = {}
-    for _tkr in TICKERS:
+    for _tkr in tick_rets.columns:
         _pi_val  = float(pi.get(_tkr, 0)) if _tkr in pi.index else 0.0
         _cp      = float(current_prices.get(_tkr, 0)) if _tkr in current_prices.index else 0.0
         _tgt     = float(user_targets.get(_tkr, 0))
