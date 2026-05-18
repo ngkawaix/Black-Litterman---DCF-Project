@@ -822,16 +822,15 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, tab4 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📖 Introduction",
+    "🧮 DCF Models,
     "💡 Confidence",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
 ])
 
-
-# ══════════════════════════════════════════════════════════════════════════════
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 0 - Introduction
 # ══════════════════════════════════════════════════════════════════════════════
@@ -967,11 +966,29 @@ with tab0:
         """
     )
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB1 - Confidence
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
+    # ── Section 1: DCF Models (placeholder) ───────────────────────────────────
+    st.markdown("#### 1. Individual DCF Models")
+    st.info(
+        "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
+        "and WACC sensitivity tables are being built for **Amazon, Nvidia, Google, "
+        "Netflix, and Meta** as part of the Wall Street Prep DCF programme. "
+        "Once complete, football field diagrams and the investment narrative for each "
+        "name will appear here, and their confidence levels in the table above will be "
+        "updated to reflect model-derived conviction (marked ⚡).\n\n"
+        "For the remaining 12 stocks, analyst consensus targets are used as the "
+        "view input, with confidence set conservatively to reflect the lower "
+        "specificity of street estimates versus a bottom-up model.",
+        icon="🔬",
+    )
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB2 - Confidence
+# ══════════════════════════════════════════════════════════════════════════════
+with tab2:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -991,7 +1008,6 @@ with tab1:
         the market, so higher confidence pulls the weight down. 
         The conviction map makes this visual.
         """
-
     )
     st.divider()
 
@@ -1174,9 +1190,9 @@ with tab1:
         _cv      = DCF_OVERRIDES.get(_tkr, BASE_CONFIDENCE.get(_tkr, 0.0))
 
         _conf_rows[_tkr] = {
-            "BL Direction":          "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
             "Target ($)":            _tgt,
             "Break-even ($)":        _be,
+            "BL Direction":          "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
             "Gap to B/E":            _gap_pct,
             "Q − π":                 _q_pi,
             "Confidence":            _cv,
@@ -1272,25 +1288,10 @@ with tab1:
     )
     st.divider()
 
-    # ── Section 4: DCF Models (placeholder) ───────────────────────────────────
-    st.markdown("#### 3. Individual DCF Models")
-    st.info(
-        "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
-        "and WACC sensitivity tables are being built for **Amazon, Nvidia, Google, "
-        "Netflix, and Meta** as part of the Wall Street Prep DCF programme. "
-        "Once complete, football field diagrams and the investment narrative for each "
-        "name will appear here, and their confidence levels in the table above will be "
-        "updated to reflect model-derived conviction (marked ⚡).\n\n"
-        "For the remaining 12 stocks, analyst consensus targets are used as the "
-        "view input, with confidence set conservatively to reflect the lower "
-        "specificity of street estimates versus a bottom-up model.",
-        icon="🔬",
-    )
-
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 - Views, Returns & Weights
+# TAB 3 - Views, Returns & Weights
 # ══════════════════════════════════════════════════════════════════════════════
-with tab2:
+with tab3:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1424,9 +1425,9 @@ with tab2:
     st.plotly_chart(fig2, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 - Simulation & Stress Tests
+# TAB 4 - Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
-with tab3:
+with tab4:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
@@ -1627,9 +1628,9 @@ with tab3:
     st.plotly_chart(fig_stress, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 - Strategy Comparison
+# TAB 5 - Strategy Comparison
 # ══════════════════════════════════════════════════════════════════════════════
-with tab4:
+with tab5:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
