@@ -1971,7 +1971,7 @@ with tab5:
     fig_cppi.add_trace(go.Scatter(
         x=_bl_w.index, y=_bl_w.values,
         mode="lines", name="BL (static)",
-        line=dict(color="#253494", width=1.5, dash="dot"),
+        line=dict(color="#253494", width=1.5),
         opacity=0.55,
     ))
     fig_cppi.add_trace(go.Scatter(
