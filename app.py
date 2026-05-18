@@ -1080,8 +1080,8 @@ with tab2:
     _cdf = pd.DataFrame(_crows)
 
     _TEAL, _CORAL = "#1D9E75", "#D85A30"
-    _xmin = min(float(_cdf["gap"].min()) - 3, -22)
-    _xmax = max(float(_cdf["gap"].max()) + 3, 28)
+    _xmin = min(float(_cdf["gap"].min()) - 5, -30)
+    _xmax = max(float(_cdf["gap"].max()) + 5, 35)
     _ymin, _ymax = 18.0, 87.0
 
     # Label positions tuned for the default gap distribution; top/bottom alternated
