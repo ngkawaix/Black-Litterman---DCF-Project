@@ -1800,8 +1800,10 @@ with tab4:
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
             "Controls the CPPI wrapper applied to the BL portfolio in Section 3. "
-            "The floor ratchets up with the portfolio's high-water mark and never falls - "
-            "gains are locked in as the portfolio grows."
+            "The floor ratchets up with the portfolio's high-water mark and never falls as "
+            "gains are locked in as the portfolio grows. Gap Risk is the inverse of the multiplier. "
+            "Default of m=3 implies a confidence that the portfolio should not drawdown past 33.33%
+            before the next rebalance period."
         )
         _col_m, _col_mdd = st.columns(2)
         m_cppi = _col_m.slider(
@@ -1810,7 +1812,9 @@ with tab4:
             help=(
                 "Scales equity exposure relative to the available cushion. "
                 "Higher m = more upside participation but more gap risk. "
-                "At m=1, equity exposure never exceeds the cushion itself."
+                "At m=3, the risky sleeve can drawdown at most 33.33% (1/m) between rebalances before the cushion "
+                "is exhausted and the HWM floor is breached. The multiplier implicitly assumes no single-period drop "
+                "exceeds this treshold. "
             ),
         )
         mdd_cppi = _col_mdd.slider(
