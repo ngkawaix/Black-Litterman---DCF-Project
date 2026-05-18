@@ -1155,10 +1155,11 @@ with tab1:
     # ── Section 3: Confidence Levels & Rationale ─────────────────────────────
     st.markdown("#### 2. Confidence Levels & Rationale")
     st.caption(
-        "The break-even gap shows how far your target is above (+) or below (−) the "
-        "market-implied equilibrium price. Combined with confidence, this determines "
-        "how strongly the BL model overweights (green) or underweights (red) each stock. "
-    )
+        "Sorted by gap to break-even (most bullish first). "
+        "The break-even price is the market-implied equilibrium price; "
+        "a target above it is a bullish signal and below it is bearish. "
+        "The confidence setting then determines how strongly that signal shifts the BL allocation."
+        )
  
     # Build the per-ticker rows using live BL outputs
     _conf_rows = {}
@@ -1170,33 +1171,28 @@ with tab1:
         _gap_pct = (_tgt - _be) / _be if _be > 0 else 0.0
         _q_val   = float((total_return_views - RF).get(_tkr, 0)) if _tkr in total_return_views.index else 0.0
         _q_pi    = _q_val - _pi_val
-        _post    = float(mu_bl.get(_tkr, 0)) if _tkr in mu_bl.index else 0.0
         _cv      = DCF_OVERRIDES.get(_tkr, BASE_CONFIDENCE.get(_tkr, 0.0))
- 
+
         _conf_rows[_tkr] = {
-            "Confidence":       _cv,
-            "BL Direction":     "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
-            "Q − π":            _q_pi,
-            "Target ($)":       _tgt,
-            "Break-even ($)":   _be,
-            "Gap to B/E":       _gap_pct,
-            "BL Posterior":     _post,
-            "Confidence Rationale": CONFIDENCE_RATIONALE.get(_tkr, "—"),
+            "BL Direction":          "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
+            "Target ($)":            _tgt,
+            "Break-even ($)":        _be,
+            "Gap to B/E":            _gap_pct,
+            "Q − π":                 _q_pi,
+            "Confidence":            _cv,
+            "Confidence Rationale":  CONFIDENCE_RATIONALE.get(_tkr, "—"),
         }
- 
+
     _conf_df = (
         pd.DataFrame(_conf_rows)
         .T
         .sort_values("Gap to B/E", ascending=False)
     )
- 
-    _pct_cols   = ["Confidence", "Q − π", "Gap to B/E", "BL Posterior"]
-    _dollar_cols = ["Target ($)", "Break-even ($)"]
- 
+
     _styled_conf = (
         _conf_df.style
-        .format("{:.0%}",    subset=["Confidence", "Q − π", "Gap to B/E", "BL Posterior"])
-        .format("${:,.2f}",  subset=["Target ($)", "Break-even ($)"])
+        .format("{:.0%}",   subset=["Gap to B/E", "Q − π", "Confidence"])
+        .format("${:,.2f}", subset=["Target ($)", "Break-even ($)"])
         .background_gradient(subset=["Confidence"], cmap="YlGnBu")
         .map(
             lambda v: "color: #1D9E75; font-weight: 500;" if "Bullish" in str(v) else
@@ -1209,44 +1205,29 @@ with tab1:
             subset=["Gap to B/E", "Q − π"],
         )
     )
- 
+
     st.dataframe(
         _styled_conf,
         use_container_width=True,
         height=700,
         column_config={
-            "Confidence": st.column_config.NumberColumn(
-                "Confidence",
-                width="small",
-                help=(
-                    "Idzorek confidence (0–100%). Controls how strongly the price target "
-                    "view overrides the market equilibrium in the BL model. "
-                    "Direction matters: for Bullish stocks higher confidence overweights; "
-                    "for Bearish stocks higher confidence underweights. "
-                    "0% = ignore view entirely; 100% = full conviction over the prior."
-                ),
-            ),
             "BL Direction": st.column_config.TextColumn(
                 "Direction",
                 width="small",
                 help="Whether your price target implies Q > π (Bullish) or Q < π (Bearish).",
             ),
-            "Q − π": st.column_config.NumberColumn(
-                "Q − π",
+            "Target ($)": st.column_config.NumberColumn(
+                "Target ($)",
                 width="small",
-                help=(
-                    "Gap between your excess-return view (Q) and the market-implied equilibrium "
-                    "return (π). Positive = bullish signal. Negative = bearish signal. "
-                    "This is the x-axis of the Conviction Map."
-                ),
+                help="Your 1-year price target for this stock.",
             ),
-            "Target ($)": st.column_config.NumberColumn("Target ($)", width="small"),
             "Break-even ($)": st.column_config.NumberColumn(
                 "Break-even ($)",
                 width="small",
                 help=(
-                    "Minimum price target for Q to exceed π (bullish). "
-                    "Computed as: Current Price × (1 + π + rf). "
+                    "The market-implied 1-year price target, derived from the market equilibrium "
+                    "return (π) over your view horizon. "
+                    "Computed as: Current Price x (1 + π + rf). "
                     "If your target is below this, raising confidence will underweight the stock."
                 ),
             ),
@@ -1254,127 +1235,41 @@ with tab1:
                 "Gap to B/E",
                 width="small",
                 help=(
-                    "How far your target is above (+) or below (−) the break-even price, "
-                    "expressed as a percentage. Matches the x-axis of the Break-even Chart above."
+                    "How far your target is above (+) or below (-) the market-implied price, "
+                    "as a percentage. This is the x-axis of the Conviction Map above."
                 ),
             ),
-            "BL Posterior": st.column_config.NumberColumn(
-                "BL Posterior",
-                width="small",
-                help="The blended BL expected return fed into the optimiser.",
-            ),
-            "Status": st.column_config.TextColumn(
-                "Status",
+            "Q − π": st.column_config.NumberColumn(
+                "Q - π",
                 width="small",
                 help=(
-                    "🟢 Earnings reported within last 30 days — data is fresh. "
-                    "🟡 Earnings due within 30 days — consensus may shift. "
-                    "–  No near-term earnings signal."
+                    "Gap between your excess-return view (Q) and the market-implied equilibrium "
+                    "return (π), expressed in return space. Positive = bullish signal. "
+                    "Negative = bearish signal. Directly corresponds to the x-axis of the Conviction Map."
                 ),
             ),
-            "Earnings Highlights": st.column_config.TextColumn(
-                "Earnings Highlights",
-                width="large",
-                help="Summary of the most recent earnings report and key forward indicators.",
+            "Confidence": st.column_config.NumberColumn(
+                "Confidence",
+                width="small",
+                help=(
+                    "Idzorek confidence (0-100%). Controls how strongly the price target "
+                    "view overrides the market equilibrium in the BL model. "
+                    "Direction matters: for Bullish stocks higher confidence overweights; "
+                    "for Bearish stocks higher confidence underweights. "
+                    "0% = ignore view entirely; 100% = full conviction over the prior."
+                ),
             ),
             "Confidence Rationale": st.column_config.TextColumn(
                 "Confidence Rationale",
                 width="large",
                 help=(
                     "BL-specific justification for the confidence level: explains the "
-                    "Q−π direction, the break-even context, and why this confidence is "
-                    "appropriate given current earnings, business quality, and risk."
+                    "gap to break-even and why this confidence is appropriate given "
+                    "current earnings, business quality, and key risks."
                 ),
             ),
         },
     )
-    st.divider()
-
-    # ── Section 3: Valuation Snapshot ─────────────────────────────────────────
-    st.markdown("#### 3. Valuation Snapshot")
-    st.caption(
-        f"Ratios sourced from Yahoo Finance (24h cache). "
-        f"Last Close as of **{price_data.index[-1].strftime('%d %b %Y')}**."
-    )
-
-    val_df = pd.DataFrame(
-        index=TICKERS,
-        data={
-            "Last Close ($)": last_close.reindex(TICKERS),
-            "P/E (TTM)":     val_metrics["P/E (TTM)"].astype(float, errors="ignore"),
-            "Fwd P/E":       val_metrics["Fwd P/E"].astype(float, errors="ignore"),
-            "EV/EBITDA":     val_metrics["EV/EBITDA"].astype(float, errors="ignore"),
-            "P/S":           val_metrics["P/S"].astype(float, errors="ignore"),
-            "P/B":           val_metrics["P/B"].astype(float, errors="ignore"),
-            "Beta":          val_metrics["Beta"].astype(float, errors="ignore"),
-        }
-    )
-
-    numeric_1dp = ["P/E (TTM)", "Fwd P/E", "EV/EBITDA", "P/S", "P/B", "Beta"]
-
-    styled_val = (
-        val_df.style
-        .format("${:,.2f}", subset=["Last Close ($)"])
-        .format("{:.1f}",   subset=numeric_1dp, na_rep="N/A")
-    )
-
-    st.dataframe(
-        styled_val,
-        use_container_width=True,
-        column_config={
-            "Last Close ($)": st.column_config.NumberColumn(
-                "Last Close ($)",
-                help="Most recent trading day closing price (Yahoo Finance).",
-            ),
-            "P/E (TTM)": st.column_config.NumberColumn(
-                "P/E (TTM)",
-                help=(
-                    "Trailing twelve-month price-to-earnings ratio. "
-                    "Share price divided by earnings per share over the last four quarters. "
-                    "Higher = market paying more per dollar of current earnings."
-                ),
-            ),
-            "Fwd P/E": st.column_config.NumberColumn(
-                "Fwd P/E",
-                help=(
-                    "Forward price-to-earnings ratio using next twelve months' consensus EPS estimates. "
-                    "A lower Fwd P/E than trailing P/E implies the market expects earnings to grow."
-                ),
-            ),
-            "EV/EBITDA": st.column_config.NumberColumn(
-                "EV/EBITDA",
-                help=(
-                    "Enterprise Value divided by Earnings Before Interest, Tax, Depreciation & Amortisation. "
-                    "A capital-structure-neutral multiple - useful for comparing companies "
-                    "with different levels of debt or depreciation policy."
-                ),
-            ),
-            "P/S": st.column_config.NumberColumn(
-                "P/S",
-                help=(
-                    "Price-to-Sales ratio: market cap divided by trailing twelve-month revenue. "
-                    "Useful for high-growth companies where earnings are minimal or reinvested."
-                ),
-            ),
-            "P/B": st.column_config.NumberColumn(
-                "P/B",
-                help=(
-                    "Price-to-Book ratio: market cap divided by book value of equity. "
-                    "Note: FICO's negative book equity (from sustained buybacks, not distress) "
-                    "makes this metric uninformative for that ticker."
-                ),
-            ),
-            "Beta": st.column_config.NumberColumn(
-                "Beta",
-                help=(
-                    "Sensitivity of the stock's returns to the broad market (S&P 500). "
-                    "Beta > 1 = amplifies market moves; Beta < 1 = dampens them. "
-                    "Estimated over the trailing 5 years of monthly returns."
-                ),
-            ),
-        },
-    )
-
     st.divider()
 
     # ── Section 4: DCF Models (placeholder) ───────────────────────────────────
