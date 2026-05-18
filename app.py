@@ -874,22 +874,27 @@ with tab0:
     st.divider()
 
     st.markdown("#### How to navigate this app")
-    _nav_cols = st.columns(6)
+    _nav_cols = st.columns(5)
     _nav_cards = [
-        ("⚙️", "Sidebar",                 "Adjust model parameters"),
-        ("🧮", "DCF Models",              "Where the price targets come from — coming soon"),
-        ("💡", "Confidence",              "How strongly each view is held relative to the market"),
-        ("📋", "Views & Weights",         "How BL blends those views into a portfolio allocation"),
-        ("📈", "Simulation & Stress",     "Tail risk and historical drawdowns on the allocation"),
-        ("🔀", "Strategy Comparison",     "BL benchmarked against simpler allocation strategies"),
+        ("🧮", "DCF Models",          "Where the price targets come from -- coming soon"),
+        ("💡", "Confidence",          "How strongly each view is held relative to the market"),
+        ("📋", "Views & Weights",     "How BL blends those views into a portfolio allocation"),
+        ("📈", "Simulation & Stress", "Tail risk and historical drawdowns on the allocation"),
+        ("🔀", "Strategy Comparison", "BL benchmarked against simpler allocation strategies"),
     ]
     for _col, (_emoji, _title, _desc) in zip(_nav_cols, _nav_cards):
         with _col:
             with st.container(border=True):
                 st.markdown(f"**{_emoji} {_title}**")
                 st.caption(_desc)
-
-    st.divider()
+    
+    with st.container(border=True):
+        st.caption(
+            "⚙️ **Sidebar (global)** -- price targets, confidence levels, position size constraints, "
+            "BL parameters, and backtest estimation window are all adjustable from the sidebar and "
+            "flow through every tab in real time."
+        )
+        st.divider()
 
     st.markdown("#### How Black-Litterman Works")
     st.markdown(
