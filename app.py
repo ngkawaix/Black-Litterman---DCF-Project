@@ -1678,7 +1678,6 @@ with tab5:
         a tail-risk estimate.
         """
     )
-    )
     st.divider()
 
     # ── CPPI Parameters ───────────────────────────────────────────────────────
