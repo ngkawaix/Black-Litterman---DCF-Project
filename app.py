@@ -1650,7 +1650,7 @@ with tab5:
         """
         **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
         and the S&P 500 across three lenses: a historical wealth index, a 1-year Monte Carlo 
-        return forecast, and, uniquely, a CPPI drawdown protection analysis.** The wealth index 
+        return forecast, and (uniquely) a CPPI drawdown protection analysis.** The wealth index 
         and Monte Carlo answer *how does BL compare to simpler approaches?* The CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
         behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
@@ -1665,11 +1665,11 @@ with tab5:
         properly rolled, with weights re-estimated at each step using only data available at that 
         point, so there is no look-ahead bias. Black-Litterman is shown differently, as a static 
         allocation applying the current optimal weights to the full history. This is an intentional 
-        design choice rather than an oversight. As BL weights are derived from a forward-looking 
+        design choice rather than an oversight. Because BL weights are derived from a forward-looking 
         view on price targets rather than purely from historical patterns, applying them statically 
         is the more natural representation of what the model is actually doing.
 
-        **Crucial Model Caveats**: The historical comparison is not a like-for-like backtest. 
+        **A note on comparability**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
         This comparison is best read as an illustration of the strategies' structural differences 
         rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
@@ -1680,77 +1680,45 @@ with tab5:
     )
     st.divider()
 
-    # ── CPPI Parameters ───────────────────────────────────────────────────────
-    with st.expander("⚙️ CPPI Parameters", expanded=True):
-        st.caption(
-            "Constant Proportion Portfolio Insurance maintains a floor under your portfolio, "
-            "set as a fixed percentage below the current peak value. As the portfolio grows, "
-            "the floor rises with it, permanently locking in gains (a high-water mark floor). "
-            "The gap between your portfolio value and this floor is the cushion. A fixed multiple "
-            "of the cushion is allocated to equities, with the remainder earning the risk-free rate. "
-            "When markets fall and the cushion narrows, equity exposure is trimmed automatically. "
-            "When markets recover, it rebuilds. The two parameters below control this behaviour."
-        )
-        _col_m, _col_mdd = st.columns(2)
-        m_cppi = _col_m.slider(
-            "Multiplier (m)",
-            min_value=1.0, max_value=5.0, value=3.0, step=0.5,
-            help=(
-                "Scales equity exposure relative to the available cushion. "
-                "Higher m = more upside participation but more gap risk. "
-                "At m=3, the risky sleeve can drawdown at most 33.33% (1/m) between rebalances before the cushion "
-                "is exhausted and the HWM floor is breached. The multiplier implicitly assumes no single-period drop "
-                "exceeds this treshold. "
-            ),
-        )
-        mdd_cppi = _col_mdd.slider(
-            "Max Drawdown Floor (%)",
-            min_value=5.0, max_value=40.0, value=15.0, step=1.0,
-            help=(
-                "Maximum tolerated drawdown from the portfolio's all-time high. "
-                "Floor = (1 − this value) × high-water mark. "
-                "A tighter floor provides more protection but triggers cash lock-in more frequently."
-            ),
-        ) / 100
-        st.caption(
-            f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} (current 1Y T-bill) across "
-            "all historical windows. In practice, the safe asset return varied significantly across these "
-            "periods: near zero during the GFC Echo (2015) and COVID Crash (2020); rising sharply from "
-            "near zero to approximately 4.5% during the 2022 rate hike cycle; and broadly in line with "
-            f"today's rate of {RF:.2%} only for the 2025 tariff window. This means CPPI returns are modestly "
-            "overstated for the pre-2022 low-rate periods and understated during the 2022 hiking cycle, "
-            "where the safe sleeve was earning progressively more precisely as equity exposure was being cut. "
-            "A time-varying rate (such as the historical 3M T-bill series from FRED) would improve "
-            "return attribution precision, but is not implemented here as a deliberate simplification: "
-            "the primary outputs of this section (drawdown reduction, floor breach, and equity allocation "
-            "dynamics) are determined entirely by the equity sleeve and are unaffected by the safe asset "
-            "return assumption."
-            )
+    # ── Session state defaults for CPPI parameters ────────────────────────────
+    # Must be initialised before CPPI computation so values are available for
+    # the wealth index in Section 1. Sliders rendered in Section 3 write back to these keys
+    if "m_cppi" not in st.session_state:
+        st.session_state["m_cppi"] = 3.0
+    if "mdd_cppi_pct" not in st.session_state:
+        st.session_state["mdd_cppi_pct"] = 15.0
 
-    st.markdown("#### 1. Historical Wealth Index")
+    m_cppi   = st.session_state["m_cppi"]
+    mdd_cppi = st.session_state["mdd_cppi_pct"] / 100
 
+    # ── Pre-compute returns for wealth index ──────────────────────────────────
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
         tick_rets, tick_capweights, estimation_window
     )
 
+    #Align Start Date for Wealth Index
     valid_start_date = tick_rets.index[estimation_window]
-
-    # BL: static weights applied to history, aligned to rolling start date
+    
     bl_static_w = bl_w_series.reindex(tick_rets.columns).fillna(0)
     bl_r        = (tick_rets * bl_static_w.values).sum(axis=1)
 
-    btr = pd.DataFrame({
-            "Equal-Weighted":          pd.Series(ew_r).squeeze(),
-            "Cap-Weighted":            pd.Series(cw_r).squeeze(),
-            "Global Minimum Variance":    pd.Series(gmv_r).squeeze(),
-            "Risk Parity":             pd.Series(erc_r).squeeze(),
-            "BL (static)":             pd.Series(bl_r).squeeze(),
-            "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
-        }).loc[valid_start_date:].dropna()
+    # Run CPPI
+    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(
+        risky_r=bl_r, rf=RF, multiplier=m_cppi, max_drawdown=mdd_cppi
+    )
 
-    # Run CPPI and load into Wealth Index
-    cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, multiplier = m_cppi, max_drawdown = mdd_cppi)
-    btr["BL (CPPI)"] = cppi_r
+    btr = pd.DataFrame({
+        "Equal-Weighted":          pd.Series(ew_r).squeeze(),
+        "Cap-Weighted":            pd.Series(cw_r).squeeze(),
+        "Global Minimum Variance": pd.Series(gmv_r).squeeze(),
+        "Risk Parity":             pd.Series(erc_r).squeeze(),
+        "BL (static)":             pd.Series(bl_r).squeeze(),
+        "BL (CPPI)":               pd.Series(cppi_r).squeeze(),
+        "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
+    }).loc[valid_start_date:].dropna()
+
+    # ── Section 1: Historical Wealth Index ────────────────────────────────────
+    st.markdown("#### 1. Historical Wealth Index")
 
     bl_estimation_start = tick_rets.index[0].date()
     bl_estimation_end   = tick_rets.index[-1].date()
@@ -1766,18 +1734,17 @@ with tab5:
         f"**Backtest period:** {backtest_start} → {backtest_end}  \n"
         f"Starts {estimation_window_yrs} year(s) after data begins - the minimum needed for the first rolling estimate."
     )
-    
+
     wealth = (1 + btr).cumprod() * 10_000
 
     palette = {
-        # Ordered light → dark along the YlGnBu ramp; BL gets extra weight to stand out
-        "Equal-Weighted":       ("#fecc5c",  1.4, "solid"),   # warm yellow
-        "Cap-Weighted":         ("#a1dab4",  1.4, "solid"),   # light mint-green
-        "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
-        "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
-        "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
-        "BL (CPPI)":            ("#7B2D8B",  2.0, "solid"),    # purple dashed - protection overlay
-        "S&P 500 (SPY)":         ("#888888",  1.4, "solid"),
+        "Equal-Weighted":          ("#fecc5c",  1.4, "solid"),
+        "Cap-Weighted":            ("#a1dab4",  1.4, "solid"),
+        "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),
+        "Risk Parity":             ("#2c7fb8",  1.4, "solid"),
+        "BL (static)":             ("#253494",  2.5, "solid"),
+        "BL (CPPI)":               ("#7B2D8B",  2.0, "solid"),
+        "S&P 500 (SPY)":           ("#888888",  1.4, "solid"),
     }
 
     fig_wealth = go.Figure()
@@ -1798,7 +1765,7 @@ with tab5:
     )
     st.plotly_chart(fig_wealth, use_container_width=True)
 
-    # Summary Statistics for Backtest
+    #Summary Statistics for Wealth Index
     _ann_scale = np.sqrt(252)
     summary_rows = {}
     for col in btr.columns:
@@ -1806,22 +1773,21 @@ with tab5:
         ann_r     = erk.annualize_rets(r, periods_per_year=252)
         ann_v     = erk.annualize_vol(r, periods_per_year=252)
         skew      = erk.skewness(r)
-        kurt      = erk.kurtosis(r)          # raw kurtosis; normal = 3
-        # Annualise daily VaR/CVaR → multiply by √252
+        kurt      = erk.kurtosis(r)
         cf_var    = erk.var_gaussian(r, level=5, modified=True) * _ann_scale
         cvar_hist = erk.cvar_historic(r, level=5)               * _ann_scale
         sharpe    = erk.sharpe_ratio(r, riskfree_rate=RF, periods_per_year=252)
         cp        = (1 + r).cumprod()
         mdd       = (cp / cp.cummax() - 1).min()
         summary_rows[col] = {
-            "Ann. Return":           ann_r,
-            "Ann. Vol":              ann_v,
-            "Sharpe Ratio":          sharpe,
-            "Max Drawdown":          mdd,
-            "Skewness":              skew,
-            "Kurtosis":              kurt,
-            "Ann. CF VaR (5%)":      cf_var,
-            "Ann. CVaR (5%)":        cvar_hist,
+            "Ann. Return":      ann_r,
+            "Ann. Vol":         ann_v,
+            "Sharpe Ratio":     sharpe,
+            "Max Drawdown":     mdd,
+            "Skewness":         skew,
+            "Kurtosis":         kurt,
+            "Ann. CF VaR (5%)": cf_var,
+            "Ann. CVaR (5%)":   cvar_hist,
         }
 
     summary_df = pd.DataFrame(summary_rows).T
@@ -1854,8 +1820,7 @@ with tab5:
                     "Cornish-Fisher Value at Risk at the 5% level, annualised (×√252). "
                     "Adjusts the standard Gaussian VaR for the observed skewness and kurtosis "
                     "of the return distribution. Represents the annualised threshold loss "
-                    "that is exceeded only 5% of the time. "
-                    "Higher = worse tail risk."
+                    "that is exceeded only 5% of the time. Higher = worse tail risk."
                 ),
             ),
             "Ann. CVaR (5%)": st.column_config.Column(
@@ -1872,8 +1837,8 @@ with tab5:
     )
 
     st.caption(
-        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies have "
-        "Direct Reivestment Plan (DRIP) enabled."
+        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies "
+        "have Direct Reinvestment Plan (DRIP) enabled."
     )
     st.caption(
         "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
@@ -1889,19 +1854,19 @@ with tab5:
 
     st.divider()
 
-    # ── Section 2: 1-Year Monte Carlo Return Forecast ────────────────────────
+    # ── Section 2: 1-Year Monte Carlo Return Forecast ─────────────────────────
     st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
     st.caption(
-        "Uses the same correlated GBM paths from the Simulation & Stress Tests tab but applied to each "
-        "strategy's weights. Lets you see whether BL adds value over simpler alternatives."
+        "Uses the same correlated GBM paths from the Simulation & Stress Tests tab but applied "
+        "to each strategy's weights. Lets you see whether BL adds value over simpler alternatives."
     )
 
     strategy_weights = {
-        "Equal-Weighted":   pd.Series(ew_w, index=tick_rets.columns),
-        "Cap-Weighted":     cw_w_s,
-        "Global Minimum Variance":  pd.Series(gmv_w, index=tick_rets.columns),
-        "Risk Parity":      pd.Series(erc_w, index=tick_rets.columns),
-        "Black-Litterman":      bl_w_series,
+        "Equal-Weighted":          pd.Series(ew_w, index=tick_rets.columns),
+        "Cap-Weighted":            cw_w_s,
+        "Global Minimum Variance": pd.Series(gmv_w, index=tick_rets.columns),
+        "Risk Parity":             pd.Series(erc_w, index=tick_rets.columns),
+        "Black-Litterman":         bl_w_series,
     }
 
     comparison = {}
@@ -1912,11 +1877,10 @@ with tab5:
             "Expected Return": np.mean(fv) - 1,
             "5th pct":         np.percentile(fv, 5) - 1,
             "95th pct":        np.percentile(fv, 95) - 1,
-            "Spread (95--5)":   np.percentile(fv, 95) - np.percentile(fv, 5),
+            "Spread (95--5)":  np.percentile(fv, 95) - np.percentile(fv, 5),
         }
 
-    comp_df = pd.DataFrame(comparison).T
-    comp_df = comp_df.sort_values("Expected Return", ascending=False)
+    comp_df = pd.DataFrame(comparison).T.sort_values("Expected Return", ascending=False)
     st.dataframe(
         comp_df.style
             .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
@@ -1925,8 +1889,6 @@ with tab5:
         use_container_width=True,
     )
 
-    # Dot-plot
-    
     _dotplot_colours = {
         "Equal-Weighted":          "#fecc5c",
         "Cap-Weighted":            "#a1dab4",
@@ -1944,15 +1906,14 @@ with tab5:
             mode="markers",
             marker=dict(size=14, symbol="circle", color=_c),
             error_y=dict(
-                type="data",
-                symmetric=False,
+                type="data", symmetric=False,
                 array     =[row["95th pct"] - row["Expected Return"]],
                 arrayminus=[row["Expected Return"] - row["5th pct"]],
                 color=_c,
             ),
             name=strat_name,
         ))
-    
+
     fig_comp.update_layout(
         title="Expected 1Y Return with 95% Confidence Interval",
         yaxis_tickformat=".1%",
@@ -1964,19 +1925,44 @@ with tab5:
 
     st.divider()
 
+    # ── Section 3: CPPI Drawdown Protection Analysis ──────────────────────────
     st.markdown("#### 3. CPPI Drawdown Protection Analysis")
-    st.caption(
-        "Wraps the BL static portfolio inside a CPPI rule. "
-        "The floor is a high-water mark floor - it rises with the portfolio peak and never falls, "
-        "locking in gains. Equity exposure is cut automatically as the portfolio approaches the floor. "
-        f"Current settings: multiplier m = **{m_cppi:.1f}**, max drawdown floor = **{mdd_cppi:.0%}**."
-    )
+
+    with st.expander("⚙️ CPPI Parameters", expanded=True):
+        st.caption(
+            "At each step, CPPI allocates equity exposure equal to the multiplier times the cushion "
+            "(portfolio value minus floor), with the remainder in a safe asset. "
+            "The two parameters below set how aggressively equity is sized and where the floor sits."
+        )
+        _col_m, _col_mdd = st.columns(2)
+        _col_m.slider(
+            "Multiplier (m)",
+            min_value=1.0, max_value=5.0, step=0.5,
+            key="m_cppi",
+            help=(
+                "Scales equity exposure relative to the available cushion. "
+                "Higher m = more upside participation but more gap risk. "
+                "At m=3, the risky sleeve can drawdown at most 33.33% (1/m) between rebalances "
+                "before the cushion is exhausted and the HWM floor is breached. The multiplier "
+                "implicitly assumes no single-period drop exceeds this threshold."
+            ),
+        )
+        _col_mdd.slider(
+            "Max Drawdown Floor (%)",
+            min_value=5.0, max_value=40.0, step=1.0,
+            key="mdd_cppi_pct",
+            help=(
+                "Maximum tolerated drawdown from the portfolio's all-time high. "
+                "Floor = (1 − this value) × high-water mark. "
+                "A tighter floor provides more protection but triggers cash lock-in more frequently."
+            ),
+        )
 
     # ── CPPI vs BL wealth index with floor overlay ────────────────────────────
-    _init       = 10_000
-    _cppi_w     = cppi_account  * _init
-    _cppi_fl_w  = cppi_floor    * _init
-    _bl_w       = (1 + btr["BL (static)"]).cumprod() * _init
+    _init      = 10_000
+    _cppi_w    = cppi_account * _init
+    _cppi_fl_w = cppi_floor   * _init
+    _bl_w      = (1 + btr["BL (static)"]).cumprod() * _init
 
     fig_cppi = go.Figure()
     fig_cppi.add_trace(go.Scatter(
@@ -2041,8 +2027,8 @@ with tab5:
     # ── CPPI Performance During Stress Periods ────────────────────────────────
     st.markdown("##### CPPI Protection During Historical Stress Periods")
     st.caption(
-        "The table below checks how the BL with CPPI sleeve would have performed relative "
-        "the unprotected BL allocation."
+        "The table below checks how the BL with CPPI sleeve would have performed "
+        "relative to the unprotected BL allocation."
     )
 
     _stress_cppi_rows = {}
@@ -2051,12 +2037,9 @@ with tab5:
         if len(_period_rets) < 5:
             continue
 
-        # Run CPPI over this isolated window
         _c_r, _c_acct, _c_floor, _c_alloc = run_cppi(
-            risky_r      = _period_rets,
-            rf           = RF,
-            multiplier   = m_cppi,
-            max_drawdown = mdd_cppi,
+            risky_r=_period_rets, rf=RF,
+            multiplier=m_cppi, max_drawdown=mdd_cppi,
         )
 
         _bl_cp    = (1 + _period_rets).cumprod()
@@ -2064,13 +2047,11 @@ with tab5:
 
         _bl_total   = float(_bl_cp.iloc[-1] - 1)
         _cppi_total = float(_cppi_cp.iloc[-1] - 1)
-
-        _bl_mdd   = float((_bl_cp   / _bl_cp.cummax()   - 1).min())
-        _cppi_mdd = float((_cppi_cp / _cppi_cp.cummax() - 1).min())
+        _bl_mdd     = float((_bl_cp   / _bl_cp.cummax()   - 1).min())
+        _cppi_mdd   = float((_cppi_cp / _cppi_cp.cummax() - 1).min())
 
         _floor_breached = bool((_c_acct < _c_floor * 0.999).any())
-        _min_alloc      = float(_c_alloc.min())
-        _cash_locked    = _min_alloc < 0.001
+        _cash_locked    = float(_c_alloc.min()) < 0.001
 
         _stress_cppi_rows[_name] = {
             "BL Return":         _bl_total,
@@ -2084,11 +2065,10 @@ with tab5:
         }
 
     _stress_cppi_df = pd.DataFrame(_stress_cppi_rows).T
-
     st.dataframe(
         _stress_cppi_df.style
             .format("{:.2%}", subset=["BL Return", "CPPI Return", "Return Difference",
-                                       "BL Max Drawdown", "CPPI Max Drawdown", "DD Reduction"])
+                                      "BL Max Drawdown", "CPPI Max Drawdown", "DD Reduction"])
             .background_gradient(subset=["CPPI Max Drawdown"], cmap="Reds_r",  vmax=0.0)
             .background_gradient(subset=["BL Max Drawdown"],   cmap="Reds_r",  vmax=0.0)
             .background_gradient(subset=["DD Reduction"],      cmap="RdYlGn", vmin=-0.1, vmax=0.0),
@@ -2113,6 +2093,14 @@ with tab5:
         },
     )
 
+    st.caption(
+        f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} (current 1Y T-bill) across "
+        "all historical windows. In practice this varied significantly: near zero during the GFC Echo (2015) "
+        "and COVID Crash (2020), rising to ~4.5% during the 2022 rate hike cycle. A time-varying rate would "
+        "improve return attribution precision, but the primary outputs here (drawdown reduction, floor breach, "
+        "and equity allocation dynamics) are determined entirely by the equity sleeve and are unaffected by "
+        "this assumption."
+    )
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────────────────────────────────────
