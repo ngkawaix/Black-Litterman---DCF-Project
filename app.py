@@ -1648,37 +1648,49 @@ with tab5:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        **This tab benchmarks the BL portfolio against four alternative allocation 
-        strategies across three lenses**: (1) a historical wealth index, (2) a forward-looking 
-        Monte Carlo return forecast, (3) and a CPPI drawdown protection analysis.
-        
-        The historical wealth index uses a rolling backtest with the estimation window
-        set in the sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, 
-        and Risk Parity are all properly rolled with weights being re-estimated at each step 
-        using only data available at that point, so there is no look-ahead bias.
-        Black-Litterman is shown differently: as a static allocation, applying the current optimal 
-        weights to the full history. This is an intentional design choice rather than an oversight. 
-        Because BL weights are derived from a forward-looking view on price targets rather than 
-        purely from historical patterns, applying them statically is the more natural representation 
-        of what the model is actually doing.
-        
-        **Critical Model Caveats**: The historical comparison is not a like-for-like backtest. 
+        **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
+        and the S&P 500 across three lenses: a historical wealth index, a 1-year Monte Carlo 
+        return forecast, and, uniquely, a CPPI drawdown protection analysis.** The wealth index 
+        and Monte Carlo answer *how does BL compare to simpler approaches?* The CPPI analysis asks 
+        a different question: *what does it cost to protect capital, and how does the BL portfolio 
+        behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
+        strategies, is built for wealth accumulation. But most real investors have a loss tolerance, 
+        and cannot afford to absorb drawdowns like the 34% COVID crash and simply wait for recovery. 
+        CPPI wraps a dynamic floor around BL, creating a version of the portfolio that a 
+        capital-constrained investor could hold. Comparing the two reveals the cost of that 
+        protection in terms of forgone upside.
+
+        The historical wealth index uses a rolling backtest with the estimation window set in the 
+        sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, and Risk Parity are all 
+        properly rolled, with weights re-estimated at each step using only data available at that 
+        point, so there is no look-ahead bias. Black-Litterman is shown differently, as a static 
+        allocation applying the current optimal weights to the full history. This is an intentional 
+        design choice rather than an oversight. As BL weights are derived from a forward-looking 
+        view on price targets rather than purely from historical patterns, applying them statically 
+        is the more natural representation of what the model is actually doing.
+
+        **Crucial Model Caveats**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
-        This comparison is best read as an illustration of the strategies' structural differences rather 
-        than a performance horse-race. The 1-Year Monte Carlo Return Forecast in Section 2 provides 
-        a more comparable forward-looking view, though as noted in the Simulation & Stress Tests tab, 
-        GBM paths assume Gaussian returns and should be treated as a baseline rather than a tail-risk estimate.
-        
+        This comparison is best read as an illustration of the strategies' structural differences 
+        rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
+        provides a more comparable forward-looking view, though as noted in the Simulation & Stress 
+        Tests tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
+        a tail-risk estimate.
         """
+    )
     )
     st.divider()
 
     # ── CPPI Parameters ───────────────────────────────────────────────────────
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
-            "Controls the CPPI wrapper applied to the BL portfolio in Section 3. "
-            "The floor ratchets up with the portfolio's high-water mark as "
-            "gains are locked in as the portfolio grows."
+            "Constant Proportion Portfolio Insurance maintains a floor under your portfolio, "
+            "set as a fixed percentage below the current peak value. As the portfolio grows, "
+            "the floor rises with it, permanently locking in gains (a high-water mark floor). "
+            "The gap between your portfolio value and this floor is the cushion. A fixed multiple "
+            "of the cushion is allocated to equities, with the remainder earning the risk-free rate. "
+            "When markets fall and the cushion narrows, equity exposure is trimmed automatically. "
+            "When markets recover, it rebuilds. The two parameters below control this behaviour."
         )
         _col_m, _col_mdd = st.columns(2)
         m_cppi = _col_m.slider(
