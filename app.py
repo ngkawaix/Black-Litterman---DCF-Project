@@ -1222,8 +1222,9 @@ with tab2:
 
     _styled_conf = (
         _conf_df.style
-        .format("{:.0%}",   subset=["Gap to B/E", "Q − π", "Confidence"])
+        .format("{:.2f%}",   subset=["Gap to B/E", "Q − π"])
         .format("${:,.2f}", subset=["Target ($)", "Break-even ($)"])
+        .format("{:.2f)", subset=["Confidence"]
         .map(
             lambda v: "color: #1D9E75; font-weight: 500;" if "Bullish" in str(v) else
                       "color: #D85A30; font-weight: 500;" if "Bearish" in str(v) else "",
