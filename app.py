@@ -102,102 +102,74 @@ EARNINGS_HIGHLIGHTS = {
 
 CONFIDENCE_RATIONALE = {
     "AAPL": (
-        "Target ($305) implies Q = −2.2% — below the risk-free rate — against a market-implied "
-        "π of 14.5% (break-even: $355). Some bearishness is intentional given the tariff overhang "
-        "and supply chain transition, but 0.40 was excessive; 0.20 keeps a mild discount without "
-        "aggressively zeroing the second-largest position in the universe."
+        "Target sits 14% below the market-implied price — a deliberate mild bearish tilt on tariff overhang and supply chain transition risk. "
+        "Confidence at 0.20 preserves the discount signal without aggressively underweighting the second-largest position in the universe."
     ),
     "ADBE": (
-        "Target a bullish gap of +11.7% above break-even ($294). The structural AI "
-        "commoditisation risk is genuine — two consecutive ARR misses signal execution uncertainty. "
-        "0.25 is the lowest confidence among bullish names and appropriate until Firefly shows up "
-        "in ARR acceleration."
+        "Target is 12% above the market-implied price, a bullish view against a structurally challenged backdrop. "
+        "Confidence at 0.25 is the lowest among bullish names | Reflects two consecutive ARR misses and unproven Firefly AI monetisation."
     ),
     "AMAT": (
-        "Target is −9.4% below break-even ($537). Confidence of 0.15 to reflect continued confidence "
-        "in AMAT's execution in Q2 and Deutsche Bank raising PT to $550."
+        "Target is 9% below the market-implied price on continued NAND and trailing-edge weakness. "
+        "Confidence at 0.15 keeps the bearish tilt soft | Deutsche Bank's $550 PT raise and solid Q2 execution prevent a stronger discount."
     ),
-    
     "AMZN": (
-        "A near-accidental bearish gap of −1.5%: target $312 vs break-even $317. AWS +28% YoY and "
-        "record 13.1% operating margins do not warrant active underweighting. Reduced to 0.25 to "
-        "minimise the unintentional effect while preserving a small uncertainty buffer."
+        "Target falls 1.5% below the market-implied price — a near-accidental bearish gap that does not reflect a genuine bearish view. "
+        "Confidence at 0.25 reflects confidence | AWS +28% YoY and record 13.1% operating margin do not warrant a discount."
     ),
     "ASML": (
-        "EUV monopoly with demand visibility to 2027, but the analyst consensus target ($1,661) "
-        "falls −8.8% below break-even ($1,821) — any consensus-anchored target will be bearish in "
-        "BL terms. Confidence of 0.10 to preserve equilibrium weight. "
+        "Target is 9% below the market-implied price because any consensus-anchored estimate will sit below a market already pricing in ASML's EUV monopoly and 2027 demand visibility. "
+        "Confidence at 0.10 preserves equilibrium weight | Reflects a data limitation, not a bearish thesis."
     ),
     "CPRT": (
-        "Target is +16.3% above break-even ($37). However, the stock has declined ~50% from its "
-        "52-week high. Confidence is kept at 0.20 to keep allocation low."
+        "Target is 16% above the market-implied price, but the stock has declined ~50% from its 52-week high. "
+        "Confidence at 0.20 reflects uncertainty following the sharp de-rating, despite a debt-free balance sheet and resilient margins."
     ),
     "FICO": (
-        "Target is +20.0% above break-even ($1,301). Strong Q2 results with raised guidance and accelerating "
-        "Scores revenue support a confidence of 0.45 but is not higher due to increasing competition from VantageScore4.0 "
-        "In April 2026, Fannie Mae now allows lenders to use VantageScore 4.0 as an alternative to the traditional Classic FICO model. "
-        "Continued strong performance may result in a higher confidence as FICO shows it can defend its top-line. "
+        "Target is 20% above the market-implied price, supported by strong Q2 results and accelerating Scores revenue. "
+        "Confidence at 0.45 reflects uncertainty following Fannie Mae's April 2026 approval of VantageScore 4.0 as a FICO alternative | Structural competitive risk warrants caution."
     ),
     "GOOGL": (
-        "Target is -9.1% below break-even ($471). A confidence of 0.15 was chosen to "
-        "reduce own views relative to the market, which is warranted given that GOOGL has "
-        "continued to execute, and in line with blowout Q1 results in 2026 of Rev +19% and Cloud +63% YoY. "
-        "I did not grant a lower confidence given the recent run up on the stock in the past year."
+        "Target is 9% below the market-implied price, but this does not reflect a genuine bearish view — Q1 2026 revenue +19% and Cloud +63% YoY contradict underweighting. "
+        "Confidence at 0.15 defers largely to the market given continued execution and a significant run-up over the past year."
     ),
     "LRCX": (
-        "Priority correction: the previous 0.65 confidence combined with a −12.0% break-even gap "
-        "was the single most damaging setting in the model. Revenue +28% YoY and ~35% recurring "
-        "service revenue contradict the bearish stance. Neutralised to 0.10 pending a target "
-        "refresh — break-even is $352; a target of $370–380 would flip this bullish."
+        "Target is 12% below the market-implied price, a stale estimate that does not reflect revenue +28% YoY or ~35% recurring service revenue providing cycle insulation. "
+        "Confidence at 0.10 reflects confidence in LRCX (but need more research)."
     ),
     "MA": (
-        "Target is +14.1% above break-even ($570), one of the cleaner bullish setups. Trading near "
-        "its 52-week low with fresh Q1 earnings (revenue +12% YoY, dividend raised for 14th year) "
-        "and analyst consensus at $647. Confidence of 0.55 is warranted by recent earnings clarity "
-        "and low-vs-history valuation."
+        "Target is 14% above the market-implied price, with the stock near its 52-week low despite Q1 revenue +12% YoY and a 14th consecutive dividend increase. "
+        "Confidence at 0.55 reflects strong earnings clarity and a below-historical valuation entry point."
     ),
     "META": (
-        "Strongest bullish signal in the book: target +11.0% above break-even ($745) with "
-        "Q−π = +13.4%. Confidence of 0.65 reflects strong belief in the underlying business but "
-        " not a higher confidence as 2026 capex raised to $125–145B and buybacks paused. "
+        "Target is 11% above the market-implied price, the strongest bullish signal in the portfolio. "
+        "Confidence capped at 0.65 rather than higher given 2026 capex guidance raised to $125–145B and buybacks paused."
     ),
     "MSCI": (
-        "Target is +4.7% above break-even ($654), a moderate bullish gap. 95%+ subscription "
-        "retention and early ESG recovery support a confidence of 0.55. The zero BL allocation in the current "
-        "output is a max-Sharpe correlation artefact and not a confidence problem. "
-
+        "Target is 5% above the market-implied price on 95%+ subscription retention and early ESG segment recovery. "
+        "Confidence at 0.55; the zero BL allocation is a max-Sharpe correlation artefact, not a reflection of low conviction."
     ),
     "MSFT": (
-        "Target is +13.3% above break-even ($496), with Azure +40% YoY, AI business at $37B ARR "
-        "(+123% YoY) and 46% operating margin held. The stock's pullback from $555 to $420 has "
-        "widened the gap, making the confidence of 0.60 justified given the market overreaction. "
+        "Target is 13% above the market-implied price; the pullback from $555 to $420 has widened the gap despite Azure +40% YoY and AI revenue at a $37B annualised run rate. "
+        "Confidence at 0.60 reflects conviction that the selloff overweights short-term macro noise relative to the underlying business trajectory."
     ),
     "NFLX": (
-        "Target is +9.3% above break-even ($105). The ad-supported tier now accounts for ~40% "
-        "of new sign-ups and FCF guidance was raised. Modest reduction from 0.60 to 0.55 reflects "
-        "that this remains a street estimate with no DCF completed — conservative confidence is "
-        "appropriate pending deeper modelling."
+        "Target is 10% above the market-implied price on ad-supported tier momentum (~40% of new sign-ups) and raised FCF guidance. "
+        "Confidence at 0.55 rather than higher — this remains a street estimate with no completed DCF model."
     ),
     "NVDA": (
-        "Intentional neutralisation: NVDA's π = 27.2% is the highest in the universe (largest cap "
-        "weight + beta 1.7), and the current target of $270 implies Q = 16.0% — placing it −8.5% "
-        "below break-even at $295. Confidence set to 0.10 to let equilibrium dominate. A DCF "
-        "target above $295 is needed before meaningful bullish confidence is appropriate."
+        "Target is 8.5% below the market-implied price — an intentional neutralisation given NVDA carries the highest π in the universe (largest cap weight, beta 1.7) and the current target implies meaningful underperformance. "
+        "Confidence at 0.10 to let equilibrium dominate; a DCF-derived target above the break-even of $295 is needed before meaningful bullish confidence is warranted."
     ),
     "TSM": (
-        "Target is −4.1% below break-even ($483), making this a mild intentional bearish view. "
-        "Taiwan geopolitical risk is persistent and a structural discount is defensible. 0.25 "
-        "preserves that discount signal without making it a dominant underweight — half the "
-        "previous 0.50 confidence."
+        "Target is 4% below the market-implied price — a deliberate discount for persistent Taiwan geopolitical risk. "
+        "Confidence at 0.25, halved from its previous level, preserves the signal without making TSM a dominant underweight."
     ),
     "V": (
-        "Target is +7.2% above break-even ($372), a genuine bullish view. The zero BL allocation "
-        "is not a confidence issue — Visa and Mastercard are highly correlated and MA has a higher "
-        "posterior, so the max-Sharpe optimiser concentrates in MA and zeroes V. If both are "
-        "desired, tighten the max position size to 12–15%."
+        "Target is 7% above the market-implied price — a genuine bullish view on cross-border recovery and a value-added services mix shift toward higher margins. "
+        "The zero BL allocation reflects optimiser concentration in the higher-posterior MA rather than low conviction; tightening the max position size to 12–15% would reinstate both."
     ),
 }
-
 
 STRESS_PERIODS = {
     "COVID Crash (Feb--Mar 2020)":        ("2020-02-19", "2020-03-23"),
@@ -1055,12 +1027,9 @@ with tab1:
     # ── Section 1: Conviction Map ──────────────────────────────────────────────
     st.markdown("#### 1. Conviction Map")
     st.caption(
-        "Each stock plotted by how far your DCF view deviates from the market equilibrium (x-axis) "
-        "and your confidence in that view (y-axis). Stocks to the right have bullish views (Q > π) "
-        "and will be overweighted; stocks to the left have bearish views (Q < π) and will be "
-        "underweighted. The 50% line separates deliberate, high-conviction tilts from mild signals. "
-        "Where you have adjusted a confidence slider from its default, a hollow marker shows the "
-        "original level and the dotted line shows how far you have moved."
+        "Adjusting the confidence sliders in the slide bar will result in this map changing "
+        " dyanmically. Use this chart and the Confidence Levels and Rationale to make map "
+        "your own convictions. "
     )
 
     # ── Build per-ticker conviction rows from live BL outputs ─────────────────
@@ -1186,11 +1155,9 @@ with tab1:
     # ── Section 3: Confidence Levels & Rationale ─────────────────────────────
     st.markdown("#### 2. Confidence Levels & Rationale")
     st.caption(
-        "Sorted by **break-even gap** (most bullish first). "
         "The break-even gap shows how far your target is above (+) or below (−) the "
         "market-implied equilibrium price. Combined with confidence, this determines "
         "how strongly the BL model overweights (green) or underweights (red) each stock. "
-        "🟢 = earnings reported within 30 days.  🟡 = earnings due within 30 days."
     )
  
     # Build the per-ticker rows using live BL outputs
@@ -1824,8 +1791,21 @@ with tab4:
                 "A tighter floor provides more protection but triggers cash lock-in more frequently."
             ),
         ) / 100
+        st.caption(
+            f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} (current 1Y T-bill) across "
+            "all historical windows. In practice, the safe asset return varied significantly across these "
+            "periods: near zero during the GFC Echo (2015) and COVID Crash (2020); rising sharply from "
+            "near zero to approximately 4.5% during the 2022 rate hike cycle; and broadly in line with "
+            f"today's rate of {RF:.2%} only for the 2025 tariff window. This means CPPI returns are modestly "
+            "overstated for the pre-2022 low-rate periods and understated during the 2022 hiking cycle, "
+            "where the safe sleeve was earning progressively more precisely as equity exposure was being cut. "
+            "A time-varying rate (such as the historical 3M T-bill series from FRED) would improve "
+            "return attribution precision, but is not implemented here as a deliberate simplification: "
+            "the primary outputs of this section (drawdown reduction, floor breach, and equity allocation "
+            "dynamics) are determined entirely by the equity sleeve and are unaffected by the safe asset "
+            "return assumption."
+            )
 
-        
     st.markdown("#### 1. Historical Wealth Index")
 
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
@@ -1971,8 +1951,21 @@ with tab4:
     )
 
     st.caption(
-        "**Note**: Summary Statistcs assume all strategies have Direct Reivestment Plan (DRIP) enabled."
+        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies have 
+        Direct Reivestment Plan (DRIP) enabled."
     )
+    st.caption(
+        "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
+        "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
+        "prior - where all pairwise correlations are set to the cross-sectional average - "
+        "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
+        "stocks the sample covariance matrix is prone to estimation noise and "
+        "near-singularity, which causes unconstrained optimisers to produce extreme, "
+        "unstable weights. Shrinking toward the structured prior regularises the matrix, "
+        "reduces its condition number, and makes the optimisation numerically well-behaved "
+        "without requiring a larger asset universe to stabilise the estimate."
+    )
+
     st.divider()
 
     # ── Section 2: 1-Year Monte Carlo Return Forecast ────────────────────────
@@ -2197,18 +2190,6 @@ with tab4:
                      "the CPPI strategy stays there for the remainder of that window.",
             ),
         },
-    )
-    
-    st.caption(
-        "⚙️ **Note on covariance estimation for Wealth Index:** GMV and Risk Parity use the Elton-Gruber Constant "
-        "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-        "prior - where all pairwise correlations are set to the cross-sectional average - "
-        "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
-        "stocks the sample covariance matrix is prone to estimation noise and "
-        "near-singularity, which causes unconstrained optimisers to produce extreme, "
-        "unstable weights. Shrinking toward the structured prior regularises the matrix, "
-        "reduces its condition number, and makes the optimisation numerically well-behaved "
-        "without requiring a larger asset universe to stabilise the estimate."
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
