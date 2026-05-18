@@ -2198,13 +2198,6 @@ with tab4:
             ),
         },
     )
-    st.caption(
-        f"Settings: multiplier m = **{m_cppi:.1f}**, floor = **{mdd_cppi:.0%}** max drawdown from HWM. "
-        "Unlike a GBM-based gap risk test, these results use actual daily returns and capture "
-        "real correlation breakdowns and volatility clustering — the tail-risk regimes that matter most."
-    )
-
-    st.divider()
     
     st.caption(
         "⚙️ **Note on covariance estimation for Wealth Index:** GMV and Risk Parity use the Elton-Gruber Constant "
