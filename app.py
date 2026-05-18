@@ -2213,7 +2213,7 @@ with tab4:
     st.divider()
     
     st.caption(
-        "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
+        "⚙️ **Note on covariance estimation for Wealth Index:** GMV and Risk Parity use the Elton-Gruber Constant "
         "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
         "prior - where all pairwise correlations are set to the cross-sectional average - "
         "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
