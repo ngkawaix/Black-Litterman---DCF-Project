@@ -130,9 +130,7 @@ CONFIDENCE_RATIONALE = {
     ),
     "CPRT": (
         "Target is +16.3% above break-even ($37). However, the stock has declined ~50% from its "
-        "52-week high. Confidence is kept at 0.20 
-        "earnings narrative — this is a knowledge gap. Confidence reduced to 0.20 until the cause "
-        "of the decline is understood."
+        "52-week high. Confidence is kept at 0.20 to keep allocation low."
     ),
     "FICO": (
         "Target is +20.0% above break-even ($1,301). Strong Q2 results with raised guidance and accelerating "
