@@ -852,7 +852,7 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "📖 Introduction",
-    "💡 Confidence & Price Targets",
+    "💡 Confidence",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
     "🔀 Strategy Comparison",
