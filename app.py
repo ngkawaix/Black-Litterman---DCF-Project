@@ -1014,9 +1014,9 @@ with tab1:
         and how they interact with the model.**
         
         Confidence in the Black-Litterman Model is not absolute. It is always 
-        relative to the market. A confidence of 0 means: ignore your view entirely 
-        and defer to what the market implies. A confidence of 1 means: trust your 
-        view completely and let it override the market equilibrium.
+        relative to the market. A confidence of 0 means ignoring your view entirely 
+        and deferomg to what the market implies. Conversely, a confidence of 1 means you
+        trusts your view completely and let it override the market equilibrium.
         
         This matters because the direction of the effect depends on whether your 
         price target is above or below what the market is already pricing in. 
