@@ -2004,7 +2004,10 @@ with tab5:
     st.plotly_chart(fig_cppi, use_container_width=True)
 
     # ── Equity allocation over time ───────────────────────────────────────────
-    _eq_pct = (cppi_alloc * 100).clip(0, 100)
+    #Reindexed to backtest start date with rolling window constraint, not out of necessity, but consistency.
+    #BL are static weights with allocations that go back even to the start date.
+    _eq_pct = (cppi_alloc.reindex(btr.index) * 100).clip(0, 100) 
+    
     fig_alloc = go.Figure()
     fig_alloc.add_trace(go.Scatter(
         x=_eq_pct.index, y=_eq_pct.values,
