@@ -10,7 +10,7 @@ How to run locally:"**Views & Weights** to see how price targets feed through th
 
 Deployment note:
     edhec_risk_kit_final.py  <-- must sit in the same folder as this file
-    requirements.txt         <-- must also be in the repo root
+    requirements.txt         <-- must also be in the repo rootdot
 """
 
 import warnings
@@ -1877,7 +1877,6 @@ with tab4:
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
         "CPPI (BL)":            ("#7B2D8B",  2.0, "solid"),    # purple dashed - protection overlay
         "S&P 500 (SPY)":         ("#888888",  1.4, "solid"),
-        
     }
 
     fig_wealth = go.Figure()
@@ -2013,7 +2012,7 @@ with tab4:
     )
 
     # Dot-plot
-
+    
     _dotplot_colours = {
         "Equal-Weighted":          "#fecc5c",
         "Cap-Weighted":            "#a1dab4",
@@ -2021,7 +2020,7 @@ with tab4:
         "Risk Parity":             "#2c7fb8",
         "Black-Litterman":         "#253494",
     }
-    
+
     fig_comp = go.Figure()
     for strat_name, row in comparison.items():
         _c = _dotplot_colours.get(strat_name, "#888888")
@@ -2029,15 +2028,17 @@ with tab4:
             x=[strat_name],
             y=[row["Expected Return"]],
             mode="markers",
-            marker=dict(size=14, symbol="circle"),
-            name=strat_name,
+            marker=dict(size=14, symbol="circle", color=_c),
             error_y=dict(
                 type="data",
                 symmetric=False,
                 array     =[row["95th pct"] - row["Expected Return"]],
                 arrayminus=[row["Expected Return"] - row["5th pct"]],
+                color=_c,
             ),
+            name=strat_name,
         ))
+    
     fig_comp.update_layout(
         title="Expected 1Y Return with 95% Confidence Interval",
         yaxis_tickformat=".1%",
