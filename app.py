@@ -1846,8 +1846,8 @@ with tab4:
     )
 
     st.caption(
-        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies have 
-        Direct Reivestment Plan (DRIP) enabled."
+        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies have "
+        "Direct Reivestment Plan (DRIP) enabled."
     )
     st.caption(
         "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
