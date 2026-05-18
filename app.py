@@ -139,9 +139,9 @@ CONFIDENCE_RATIONALE = {
         "Continued strong performance may result in a higher confidence as FICO shows it can defend its top-line. "
     ),
     "GOOGL": (
-        "Target is -9.1% below break-even ($471). A confidence of 0.15 was chosen to give more"
-        "reduce own views relative to the market, which is warranted given that GOOGL has"
-        "continued to execute, and in line with blowout Q1 results in 2026 of Rev +19% and Cloud +63% YoY.
+        "Target is -9.1% below break-even ($471). A confidence of 0.15 was chosen to "
+        "reduce own views relative to the market, which is warranted given that GOOGL has "
+        "continued to execute, and in line with blowout Q1 results in 2026 of Rev +19% and Cloud +63% YoY. "
         "I did not grant a lower confidence given the recent run up on the stock in the past year."
     ),
     "LRCX": (
