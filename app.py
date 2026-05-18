@@ -33,7 +33,7 @@ import edhec_risk_kit_final as erk
 # PAGE CONFIG  (must be the very first Streamlit call)
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="DCF × Black-Litterman",
+    page_title="Portfolio Optimiser (DCF-BL)",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
