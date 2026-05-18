@@ -1190,6 +1190,9 @@ with tab2:
         "The break-even price is the market-implied equilibrium price; "
         "a target above it is a bullish signal and below it is bearish. "
         "The confidence setting then determines how strongly that signal shifts the BL allocation."
+        "Gap to B/E expresses this signal as a percentage difference between your price target "
+        "and the market-implied price. Q − π is the same signal translated into **return space**, "
+        "and is the figure the BL formula actually uses."
         )
  
     # Build the per-ticker rows using live BL outputs
