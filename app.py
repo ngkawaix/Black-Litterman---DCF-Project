@@ -824,7 +824,7 @@ st.caption(
 # ─────────────────────────────────────────────────────────────────────────────
 tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📖 Introduction",
-    "🧮 DCF Models,
+    "🧮 DCF Models",
     "💡 Confidence",
     "📋 Views, Returns & Weights",
     "📈 Simulation & Stress Tests",
@@ -871,42 +871,21 @@ with tab0:
         """
     )
     
-    st.info(
-    "**Suggested reading order:** Introduction (you are here) → "
-    "**Confidence** to see how initial confidences were derived → "
-    "**Views & Weights** to see the deriation of the BL portfolio allocation → "
-    "**Simulation & Stress Tests** for tail risk holding the allocation → "
-    "**Strategy Comparison** to benchmark BL against alternatives. "
-    "All model assumptions are adjustable in the sidebar.",
-    icon="🗺️",
-    )
-
-    st.divider()
-
-    st.markdown("#### Stock Universe & Selection Criteria")
-    st.markdown(
-        """
-        The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
-        below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
-        market cap of $10 billion**. ROIC was chosen as the primary quality
-        filter because it measures how efficiently a company converts capital
-        into profit - sustained high ROIC over multiple years is one of the
-        most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
-        to screen for profitable generating companies, this method would screen out high quality companies like
-        AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
-
-        The resulting universe is concentrated in technology, semiconductors,
-        payments infrastructure, and financial data - sectors where
-        capital-light business models and high switching costs tend to produce
-        the kind of high quality businesses with durable moats. Two names
-        warrant a note: FICO carries negative book equity due to sustained
-        buybacks rather than distress, which causes standard debt screens to
-        misread it; ASML is the sole supplier of extreme ultraviolet
-        lithography equipment to the global semiconductor industry, making it
-        structurally irreplaceable within the AI infrastructure stack.
-        """
-    )
+    st.markdown("#### How to navigate this app")
+    _nav_cols = st.columns(6)
+    _nav_cards = [
+        ("🧮", "DCF Models",              "Where the price targets come from — coming soon"),
+        ("💡", "Confidence",              "How strongly each view is held relative to the market"),
+        ("📋", "Views & Weights",         "How BL blends those views into a portfolio allocation"),
+        ("📈", "Simulation & Stress",     "Tail risk and historical drawdowns on the allocation"),
+        ("🔀", "Strategy Comparison",     "BL benchmarked against simpler allocation strategies"),
+        ("⚙️", "Sidebar",                 "Adjust price targets, confidence, and model parameters"),
+    ]
+    for _col, (_emoji, _title, _desc) in zip(_nav_cols, _nav_cards):
+        with _col:
+            with st.container(border=True):
+                st.markdown(f"**{_emoji} {_title}**")
+                st.caption(_desc)
 
     st.divider()
 
@@ -970,8 +949,36 @@ with tab0:
 # TAB1 - Confidence
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    # ── Section 1: DCF Models (placeholder) ───────────────────────────────────
-    st.markdown("#### 1. Individual DCF Models")
+    # ── Section 1: Stock Universe & Selection Criteria ───────────────────────────────────
+    st.markdown("#### 1. Stock Universe & Selection Criteria")
+    st.markdown(
+        """
+        The 17 stocks in this portfolio were selected through a systematic
+        fundamental screen using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
+        below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
+        market cap of $10 billion**. ROIC was chosen as the primary quality
+        filter because it measures how efficiently a company converts capital
+        into profit - sustained high ROIC over multiple years is one of the
+        most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
+        to screen for profitable generating companies, this method would screen out high quality companies like
+        AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
+
+        The resulting universe is concentrated in technology, semiconductors,
+        payments infrastructure, and financial data - sectors where
+        capital-light business models and high switching costs tend to produce
+        the kind of high quality businesses with durable moats. Two names
+        warrant a note: FICO carries negative book equity due to sustained
+        buybacks rather than distress, which causes standard debt screens to
+        misread it; ASML is the sole supplier of extreme ultraviolet
+        lithography equipment to the global semiconductor industry, making it
+        structurally irreplaceable within the AI infrastructure stack.
+        """
+    )
+
+    st.divider()
+
+    # ── Section 2: DCF Models (placeholder) ───────────────────────────────────
+    st.markdown("#### 2. Individual DCF Models")
     st.info(
         "📐  **In progress.** Individual DCF models with bear / base / bull scenarios "
         "and WACC sensitivity tables are being built for **Amazon, Nvidia, Google, "
