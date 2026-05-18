@@ -894,8 +894,9 @@ with tab0:
             "BL parameters, and backtest estimation window are all adjustable from the sidebar and "
             "flow through every tab in real time."
         )
-        st.divider()
 
+    st.divider()
+        
     st.markdown("#### How Black-Litterman Works")
     st.markdown(
         """
