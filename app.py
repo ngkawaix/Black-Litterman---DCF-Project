@@ -2048,6 +2048,8 @@ with tab4:
     )
     st.plotly_chart(fig_comp, use_container_width=True)
 
+    st.divider()
+
     st.markdown("#### 3. CPPI Drawdown Protection Analysis")
     st.caption(
         "Wraps the BL static portfolio inside a CPPI rule. "
@@ -2119,22 +2121,14 @@ with tab4:
         paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_alloc, use_container_width=True)
-    st.caption(
-        "When equity allocation drops sharply to zero, the portfolio has hit the floor - "
-        "**cash lock-in**. Once locked, the strategy stays in the safe asset permanently "
-        "for that path. This is a known property of CPPI, not a bug."
-    )
 
     st.divider()
 
     # ── CPPI Performance During Stress Periods ────────────────────────────────
     st.markdown("##### CPPI Protection During Historical Stress Periods")
     st.caption(
-        "The most meaningful test of a floor strategy is not a Gaussian simulation — it is whether "
-        "the protection held during the real fat-tail events that GBM cannot reproduce: "
-        "correlation spikes, overnight gap-downs, and liquidity crises. "
-        "The table below applies the same CPPI rule to each historical stress window and compares "
-        "the drawdown of the protected portfolio against the unprotected BL allocation."
+        "The table below checks how the BL with CPPI sleeve would have performed relative "
+        "the unprotected BL allocation."
     )
 
     _stress_cppi_rows = {}
