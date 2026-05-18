@@ -5,7 +5,7 @@ A Streamlit app for setting Bear / Base / Bull price targets per stock
 (derived from DCF work) and seeing how each scenario shifts the Black-Litterman
 optimal portfolio weights, Monte Carlo distribution, and stress-test results.
 
-How to run locally:
+How to run locally:"**Views & Weights** to see how price targets feed through the model → "
     streamlit run app.py
 
 Deployment note:
@@ -108,16 +108,16 @@ CONFIDENCE_RATIONALE = {
         "aggressively zeroing the second-largest position in the universe."
     ),
     "ADBE": (
-        "Target implies a bullish gap of +11.7% above break-even ($294). The structural AI "
+        "Target a bullish gap of +11.7% above break-even ($294). The structural AI "
         "commoditisation risk is genuine — two consecutive ARR misses signal execution uncertainty. "
         "0.25 is the lowest confidence among bullish names and appropriate until Firefly shows up "
         "in ARR acceleration."
     ),
     "AMAT": (
-        "Target ($486) sits −9.4% below break-even ($537), making this an unintentional bearish "
-        "bet despite record Q2 earnings and Deutsche Bank raising PT to $550. Neutralised at 0.15 "
-        "pending a target refresh to ~$540+, which would flip this to a mild bullish view."
+        "Target is −9.4% below break-even ($537). Confidence of 0.15 to reflect continued confidence "
+        "in AMAT's execution in Q2 and Deutsche Bank raising PT to $550."
     ),
+    
     "AMZN": (
         "A near-accidental bearish gap of −1.5%: target $312 vs break-even $317. AWS +28% YoY and "
         "record 13.1% operating margins do not warrant active underweighting. Reduced to 0.25 to "
@@ -126,26 +126,25 @@ CONFIDENCE_RATIONALE = {
     "ASML": (
         "EUV monopoly with demand visibility to 2027, but the analyst consensus target ($1,661) "
         "falls −8.8% below break-even ($1,821) — any consensus-anchored target will be bearish in "
-        "BL terms. Neutralised at 0.10 to preserve equilibrium weight until a DCF-derived target "
-        "above $1,821 can be justified."
+        "BL terms. Confidence of 0.10 to preserve equilibrium weight. "
     ),
     "CPRT": (
-        "Target is +16.3% above break-even ($37), making this a bullish view. However, the stock "
-        "has declined ~50% from its 52-week high for reasons not fully explained by the current "
+        "Target is +16.3% above break-even ($37). However, the stock has declined ~50% from its "
+        "52-week high. Confidence is kept at 0.20 
         "earnings narrative — this is a knowledge gap. Confidence reduced to 0.20 until the cause "
         "of the decline is understood."
     ),
     "FICO": (
-        "The largest positive gap in the portfolio: target +20.0% above break-even ($1,301). Strong "
-        "Q2 results with raised guidance and accelerating Scores revenue support an upgrade from "
-        "0.35 to 0.45. Even at conservative confidence, the magnitude of the Q−π gap (+23.7%) "
-        "produces a substantial posterior lift."
+        "Target is +20.0% above break-even ($1,301). Strong Q2 results with raised guidance and accelerating "
+        "Scores revenue support a confidence of 0.45 but is not higher due to increasing competition from VantageScore4.0 "
+        "In April 2026, Fannie Mae now allows lenders to use VantageScore 4.0 as an alternative to the traditional Classic FICO model. "
+        "Continued strong performance may result in a higher confidence as FICO shows it can defend its top-line. "
     ),
     "GOOGL": (
-        "Setting target = analyst consensus ($428) still places you −9.1% below break-even ($471). "
-        "A 0.50 confidence on that gap was actively underweighting a quality business with Search "
-        "+19% and Cloud +63% YoY. Neutralised to 0.15 — consider raising the target to $470+ "
-        "to express a genuinely neutral-to-bullish view."
+        "Target is -9.1% below break-even ($471). A confidence of 0.15 was chosen to give more"
+        "reduce own views relative to the market, which is warranted given that GOOGL has"
+        "continued to execute, and in line with blowout Q1 results in 2026 of Rev +19% and Cloud +63% YoY.
+        "I did not grant a lower confidence given the recent run up on the stock in the past year."
     ),
     "LRCX": (
         "Priority correction: the previous 0.65 confidence combined with a −12.0% break-even gap "
@@ -156,26 +155,24 @@ CONFIDENCE_RATIONALE = {
     "MA": (
         "Target is +14.1% above break-even ($570), one of the cleaner bullish setups. Trading near "
         "its 52-week low with fresh Q1 earnings (revenue +12% YoY, dividend raised for 14th year) "
-        "and analyst consensus at $647. Modest upgrade from 0.50 to 0.55 is warranted by the "
-        "earnings clarity and low-vs-history valuation."
+        "and analyst consensus at $647. Confidence of 0.55 is warranted by recent earnings clarity "
+        "and low-vs-history valuation."
     ),
     "META": (
         "Strongest bullish signal in the book: target +11.0% above break-even ($745) with "
-        "Q−π = +13.4%. Slight reduction from 0.70 to 0.65 reflects 2026 capex raised to "
-        "$125–145B and buybacks paused — this introduces FCF uncertainty into the thesis that "
-        "was not present at the prior confidence level."
+        "Q−π = +13.4%. Confidence of 0.65 reflects strong belief in the underlying business but "
+        " not a higher confidence as 2026 capex raised to $125–145B and buybacks paused. "
     ),
     "MSCI": (
         "Target is +4.7% above break-even ($654), a moderate bullish gap. 95%+ subscription "
-        "retention and early ESG recovery support 0.55. The zero BL allocation in the current "
-        "output is a max-Sharpe correlation artefact — not a confidence problem — and should "
-        "resolve if the max position size constraint is tightened to 12–15%."
+        "retention and early ESG recovery support a confidence of 0.55. The zero BL allocation in the current "
+        "output is a max-Sharpe correlation artefact and not a confidence problem. "
+
     ),
     "MSFT": (
         "Target is +13.3% above break-even ($496), with Azure +40% YoY, AI business at $37B ARR "
         "(+123% YoY) and 46% operating margin held. The stock's pullback from $555 to $420 has "
-        "widened the gap, making this the second-highest conviction bullish position. 0.60 is "
-        "the highest confidence applied to any non-DCF name and is fully warranted here."
+        "widened the gap, making the confidence of 0.60 justified given the market overreaction. "
     ),
     "NFLX": (
         "Target is +9.3% above break-even ($105). The ad-supported tier now accounts for ~40% "
