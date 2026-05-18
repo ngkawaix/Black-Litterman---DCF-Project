@@ -1803,7 +1803,7 @@ with tab4:
             "The floor ratchets up with the portfolio's high-water mark and never falls as "
             "gains are locked in as the portfolio grows. Gap Risk is the inverse of the multiplier. "
             "Default of m=3 implies a confidence that the portfolio should not drawdown past 33.33% (1/m) "
-            before the next rebalance period."
+            "before the next rebalance period."
         )
         _col_m, _col_mdd = st.columns(2)
         m_cppi = _col_m.slider(
