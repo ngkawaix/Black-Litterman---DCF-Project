@@ -1964,10 +1964,15 @@ with tab5:
 
     # ── CPPI vs BL wealth index with floor overlay ────────────────────────────
     _init      = 10_000
-    _cppi_w    = cppi_account * _init
-    _cppi_fl_w = cppi_floor   * _init
     _bl_w      = (1 + btr["BL (static)"]).cumprod() * _init
-
+    _cppi_w    = (1 + btr["BL (CPPI)"]).cumprod()   * _init
+    
+    # Rebase floor to the aligned CPPI wealth series so all three lines
+    # share the same start date and scale (floor-to-portfolio ratio is preserved)
+    _floor_raw = cppi_floor.reindex(btr.index)
+    _acct_raw  = cppi_account.reindex(btr.index)
+    _cppi_fl_w = (_floor_raw / _acct_raw) * _cppi_w
+    
     fig_cppi = go.Figure()
     fig_cppi.add_trace(go.Scatter(
         x=_bl_w.index, y=_bl_w.values,
