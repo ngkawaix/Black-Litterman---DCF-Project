@@ -715,9 +715,7 @@ with st.sidebar:
     st.caption(
         "**How these are set:** 1-Year price targets are rough estimates in-line with the Street View. "
         "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
-        "may lag recent revisions - treat them as directional references only. "
-        "**Confidence** (Idzorek method) weights your view vs. the market-implied "
-        "equilibrium: 0 = ignore your view entirely, 1 = full conviction."
+        "may lag recent revisions. Please read the Confidence tab to see how the confidences were set "
     )
     st.caption("🟡 Ticker flagged = earnings reported in the last 30 days - consensus may have been revised.")
     st.caption("**Last Updated: 15 May 2026**")
