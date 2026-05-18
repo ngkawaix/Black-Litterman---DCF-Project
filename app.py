@@ -835,7 +835,7 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 0 - Introduction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab0:
-    st.markdown("#### About this Project")
+    st.markdown("#### About this project")
     st.markdown(
         """
         **I started this self-guided project to better understand investment 
