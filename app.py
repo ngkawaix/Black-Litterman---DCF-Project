@@ -870,7 +870,9 @@ with tab0:
         *Last Updated: 16 May 2026*
         """
     )
-    
+
+    st.divider()
+
     st.markdown("#### How to navigate this app")
     _nav_cols = st.columns(6)
     _nav_cards = [
