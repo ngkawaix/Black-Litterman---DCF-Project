@@ -909,8 +909,9 @@ with tab0:
     
     st.info(
     "**Suggested reading order:** Introduction (you are here) → "
-    "**Views & Weights** to see how price targets feed through the model → "
-    "**Simulation & Stress Tests** for tail risk → "
+    "**Confidence** to see how initial confidences were derived → "
+    "**Views & Weights** to see the deriation of the BL portfolio allocation → "
+    "**Simulation & Stress Tests** for tail risk holding the allocation → "
     "**Strategy Comparison** to benchmark BL against alternatives. "
     "All model assumptions are adjustable in the sidebar.",
     icon="🗺️",
