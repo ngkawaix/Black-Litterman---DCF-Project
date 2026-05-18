@@ -1739,7 +1739,7 @@ with tab5:
 
     # Run CPPI and load into Wealth Index
     cppi_r, cppi_account, cppi_floor, cppi_alloc = run_cppi(risky_r = btr["BL (static)"], rf = RF, multiplier = m_cppi, max_drawdown = mdd_cppi)
-    btr["CPPI (BL)"] = cppi_r
+    btr["BL (CPPI)"] = cppi_r
 
     bl_estimation_start = tick_rets.index[0].date()
     bl_estimation_end   = tick_rets.index[-1].date()
@@ -1765,7 +1765,7 @@ with tab5:
         "Global Minimum Variance": ("#41b6c4",  1.4, "solid"),   # teal
         "Risk Parity":          ("#2c7fb8",  1.4, "solid"),   # medium blue
         "BL (static)":          ("#253494",  2.5, "solid"),   # dark navy - hero line
-        "CPPI (BL)":            ("#7B2D8B",  2.0, "solid"),    # purple dashed - protection overlay
+        "BL (CPPI)":            ("#7B2D8B",  2.0, "solid"),    # purple dashed - protection overlay
         "S&P 500 (SPY)":         ("#888888",  1.4, "solid"),
     }
 
