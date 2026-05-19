@@ -586,10 +586,9 @@ def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
     )
     return pd.Series(result.x, index=mu.index)
 
-
 def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1, steps=252):
     """
-    Runs a correlated GBM Monte Carlo using BL posterior returns as drift.
+    Runs a  Monte Carlo using BL posterior returns as drift.
     Returns all_paths (steps+1, n_scenarios, n_stocks) and portfolio paths.
     """
     n_stocks  = len(tick_rets.columns)
@@ -609,6 +608,57 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
     w         = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     port_paths = (all_paths * w).sum(axis=2)
     return all_paths, port_paths
+
+# Even better than 
+def run_copula_simulation(tick_rets, bl_w_series, theta=2.0, n_scenarios=3_000, n_steps=252, seed=42):
+    """
+    Clayton Copula + Empirical Inverse Transform Monte Carlo.
+
+    Replaces GBM's two core assumptions:
+      - Gaussian margins  →  empirical historical return distribution per asset
+      - Symmetric Gaussian correlation  →  Clayton copula with lower-tail dependence
+
+    Each of the n_steps daily draws is i.i.d. (no GARCH / volatility clustering).
+    theta > 0 controls crash co-movement: higher = assets lock together more in the tails.
+
+    Returns port_paths (n_steps+1, n_scenarios) — same shape as run_correlated_gbm.
+    """
+    rng      = np.random.default_rng(seed)
+    n_assets = len(tick_rets.columns)
+    w        = bl_w_series.reindex(tick_rets.columns).fillna(0).values
+
+    # Pre-sort each asset's historical daily returns once (non-parametric CDF lookup table)
+    sorted_hists = np.stack(
+        [np.sort(tick_rets[col].dropna().values) for col in tick_rets.columns],
+        axis=1,
+    )  # shape: (n_hist, n_assets)
+    n_hist = sorted_hists.shape[0]
+
+    port_paths = np.ones((n_steps + 1, n_scenarios))
+
+    for t in range(1, n_steps + 1):
+        # ── Step 1: Clayton copula via Frailty (Marshall-Olkin) method ──────────
+        # Draw a shared Gamma random variable W that introduces the tail dependence.
+        # When W is small (tail event), all assets simultaneously draw extreme quantiles.
+        # Frailty parameter: W ~ Gamma(1/theta, 1)
+        W       = rng.gamma(1.0 / theta, 1.0, size=n_scenarios)                       # (n_scenarios,)
+        indep_u = rng.uniform(0.0, 1.0, size=(n_scenarios, n_assets))                 # (n_scenarios, n_assets)
+
+        # Transform independent uniforms into Clayton-correlated uniforms U
+        # U_i = (1 - log(V_i) / W)^(-1/theta)  where V_i are independent Uniform(0,1)
+        U = (1.0 - np.log(indep_u) / W[:, None]) ** (-1.0 / theta)
+        U = np.clip(U, 1e-6, 1.0 - 1e-6)                                              # numerical safety
+
+        # ── Step 2: Empirical inverse transform ──────────────────────────────────
+        # Map each uniform U[s, a] to the empirical quantile of asset a's return distribution.
+        # This replaces the Gaussian draw in GBM with the actual historical return shape.
+        idx        = np.clip((U * n_hist).astype(int), 0, n_hist - 1)                 # (n_scenarios, n_assets)
+        daily_rets = sorted_hists[idx, np.arange(n_assets)]                           # (n_scenarios, n_assets)
+
+        # ── Step 3: Compound portfolio value ─────────────────────────────────────
+        port_paths[t] = port_paths[t - 1] * (1.0 + daily_rets @ w)
+
+    return port_paths
     
 # ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
@@ -1459,7 +1509,7 @@ with tab4:
         2. **Historical Stress Testing**: Backtests the portfolio against actual 
         historical market shocks to evaluate performance during systemic crises.
 
-        **Critical Model Caveats**: While the correlated GBM captures *typical* 
+        **Critical Model Caveats**: While the  captures *typical* 
         market uncertainty, it fundamentally assumes a Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
@@ -1472,7 +1522,8 @@ with tab4:
         """
     )
     st.divider()
-
+    
+    # ── Section 1: Correlated GBM Simulation ───────────────────────────────────────────────
     st.markdown("#### 1. Correlated GBM Simulation")
     col1, col2 = st.columns(2)
     n_scenarios = col1.slider("Number of scenarios", 100, 1000, 500, step=100)
@@ -1565,7 +1616,7 @@ with tab4:
 
     st.divider()
 
-    # ── Historical Stress Tests ───────────────────────────────────────────────
+    # ── Section 2: Historical Stress Tests ───────────────────────────────────────────────
     st.markdown("#### 2. Historical Stress Test")
     st.caption(
         "Applies the BL optimal weights to *actual* historical returns during "
@@ -1644,6 +1695,123 @@ with tab4:
         xaxis_tickangle=-20,
     )
     st.plotly_chart(fig_stress, use_container_width=True)
+
+    st.divider()
+    
+    # ── Section 3: Clayton Copula + Empirical Simulation ─────────────────────────────────
+    st.markdown("#### 3. Clayton Copula + Empirical Simulation")
+    st.markdown(
+        """
+        The GBM above models asset correlations as symmetric and Gaussian. In reality,
+        correlations **spike in a crash** — assets fall together far more tightly than they rise
+        together. This section replaces GBM with two changes:
+
+        - **Clayton Copula** (Frailty method): introduces **lower-tail dependence** — the higher
+          θ (theta), the more assets crash in unison. At θ → 0 the assets are independent;
+          at high θ they are nearly perfectly co-dependent in the left tail.
+        - **Empirical margins**: each asset's individual return distribution is drawn directly
+          from its historical quantiles, preserving fat tails and skew without any Gaussian
+          assumption on the margins.
+
+        Note what this does **not** capture: volatility clustering over time (GARCH). Each
+        day's draw is i.i.d., so a crash day does not make tomorrow's variance higher.
+        That would require layering GARCH on top and is a natural next extension.
+        """
+    )
+
+    col_theta, col_cop_n = st.columns(2)
+    theta_val = col_theta.slider(
+        "θ — tail dependence parameter",
+        min_value=0.5, max_value=10.0, value=2.0, step=0.5,
+        help=(
+            "Controls how tightly assets crash together in the left tail. "
+            "θ = 0.5: weak dependence, crashes are partially idiosyncratic. "
+            "θ = 2: moderate (notebook default). "
+            "θ = 10: near-total lockstep in the worst outcomes."
+        ),
+    )
+    cop_n = col_cop_n.select_slider(
+        "Scenarios",
+        options=[500, 1_000, 2_000, 3_000],
+        value=2_000,
+        help="More scenarios = smoother distribution. 2,000 is a reasonable balance for Streamlit Cloud.",
+    )
+
+    with st.spinner("Running copula simulation…"):
+        cop_paths = run_copula_simulation(
+            tick_rets, bl_w_series,
+            theta=theta_val, n_scenarios=cop_n, n_steps=252, seed=int(seed),
+        )
+
+    cop_final  = cop_paths[-1]
+    cop_mean   = float(np.mean(cop_final))            - 1
+    cop_median = float(np.median(cop_final))          - 1
+    cop_p5     = float(np.percentile(cop_final,  5))  - 1
+    cop_p95    = float(np.percentile(cop_final, 95))  - 1
+    cop_spread = cop_p95 - cop_p5
+
+    cm1, cm2, cm3, cm4, cm5 = st.columns(5)
+    cm1.metric("Expected Return",  f"{cop_mean:+.1%}",   delta=f"${(1 + cop_mean)  * 10_000:,.0f} on $10k", delta_color="off")
+    cm2.metric("Median Return",    f"{cop_median:+.1%}", delta=f"${(1 + cop_median)* 10_000:,.0f} on $10k", delta_color="off")
+    cm3.metric("5th Percentile",   f"{cop_p5:+.1%}",     delta=f"${(1 + cop_p5)   * 10_000:,.0f} on $10k", delta_color="off")
+    cm4.metric("95th Percentile",  f"{cop_p95:+.1%}",    delta=f"${(1 + cop_p95)  * 10_000:,.0f} on $10k", delta_color="off")
+    cm5.metric("Uncertainty Band", f"{cop_spread:.1%}",  delta="95th − 5th pct width",                      delta_color="off")
+
+    # Fan chart and comparative histogram side by side
+    col_cfan, col_chist = st.columns([3, 2])
+
+    cop_df = pd.DataFrame(cop_paths)
+    x_cop  = list(range(cop_paths.shape[0]))
+
+    fig_cop = go.Figure()
+    for c in cop_df.columns[:150]:
+        fig_cop.add_trace(go.Scatter(
+            x=x_cop, y=cop_df[c], mode="lines",
+            line=dict(color="#C44E52", width=0.4),
+            opacity=0.12, showlegend=False,
+        ))
+    fig_cop.add_trace(go.Scatter(
+        x=x_cop, y=np.percentile(cop_paths, 50, axis=1),
+        mode="lines", name="Median", line=dict(color="black", width=2),
+    ))
+    fig_cop.add_trace(go.Scatter(
+        x=x_cop, y=np.percentile(cop_paths, 5, axis=1),
+        mode="lines", name="5th pct", line=dict(color="#C44E52", width=1.5, dash="dash"),
+    ))
+    fig_cop.add_trace(go.Scatter(
+        x=x_cop, y=np.percentile(cop_paths, 95, axis=1),
+        mode="lines", name="95th pct", line=dict(color="#55A868", width=1.5, dash="dash"),
+    ))
+    fig_cop.update_layout(
+        title=f"Copula Portfolio Paths (θ = {theta_val})",
+        xaxis_title="Trading Day", yaxis_title="Portfolio Value ($)",
+        height=400, legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+    )
+    col_cfan.plotly_chart(fig_cop, use_container_width=True)
+
+    # Overlay GBM vs Copula terminal distributions for direct comparison
+    fig_overlay = go.Figure()
+    fig_overlay.add_trace(go.Histogram(
+        x=final_values - 1, nbinsx=60,
+        name="GBM", marker_color="steelblue", opacity=0.6,
+        histnorm="probability density",
+    ))
+    fig_overlay.add_trace(go.Histogram(
+        x=cop_final - 1, nbinsx=60,
+        name="Copula", marker_color="#C44E52", opacity=0.6,
+        histnorm="probability density",
+    ))
+    fig_overlay.update_layout(
+        barmode="overlay",
+        title="1Y Return Distribution: GBM vs Copula",
+        xaxis_title="1Y Return", yaxis_title="Density",
+        xaxis_tickformat=".0%",
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+    )
+    col_chist.plotly_chart(fig_overlay, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 - Strategy Comparison
@@ -1861,7 +2029,7 @@ with tab5:
     # ── Section 2: 1-Year Monte Carlo Return Forecast ─────────────────────────
     st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
     st.caption(
-        "Uses the same correlated GBM paths from the Simulation & Stress Tests tab but applied "
+        "Uses the same  paths from the Simulation & Stress Tests tab but applied "
         "to each strategy's weights. Lets you see whether BL adds value over simpler alternatives."
     )
 
