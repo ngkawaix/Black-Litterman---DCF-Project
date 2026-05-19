@@ -873,10 +873,97 @@ def run_garch_copula_simulation(
     return port_paths
     
 # ─────────────────────────────────────────────────────────────────────────────
+# CUSTOM TICKER VALIDATION
+# ─────────────────────────────────────────────────────────────────────────────
+@st.cache_data(show_spinner=False, ttl=3600)
+def validate_custom_ticker(ticker: str, start_date_str: str):
+    """
+    Validates a user-supplied ticker before it is admitted into the universe.
+    Cached for 1 hour so repeated attempts on the same ticker don't re-hit the API.
+
+    Returns
+    -------
+    is_valid   : bool
+    message    : str  – human-readable pass/fail reason
+    warnings   : list[str] – soft warnings (non-blocking)
+    """
+    import time
+    t = yf.Ticker(ticker)
+
+    # ── Hard check 1: ticker exists ───────────────────────────────────────────
+    try:
+        last_price = t.fast_info.last_price
+        if last_price is None or last_price <= 0:
+            return False, (
+                f"**{ticker}** does not appear to be a valid ticker symbol. "
+                "Double-check the symbol on Yahoo Finance."
+            ), []
+    except Exception:
+        return False, (
+            f"Could not retrieve data for **{ticker}**. "
+            "Check the ticker symbol and try again."
+        ), []
+
+    # ── Hard check 2: sufficient price history from the chosen start date ─────
+    try:
+        raw = yf.download(ticker, start=start_date_str, auto_adjust=True, progress=False)
+        if raw.empty:
+            return False, (
+                f"**{ticker}** returned no price data from {start_date_str}. "
+                "The stock may have listed after that date."
+            ), []
+        prices = raw["Close"].squeeze()
+        n_days = int(prices.dropna().shape[0])
+        if n_days < 500:
+            return False, (
+                f"**{ticker}** only has {n_days} trading days of data from {start_date_str} "
+                f"(minimum 500 required for a reliable covariance estimate). "
+                "Try a more recent start date, or choose a stock with a longer history."
+            ), []
+    except Exception as exc:
+        return False, f"Failed to download price data for **{ticker}**: {exc}", []
+
+    # ── Hard check 3: data completeness ───────────────────────────────────────
+    missing_pct = float(prices.isna().mean())
+    if missing_pct > 0.05:
+        return False, (
+            f"**{ticker}** has {missing_pct:.0%} missing price data from {start_date_str}. "
+            "This is too high for a reliable covariance estimate — the data is likely incomplete."
+        ), []
+
+    # ── Soft warnings (non-blocking) ──────────────────────────────────────────
+    soft_warnings = []
+    try:
+        mcap = t.fast_info.market_cap
+        if mcap is not None and mcap < 10e9:
+            soft_warnings.append(
+                f"Market cap is ~${mcap / 1e9:.1f}B — below the $10B minimum "
+                "used to screen the core universe."
+            )
+    except Exception:
+        pass
+
+    return True, (
+        f"✅ **{ticker}** added ({n_days} trading days available from {start_date_str})."
+    ), soft_warnings
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.title("⚙️ Model Assumptions")
+
+    # ── Session state: custom tickers list ────────────────────────────────────
+    if "custom_tickers" not in st.session_state:
+        st.session_state.custom_tickers = []
+    if "ticker_add_msg" not in st.session_state:
+        st.session_state.ticker_add_msg = None   # (kind, text) tuple or None
+    if "ticker_add_warnings" not in st.session_state:
+        st.session_state.ticker_add_warnings = []
+
+    # Active universe = core 17 + any user-added tickers (both sorted)
+    active_tickers = sorted(TICKERS + st.session_state.custom_tickers)
 
     # --- Data Range Selection ---
     _FLOOR = date(2012, 6, 1)
@@ -900,16 +987,16 @@ with st.sidebar:
     )
     st.sidebar.divider()
     
-    price_data, tick_rets = load_market_data(TICKERS, start=data_start_date.strftime("%Y-%m-%d"))
+    price_data, tick_rets = load_market_data(active_tickers, start=data_start_date.strftime("%Y-%m-%d"))
     
     # Fetch the cached weights series and metadata
-    weights_series, consensus_data, recent_earnings = load_ticker_metadata(TICKERS)
+    weights_series, consensus_data, recent_earnings = load_ticker_metadata(active_tickers)
     
     # Build the cap-weight DataFrame dynamically with the fresh index
     idx = price_data.index
     tick_capweights = pd.DataFrame(
-        [weights_series.reindex(TICKERS).values] * len(idx),
-        index=idx, columns=TICKERS,
+        [weights_series.reindex(active_tickers).values] * len(idx),
+        index=idx, columns=active_tickers,
     )
     
     # Hard stop: if every single ticker failed (total rate-limit), nothing works downstream.
@@ -956,13 +1043,15 @@ with st.sidebar:
     user_targets    = {}
     user_confidence = {}
 
-    for i in range(0, len(TICKERS), 2):
+    for i in range(0, len(active_tickers), 2):
         col_a, col_b = st.columns(2)
-        for col, ticker in zip([col_a, col_b], TICKERS[i:i + 2]):
+        for col, ticker in zip([col_a, col_b], active_tickers[i:i + 2]):
             with col:
                 # Ticker label + earnings recency flag
                 flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
-                st.markdown(f"**{ticker}**{flag}")
+                # Mark custom tickers with a ✦ so they're visually distinct
+                label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
+                st.markdown(label)
 
                 # Consensus reference line
                 cons   = consensus_data.get(ticker, {})
@@ -974,10 +1063,13 @@ with st.sidebar:
                 else:
                     st.caption("Consensus: N/A")
 
+                # Default target: pre-set value for core tickers; consensus (or placeholder) for custom
+                _cons_default = float(mean_t) if mean_t else 100.0
+                _target_default = float(BASE_TARGETS.get(ticker, _cons_default))
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
-                    value=float(BASE_TARGETS[ticker]),
+                    value=_target_default,
                     step=1.0,
                     key=f"pt_{ticker}",
                 )
@@ -985,15 +1077,81 @@ with st.sidebar:
                     "Confidence",
                     min_value=0.0,
                     max_value=1.0,
-                    value=float(BASE_CONFIDENCE[ticker]),
+                    value=float(BASE_CONFIDENCE.get(ticker, 0.20)),
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
 
     st.divider()
 
+    # ── Section 4: Add Custom Tickers ─────────────────────────────────────────
+    st.subheader("4. Custom Tickers")
+    st.caption(
+        "Add any valid Yahoo Finance ticker. "
+        "Tickers are validated for existence, minimum price history (500 trading days "
+        "from your chosen start date), and data completeness before being admitted."
+    )
+
+    _inp_col, _btn_col = st.columns([3, 1])
+    with _inp_col:
+        _new_ticker_raw = st.text_input(
+            "Ticker symbol",
+            placeholder="e.g. TSLA",
+            key="new_ticker_input",
+            label_visibility="collapsed",
+        )
+    with _btn_col:
+        _add_clicked = st.button("Add", use_container_width=True, key="add_ticker_btn")
+
+    if _add_clicked and _new_ticker_raw.strip():
+        _t = _new_ticker_raw.strip().upper()
+        if _t in active_tickers:
+            st.session_state.ticker_add_msg = ("warning", f"**{_t}** is already in the universe.")
+            st.session_state.ticker_add_warnings = []
+        else:
+            with st.spinner(f"Validating {_t}…"):
+                _valid, _msg, _warns = validate_custom_ticker(
+                    _t, data_start_date.strftime("%Y-%m-%d")
+                )
+            if _valid:
+                st.session_state.custom_tickers.append(_t)
+                st.session_state.ticker_add_msg = ("success", _msg)
+                st.session_state.ticker_add_warnings = _warns
+                st.rerun()
+            else:
+                st.session_state.ticker_add_msg = ("error", _msg)
+                st.session_state.ticker_add_warnings = []
+
+    # Render the last add attempt message
+    if st.session_state.ticker_add_msg:
+        _kind, _text = st.session_state.ticker_add_msg
+        if _kind == "success":
+            st.success(_text)
+        elif _kind == "error":
+            st.error(_text)
+        elif _kind == "warning":
+            st.warning(_text)
+        for _w in st.session_state.ticker_add_warnings:
+            st.warning(f"⚠️ {_w}")
+
+    # List of currently active custom tickers with remove buttons
+    if st.session_state.custom_tickers:
+        st.markdown("**Custom tickers in universe:**")
+        for _ct in list(st.session_state.custom_tickers):
+            _name_col, _rem_col = st.columns([4, 1])
+            with _name_col:
+                st.markdown(f"`{_ct}` ✦")
+            with _rem_col:
+                if st.button("✕", key=f"remove_{_ct}", help=f"Remove {_ct} from universe"):
+                    st.session_state.custom_tickers.remove(_ct)
+                    st.session_state.ticker_add_msg = None
+                    st.session_state.ticker_add_warnings = []
+                    st.rerun()
+
+    st.divider()
+
     # --- Other BL parameters ---
-    st.subheader("4. Other BL Parameters")
+    st.subheader("5. Other BL Parameters")
 
     delta = st.slider(
         "δ  Risk Aversion",
@@ -1014,7 +1172,7 @@ with st.sidebar:
     st.divider()
 
     # --- Backtest estimation window ---
-    st.subheader("5. Backtest Estimation Window")
+    st.subheader("6. Backtest Estimation Window")
 
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
@@ -1036,12 +1194,14 @@ with st.sidebar:
         "views matrix above."
     )
 
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA  (price data and metadata already fetched before the sidebar)
 # ─────────────────────────────────────────────────────────────────────────────
 RF = load_rf()
 spx_rets    = load_benchmark_data()
-val_metrics = load_valuation_metrics(TICKERS)
+val_metrics = load_valuation_metrics(active_tickers)
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
@@ -1077,7 +1237,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 st.title("Portfolio Optimiser (DCF-BL)")
 st.caption(
     f"Risk-free rate (1Y T-bill): **{RF:.2%}** (retrieved from FRED) |  "
-    f"Universe: **{len(TICKERS)} stocks** |  "
+    f"Universe: **{len(active_tickers)} stocks** |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
 
@@ -1289,7 +1449,7 @@ with tab2:
     st.divider()
 
     # ── Shared data prep ──────────────────────────────────────────────────────
-    last_close = price_data.reindex(columns=TICKERS).iloc[-1]
+    last_close = price_data.reindex(columns=active_tickers).iloc[-1]
 
     today        = pd.Timestamp.today().normalize()
     soon_cutoff  = today + pd.Timedelta(days=30)
@@ -1309,13 +1469,13 @@ with tab2:
 
     conf_vals   = {}
     conf_source = {}
-    for tkr in TICKERS:
+    for tkr in active_tickers:
         if tkr in DCF_OVERRIDES:
             conf_vals[tkr]   = DCF_OVERRIDES[tkr]
             conf_source[tkr] = "⚡ DCF Model"
         else:
-            conf_vals[tkr]   = BASE_CONFIDENCE[tkr]
-            conf_source[tkr] = "Analyst est."
+            conf_vals[tkr]   = BASE_CONFIDENCE.get(tkr, 0.20)
+            conf_source[tkr] = "Analyst est." if tkr in BASE_CONFIDENCE else "Custom (default 0.20)"
 
     # ── Section 1: Conviction Map ──────────────────────────────────────────────
     st.markdown("#### 1. Conviction Map")
