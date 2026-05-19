@@ -791,7 +791,10 @@ def fit_garch_params(_tick_rets):
         )
         return -log_density.sum()
 
-    _opt         = minimize_scalar(_clayton_neg_ll, bounds=(-2.0, 3.0), method='bounded')
+    # bounds=(-3, 3) → θ ∈ (e^-3 ≈ 0.05,  e^3 ≈ 20)
+    # The previous lower bound of -2 (θ_min ≈ 0.14) was clipping the MLE
+    # for low-dependence universes; widening lets the estimate reach its true minimum
+    _opt         = minimize_scalar(_clayton_neg_ll, bounds=(-3.0, 3.0), method='bounded')
     fitted_theta = float(np.exp(_opt.x))
 
     # Align std_resids to min_len so run_garch_copula_simulation receives
@@ -2202,7 +2205,7 @@ with tab4:
     garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(tick_rets)
 
     # Snap fitted_theta to the nearest slider step (0.5) within [0.5, 10.0]
-    _theta_default = float(np.clip(round((fitted_theta or 2.0) / 0.5) * 0.5, 0.5, 10.0)) \
+    _theta_default = float(np.clip(round((fitted_theta or 2.0) / 0.1) * 0.1, 0.1, 10.0)) \
                      if fitted_theta is not None else 2.0
 
     # ── Section 3: Clayton Copula + Empirical Simulation ─────────────────────────────────
@@ -2229,7 +2232,7 @@ with tab4:
     col_theta, col_cop_n = st.columns(2)
     theta_val = col_theta.slider(
         "θ — tail dependence parameter",
-        min_value=0.5, max_value=10.0, value=_theta_default, step=0.5,
+        min_value=0.1, max_value=10.0, value=_theta_default, step=0.1,
         help=(
             f"**Default ({_theta_default:.1f}) is MLE-estimated** from the joint lower-tail "
             f"behaviour of GARCH standardised residuals across all {len(tick_rets.columns)} assets. "
@@ -2457,7 +2460,7 @@ with tab4:
         _gc1, _gc2 = st.columns(2)
         theta_garch = _gc1.slider(
             "θ — tail dependence (GARCH-Copula)",
-            min_value=0.5, max_value=10.0, value=_theta_default, step=0.5,
+            min_value=0.1, max_value=10.0, value=_theta_default, step=0.1,
             key="theta_garch",
             help=(
                 f"**Default ({_theta_default:.1f}) is MLE-estimated** from GARCH standardised "
@@ -2834,6 +2837,14 @@ with tab5:
         showlegend=False,
     )
     st.plotly_chart(fig_comp, use_container_width=True)
+    st.caption(
+        "**Note on the chart scale:** SPY's error bar (−16% to +50%) is much wider than the "
+        "five strategies (spreads of ~0.02) because the strategies use BL posterior returns "
+        "as drift — your current bullish views shift the entire distribution rightward and "
+        "compress it. SPY uses its historical mean, giving a more realistic spread. "
+        "The strategy error bars exist but are too narrow to see at this scale; hover over "
+        "the dots to read the exact 5th/95th pct values from the table above."
+    )
 
     # ── GARCH-Copula 1-Year Return Forecast ───────────────────────────────────
     if garch_params is not None:
