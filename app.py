@@ -586,6 +586,10 @@ def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
     )
     return pd.Series(result.x, index=mu.index)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# SIMULATION HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
 def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1, steps=252):
     """
     Runs a  Monte Carlo using BL posterior returns as drift.
@@ -657,6 +661,154 @@ def run_copula_simulation(tick_rets, bl_w_series, theta=2.0, n_scenarios=3_000, 
 
         # ── Step 3: Compound portfolio value ─────────────────────────────────────
         port_paths[t] = port_paths[t - 1] * (1.0 + daily_rets @ w)
+
+    return port_paths
+
+@st.cache_data(show_spinner="Fitting GARCH(1,1) to each asset - first run only, cached thereafter…")
+def fit_garch_params(_tick_rets):
+    """
+    Fits GARCH(1,1) to each asset's daily return series.
+
+    The underscore prefix on _tick_rets tells Streamlit to skip hashing the
+    DataFrame (using object identity instead), which avoids serialisation issues
+    on large DataFrames while still correctly invalidating the cache when the
+    underlying data object changes.
+
+    Returns
+    -------
+    garch_params : dict  — {ticker: {omega, alpha, beta, mu}}
+    std_resids   : dict  — {ticker: array of standardised residuals z_t = ε_t / σ_t}
+    last_state   : dict  — {ticker: {sigma2, epsilon}} in scaled units (returns × 100)
+    cond_vol_df  : DataFrame — annualised conditional volatility per asset over time
+    """
+    try:
+        from arch import arch_model
+    except ImportError:
+        return None, None, None, None
+
+    import warnings
+
+    garch_params = {}
+    std_resids   = {}
+    last_state   = {}
+    cond_vol     = {}
+
+    for col in _tick_rets.columns:
+        # Scale returns to percentage points (e.g. 0.02 → 2.0) for numerical stability
+        # GARCH optimisers work better when the series has variance ~1–5 rather than ~0.0001
+        r = _tick_rets[col].dropna() * 100
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            res = arch_model(
+                r, vol='Garch', p=1, q=1, dist='normal', mean='Constant'
+            ).fit(disp='off', show_warning=False)
+
+        garch_params[col] = {
+            'omega': float(res.params['omega']),      # ω: long-run baseline variance
+            'alpha': float(res.params['alpha[1]']),   # α: sensitivity to last shock
+            'beta':  float(res.params['beta[1]']),    # β: persistence of last variance
+            'mu':    float(res.params['Const']),      # μ: mean return (scaled)
+        }
+
+        # Standardised residuals: z_t = ε_t / σ_t  ≈ i.i.d. once vol is stripped out
+        std_resids[col] = (res.resid / res.conditional_volatility).values
+
+        # Last observed state — seeds the forward GARCH recursion
+        last_state[col] = {
+            'sigma2':  float(res.conditional_volatility.iloc[-1] ** 2),  # σ²_T  (scaled²)
+            'epsilon': float(res.resid.iloc[-1]),                          # ε_T   (scaled)
+        }
+
+        # Annualised conditional vol for the visualisation chart
+        # conditional_volatility is in scaled units → divide by 100 to get decimal,
+        # then multiply by √252 to annualise
+        cond_vol[col] = (res.conditional_volatility / 100 * np.sqrt(252)).values
+
+    min_len     = min(len(v) for v in cond_vol.values())
+    cond_vol_df = pd.DataFrame(
+        {col: cond_vol[col][-min_len:] for col in _tick_rets.columns},
+        index=_tick_rets.index[-min_len:],
+    )
+    return garch_params, std_resids, last_state, cond_vol_df
+
+
+def run_garch_copula_simulation(
+    tick_rets, bl_w_series, garch_params, std_resids, last_state,
+    theta=2.0, n_scenarios=2_000, n_steps=252, seed=42,
+):
+    """
+    GARCH(1,1) + Clayton Copula + Empirical Inverse Transform Monte Carlo.
+
+    Three layers stacked:
+      1. GARCH(1,1): per-asset time-varying volatility
+             σ²_t = ω + α · ε²_{t-1} + β · σ²_{t-1}
+         A large shock on day t raises σ² for day t+1 — volatility clustering.
+
+      2. Clayton Copula (Frailty method): correlated draws of standardised
+         residuals z_t across all assets, with lower-tail dependence controlled by θ.
+
+      3. Empirical margins: each z_t is mapped back through the empirical CDF of
+         the fitted standardised residuals, preserving fat tails and skew.
+
+    Reconstruction: r_t = (μ + σ_t × z_t) / 100  (unscale back to decimal returns)
+
+    All sigma / epsilon tracking is kept in scaled units (returns × 100) to match
+    the units the GARCH parameters were estimated in.
+    """
+    rng      = np.random.default_rng(seed)
+    n_assets = len(tick_rets.columns)
+    cols     = tick_rets.columns.tolist()
+    w        = bl_w_series.reindex(tick_rets.columns).fillna(0).values
+
+    # Pre-sort standardised residuals for empirical inverse transform
+    sorted_std = np.stack(
+        [np.sort(std_resids[col]) for col in cols], axis=1
+    )  # shape: (n_hist, n_assets)
+    n_hist = sorted_std.shape[0]
+
+    # GARCH parameters vectorised across assets
+    omegas = np.array([garch_params[col]['omega'] for col in cols])  # (n_assets,)
+    alphas = np.array([garch_params[col]['alpha'] for col in cols])
+    betas  = np.array([garch_params[col]['beta']  for col in cols])
+    mus    = np.array([garch_params[col]['mu']     for col in cols])
+
+    # Each scenario starts from the last observed σ² and ε — path-dependent from here
+    # Broadcasting from (n_assets,) to (n_scenarios, n_assets)
+    sigma2_s  = np.tile([last_state[col]['sigma2']  for col in cols], (n_scenarios, 1))
+    epsilon_s = np.tile([last_state[col]['epsilon'] for col in cols], (n_scenarios, 1))
+
+    port_paths = np.ones((n_steps + 1, n_scenarios))
+
+    for t in range(1, n_steps + 1):
+
+        # ── Step 1: GARCH variance update ────────────────────────────────────
+        # σ²_t = ω + α · ε²_{t-1} + β · σ²_{t-1}
+        # Each scenario has its own σ² path because last period's ε differs
+        sigma2_s = omegas + alphas * epsilon_s ** 2 + betas * sigma2_s   # (n_scenarios, n_assets)
+        sigma_s  = np.sqrt(np.maximum(sigma2_s, 1e-8))                    # σ_t (scaled units)
+
+        # ── Step 2: Clayton copula draw ───────────────────────────────────────
+        W       = rng.gamma(1.0 / theta, 1.0, size=n_scenarios)
+        indep_u = rng.uniform(0.0, 1.0, size=(n_scenarios, n_assets))
+        U       = (1.0 - np.log(indep_u) / W[:, None]) ** (-1.0 / theta)
+        U       = np.clip(U, 1e-6, 1.0 - 1e-6)
+
+        # ── Step 3: Empirical inverse transform on standardised residuals ─────
+        idx  = np.clip((U * n_hist).astype(int), 0, n_hist - 1)
+        z_t  = sorted_std[idx, np.arange(n_assets)]                      # (n_scenarios, n_assets)
+
+        # ── Step 4: Reconstruct return and update GARCH state ─────────────────
+        # r_t (scaled) = μ + σ_t × z_t
+        r_scaled  = mus + sigma_s * z_t                                   # (n_scenarios, n_assets)
+        r_actual  = r_scaled / 100.0                                      # decimal return
+
+        # ε_t = r_scaled - μ  → feeds back into the GARCH recursion next step
+        # This is what creates path-dependency: a bad draw here raises σ² tomorrow
+        epsilon_s = r_scaled - mus
+
+        # ── Step 5: Compound ──────────────────────────────────────────────────
+        port_paths[t] = port_paths[t - 1] * (1.0 + r_actual @ w)
 
     return port_paths
     
@@ -1812,6 +1964,199 @@ with tab4:
         plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
     )
     col_chist.plotly_chart(fig_overlay, use_container_width=True)
+
+    # ── Section 4: GARCH(1,1) + Copula Simulation ───────────────────────────────────────
+    st.markdown("#### 4. GARCH(1,1) + Copula Simulation")
+    st.markdown(
+        """
+        This layers GARCH(1,1) on top of the copula, adding the one thing the
+        copula section still lacked: **volatility clustering over time**.
+
+        The key difference from Section 2 is that each scenario now carries its own
+        running volatility state. A large shock on day *t* raises σ² for day *t+1*,
+        which raises the scale of the next draw — exactly the self-reinforcing pattern
+        visible in every major market drawdown.
+
+        The copula still governs the cross-asset crash co-movement. GARCH governs
+        how severe individual shocks propagate forward in time. Together they
+        represent a more complete picture of how portfolio risk actually behaves.
+
+        The chart below shows the GARCH model's *fitted* conditional volatility on
+        the historical data — the volatility spikes at COVID, 2022, and the 2025
+        tariff shock are the clustering the model learns and carries forward into
+        the simulation.
+        """
+    )
+
+    garch_params, std_resids_g, last_state, cond_vol_df = fit_garch_params(tick_rets)
+
+    if garch_params is None:
+        st.error(
+            "❌ The `arch` package is not installed. Run `pip install arch` in your "
+            "local environment and restart the app to enable this section."
+        )
+    else:
+        # ── GARCH Parameter Table ─────────────────────────────────────────────
+        st.markdown("##### Fitted GARCH(1,1) Parameters")
+        st.caption(
+            "**α + β (Persistence)** is the key column — values close to 1 mean volatility "
+            "is slow to revert after a shock. Tech stocks typically sit above 0.97. "
+            "**ω (omega)** is the long-run variance floor; smaller = lower baseline vol."
+        )
+
+        _param_rows = {}
+        for col in tick_rets.columns:
+            a = garch_params[col]['alpha']
+            b = garch_params[col]['beta']
+            o = garch_params[col]['omega']
+            _param_rows[col] = {
+                'ω (omega)':       o,
+                'α (alpha)':       a,
+                'β (beta)':        b,
+                'α + β':           a + b,
+                'Long-run Ann. Vol': np.sqrt(o / (1 - a - b)) / 10 * np.sqrt(252) if (a + b) < 1 else float('nan'),
+            }
+
+        _param_df = (
+            pd.DataFrame(_param_rows).T
+            .sort_values('α + β', ascending=False)
+        )
+        st.dataframe(
+            _param_df.style
+                .format('{:.6f}', subset=['ω (omega)'])
+                .format('{:.4f}', subset=['α (alpha)', 'β (beta)', 'α + β'])
+                .format('{:.2%}', subset=['Long-run Ann. Vol'])
+                .background_gradient(subset=['α + β'], cmap='YlOrRd', vmin=0.90, vmax=1.0),
+            use_container_width=True,
+            column_config={
+                'ω (omega)': st.column_config.Column(
+                    help="Long-run baseline variance. Returns mean-revert toward this floor over time."
+                ),
+                'α (alpha)': st.column_config.Column(
+                    help="Shock sensitivity. How much last period's squared return shock raises today's variance."
+                ),
+                'β (beta)': st.column_config.Column(
+                    help="Variance persistence. How much of yesterday's variance estimate carries forward."
+                ),
+                'α + β': st.column_config.Column(
+                    help="Total persistence. Above 0.99 = volatility is very slow to revert. "
+                         "Exactly 1.0 = IGARCH (non-stationary, no mean reversion)."
+                ),
+                'Long-run Ann. Vol': st.column_config.Column(
+                    help="Annualised volatility the model converges to in the long run: √(ω / (1 − α − β)) × √252. "
+                         "NaN if α + β ≥ 1 (non-stationary, no finite long-run variance)."
+                ),
+            },
+        )
+
+        # ── Conditional Volatility Chart ──────────────────────────────────────
+        st.markdown("##### Historical Conditional Volatility (Annualised)")
+        st.caption(
+            "The GARCH model's fitted σ_t over the historical data. "
+            "Showing the top BL-weighted assets — the spikes are the clustering "
+            "the model learns and projects forward into the simulation."
+        )
+
+        _top_assets = (
+            bl_w_series.reindex(tick_rets.columns).fillna(0)
+            .nlargest(5).index.tolist()
+        )
+
+        fig_gvol = go.Figure()
+        _vol_palette = ["#253494", "#41b6c4", "#fecc5c", "#C44E52", "#55A868"]
+        for _asset, _colour in zip(_top_assets, _vol_palette):
+            if _asset not in cond_vol_df.columns:
+                continue
+            fig_gvol.add_trace(go.Scatter(
+                x=cond_vol_df.index,
+                y=cond_vol_df[_asset],
+                mode='lines', name=_asset,
+                line=dict(color=_colour, width=1.2),
+            ))
+        fig_gvol.update_layout(
+            xaxis_title='Date',
+            yaxis_title='Annualised Conditional Volatility',
+            yaxis_tickformat='.0%',
+            height=340,
+            legend=dict(orientation='h', yanchor='bottom', y=1.02),
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            margin=dict(t=20),
+        )
+        st.plotly_chart(fig_gvol, use_container_width=True)
+
+        # ── Simulation Controls ───────────────────────────────────────────────
+        _gc1, _gc2 = st.columns(2)
+        theta_garch = _gc1.slider(
+            "θ — tail dependence (GARCH-Copula)",
+            min_value=0.5, max_value=10.0, value=2.0, step=0.5,
+            key="theta_garch",
+            help="Same Clayton θ as Section 2. Adjust to compare the GARCH-Copula tail against the plain copula.",
+        )
+        garch_n = _gc2.select_slider(
+            "Scenarios (GARCH-Copula)",
+            options=[500, 1_000, 2_000, 3_000],
+            value=2_000,
+            key="garch_n",
+        )
+
+        with st.spinner("Running GARCH-Copula simulation…"):
+            gc_paths = run_garch_copula_simulation(
+                tick_rets, bl_w_series,
+                garch_params, std_resids_g, last_state,
+                theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
+            )
+
+        gc_final  = gc_paths[-1]
+        gc_mean   = float(np.mean(gc_final))           - 1
+        gc_median = float(np.median(gc_final))         - 1
+        gc_p5     = float(np.percentile(gc_final,  5)) - 1
+        gc_p95    = float(np.percentile(gc_final, 95)) - 1
+        gc_spread = gc_p95 - gc_p5
+
+        gm1, gm2, gm3, gm4, gm5 = st.columns(5)
+        gm1.metric("Expected Return",  f"{gc_mean:+.1%}",   delta=f"${(1 + gc_mean)  * 10_000:,.0f} on $10k", delta_color="off")
+        gm2.metric("Median Return",    f"{gc_median:+.1%}", delta=f"${(1 + gc_median)* 10_000:,.0f} on $10k", delta_color="off")
+        gm3.metric("5th Percentile",   f"{gc_p5:+.1%}",     delta=f"${(1 + gc_p5)   * 10_000:,.0f} on $10k", delta_color="off")
+        gm4.metric("95th Percentile",  f"{gc_p95:+.1%}",    delta=f"${(1 + gc_p95)  * 10_000:,.0f} on $10k", delta_color="off")
+        gm5.metric("Uncertainty Band", f"{gc_spread:.1%}",  delta="95th − 5th pct width",                     delta_color="off")
+
+        # ── Three-way Overlay Histogram ───────────────────────────────────────
+        st.markdown("##### Return Distribution: GBM vs Copula vs GARCH-Copula")
+        st.caption(
+            "The left tail is the main thing to compare. GBM (blue) will typically show the "
+            "narrowest downside. Copula (red) widens it via fat empirical margins and tail "
+            "co-movement. GARCH-Copula (green) widens it further because a bad early draw "
+            "amplifies subsequent variance — the self-reinforcing dynamic that GBM and the "
+            "static copula both miss."
+        )
+
+        fig_3way = go.Figure()
+        for _vals, _name, _colour in [
+            (final_values - 1, "GBM",          "steelblue"),
+            (cop_final - 1,    "Copula",        "#C44E52"),
+            (gc_final,         "GARCH-Copula",  "#2ca02c"),
+        ]:
+            fig_3way.add_trace(go.Histogram(
+                x=_vals, nbinsx=80,
+                name=_name,
+                marker_color=_colour,
+                opacity=0.55,
+                histnorm='probability density',
+            ))
+        fig_3way.update_layout(
+            barmode='overlay',
+            xaxis_title='1-Year Return',
+            yaxis_title='Density',
+            xaxis_tickformat='.0%',
+            height=400,
+            legend=dict(orientation='h', yanchor='bottom', y=1.02),
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+        )
+        st.plotly_chart(fig_3way, use_container_width=True)
+
+    st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 - Strategy Comparison
