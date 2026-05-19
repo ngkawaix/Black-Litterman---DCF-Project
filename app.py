@@ -287,7 +287,7 @@ def load_ticker_metadata(tickers):
             pass
         recent_earnings[ticker] = flagged
 
-        time.sleep(0.30)   
+        time.sleep(0.25)   
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
@@ -2786,6 +2786,177 @@ with tab5:
         "and equity allocation dynamics) are determined entirely by the equity sleeve and are unaffected by "
         "this assumption."
     )
+
+    st.divider()
+
+    # ── Section 4: Forward-Looking Risk Summary ───────────────────────────────
+    st.markdown("#### 4. Forward-Looking Risk Summary (BL Allocation)")
+    st.markdown(
+        """
+        The three simulation methods in Tab 4 each make progressively fewer assumptions
+        about how returns behave. This section brings their outputs together in one place
+        for the BL allocation specifically, so you can see at a glance how much the tail
+        risk estimate changes as the model becomes more realistic.
+
+        **The number to focus on is the 5th percentile.** In roughly 1 out of every 20
+        simulated years, your return would be at or below that figure. The gap between
+        the GBM row and the GARCH-Copula row is the tail risk that the simpler model
+        systematically misses — volatility clustering and crash co-movement working
+        together in the worst outcomes.
+
+        No new computation happens here — these figures come directly from the simulations
+        already run in Tab 4 using the parameters you set there.
+        """
+    )
+
+    # ── Build comparison table from already-computed Tab 4 variables ──────────
+    _fwd_rows = {}
+
+    _fwd_rows["GBM"] = {
+        "Assumption":      "Normal returns, symmetric correlation",
+        "Expected Return": comparison["Black-Litterman"]["Expected Return"],
+        "5th Percentile":  comparison["Black-Litterman"]["5th pct"],
+        "95th Percentile": comparison["Black-Litterman"]["95th pct"],
+        "Uncertainty Band (95th−5th)": comparison["Black-Litterman"]["Spread (95--5)"],
+    }
+
+    _fwd_rows["Copula"] = {
+        "Assumption":      "Empirical margins, lower-tail dependence",
+        "Expected Return": cop_mean,
+        "5th Percentile":  cop_p5,
+        "95th Percentile": cop_p95,
+        "Uncertainty Band (95th−5th)": cop_spread,
+    }
+
+    if garch_params is not None:
+        _fwd_rows["GARCH-Copula"] = {
+            "Assumption":      "Copula + time-varying volatility clustering",
+            "Expected Return": gc_mean,
+            "5th Percentile":  gc_p5,
+            "95th Percentile": gc_p95,
+            "Uncertainty Band (95th−5th)": gc_spread,
+        }
+
+    _fwd_df = pd.DataFrame(_fwd_rows).T
+
+    st.dataframe(
+        _fwd_df.style
+            .format("{:.2%}", subset=["Expected Return", "5th Percentile",
+                                      "95th Percentile"])
+            .format("{:.3f}", subset=["Uncertainty Band (95th−5th)"])
+            .background_gradient(subset=["5th Percentile"], cmap="Reds_r", vmax=0.0)
+            .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
+        use_container_width=True,
+        column_config={
+            "Assumption": st.column_config.TextColumn(
+                "What each model assumes",
+                width="large",
+                help=(
+                    "GBM: returns are normally distributed and correlations are fixed and symmetric. "
+                    "Copula: each asset's return distribution matches its actual historical shape "
+                    "(fat tails, skew preserved), and assets crash together more tightly than they rally. "
+                    "GARCH-Copula: adds time-varying volatility — a large shock today raises tomorrow's "
+                    "variance, producing the self-reinforcing drawdowns visible in real crashes."
+                ),
+            ),
+            "5th Percentile": st.column_config.NumberColumn(
+                "5th Percentile",
+                help=(
+                    "In roughly 1 out of 20 simulated years, the return would be at or below this. "
+                    "This is the most important column: it shows how the tail risk estimate changes "
+                    "as model realism increases. GBM typically gives the most optimistic (least negative) "
+                    "figure; GARCH-Copula the most conservative."
+                ),
+            ),
+            "Uncertainty Band (95th−5th)": st.column_config.NumberColumn(
+                "Uncertainty Band",
+                help=(
+                    "Width of the 90% return interval (95th minus 5th percentile). "
+                    "A wider band means the simulation produces a wider range of outcomes — "
+                    "both better upside and worse downside. More realistic models tend to produce "
+                    "wider bands because fat tails and volatility clustering generate more extreme paths."
+                ),
+            ),
+        },
+    )
+
+    # ── Tail risk gap callout metrics ─────────────────────────────────────────
+    st.caption(
+        "**How to read this:** the metrics below show how much the 5th percentile worsens "
+        "as the model becomes more realistic. A negative delta means the realistic model "
+        "predicts a worse tail outcome than GBM — i.e. risk GBM was hiding."
+    )
+
+    _gbm_p5   = comparison["Black-Litterman"]["5th pct"]
+    _gbm_exp  = comparison["Black-Litterman"]["Expected Return"]
+    _cop_gap  = cop_p5 - _gbm_p5
+
+    if garch_params is not None:
+        _gc_gap = gc_p5 - _gbm_p5
+        _fr1, _fr2, _fr3, _fr4 = st.columns(4)
+    else:
+        _fr1, _fr2, _fr3 = st.columns(3)
+
+    _fr1.metric(
+        "GBM 5th Percentile",
+        f"{_gbm_p5:+.1%}",
+        delta="Baseline estimate",
+        delta_color="off",
+        help="The tail estimate under the simplest model. Treats returns as normally distributed.",
+    )
+    _fr2.metric(
+        "Copula 5th Percentile",
+        f"{cop_p5:+.1%}",
+        delta=f"{_cop_gap:+.1%} vs GBM",
+        delta_color="inverse",
+        help=(
+            "The tail estimate once fat tails and crash co-movement are accounted for. "
+            "A negative delta means the copula reveals more downside risk than GBM suggested."
+        ),
+    )
+
+    if garch_params is not None:
+        _fr3.metric(
+            "GARCH-Copula 5th Percentile",
+            f"{gc_p5:+.1%}",
+            delta=f"{_gc_gap:+.1%} vs GBM",
+            delta_color="inverse",
+            help=(
+                "The most conservative tail estimate, adding volatility clustering to the copula. "
+                "This is the figure closest to what you might actually experience in a bad year."
+            ),
+        )
+        _fr4.metric(
+            "Hidden Tail Risk",
+            f"{_gc_gap:+.1%}",
+            delta="GARCH-Copula minus GBM",
+            delta_color="off",
+            help=(
+                "The additional downside risk that GBM systematically misses. "
+                "If this is −5%, it means the true 1-in-20 loss year is 5 percentage points "
+                "worse than the GBM baseline suggests."
+            ),
+        )
+    else:
+        _fr3.metric(
+            "Hidden Tail Risk",
+            f"{_cop_gap:+.1%}",
+            delta="Copula minus GBM",
+            delta_color="off",
+            help=(
+                "The additional downside risk that GBM misses once fat tails and crash "
+                "co-movement are accounted for. Install `arch` locally to also see the "
+                "GARCH-Copula estimate, which typically widens this gap further."
+            ),
+        )
+
+    st.caption(
+        "**Note:** these figures use the scenario count and θ set in Tab 4. "
+        "More scenarios produce smoother estimates with less Monte Carlo noise; "
+        "a higher θ widens the left tail further. The figures here will update "
+        "if you change those parameters and revisit this tab."
+    )
+
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────────────────────────────────────
