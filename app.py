@@ -3109,7 +3109,7 @@ with tab5:
             "CPPI Max Drawdown": _cppi_mdd,
             "DD Reduction":      _cppi_mdd - _bl_mdd,
             "Floor Breached":    "⚠️ Yes" if _floor_breached else "✅ No",
-            "Cash Lock-in":      "🔒 Yes" if _cash_locked    else "No",
+            "Cash Lock-in":      "🔒 Yes" if _cash_locked    else "✅ No",
         }
 
     _stress_cppi_df = pd.DataFrame(_stress_cppi_rows).T
