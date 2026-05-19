@@ -1223,20 +1223,6 @@ with st.sidebar:
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
-                # For custom tickers, surface the defaults so the user knows
-                # what they're starting from before adjusting.
-                if ticker not in TICKERS:
-                    _pt_src = (
-                        f"analyst consensus (${mean_t:,.0f})" if mean_t
-                        else "placeholder $100 — no consensus found"
-                    )
-                    st.info(
-                        f"📌 **Defaults for {ticker}:**  \n"
-                        f"Price target → {_pt_src}.  \n"
-                        "Confidence → **0.20** (conservative default).  \n"
-                        "Adjust both before running the model.",
-                        icon=None,
-                    )
 
     st.divider()
 
