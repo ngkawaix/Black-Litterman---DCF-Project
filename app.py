@@ -2456,16 +2456,13 @@ with tab5:
         "have Direct Reinvestment Plan (DRIP) enabled."
     )
     st.caption(
-        "⚙️ **Note on covariance estimation:** GMV and Risk Parity use the Elton-Gruber Constant "
-        "Correlation shrinkage estimator (δ = 0.7), blending 70% weight on a structured "
-        "prior - where all pairwise correlations are set to the cross-sectional average - "
-        "with 30% on the sample covariance. A higher δ was chosen because with only 17 "
-        "stocks the sample covariance matrix is prone to estimation noise and "
-        "near-singularity, which causes unconstrained optimisers to produce extreme, "
-        "unstable weights. Shrinking toward the structured prior regularises the matrix, "
-        "reduces its condition number, and makes the optimisation numerically well-behaved "
-        "without requiring a larger asset universe to stabilise the estimate."
-    )
+        "GMV and Risk Parity use the Elton-Gruber Constant Correlation shrinkage estimator "
+        "(δ = 0.7), which blends the sample covariance matrix with a structured prior where "
+        "all pairwise correlations are equal. With only 17 assets, the sample matrix is noisy "
+        "and unreliable, so shrinkage stabilises it. δ = 0.7 reflects that optimal shrinkage "
+        "intensity rises as the asset universe shrinks; fewer assets means less trustworthy "
+        "sample estimates, so a stronger pull toward the prior is warranted.")
+
 
     st.divider()
 
