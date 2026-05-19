@@ -9,3 +9,4 @@ lxml
 setuptools
 requests
 statsmodels
+arch
