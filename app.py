@@ -667,7 +667,7 @@ def run_copula_simulation(tick_rets, bl_w_series, theta=2.0, n_scenarios=3_000, 
     return port_paths
 
 @st.cache_data(show_spinner="Fitting GARCH(1,1) to each asset - first run only, cached thereafter…")
-def fit_garch_params(_tick_rets):
+def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
     """
     Fits GARCH(1,1) to each asset's daily return series.
 
@@ -884,7 +884,7 @@ def run_garch_copula_simulation(
 
 
 @st.cache_data(show_spinner="Running GARCH-Copula for all strategies…")
-def run_garch_copula_all_strategies(_tick_rets, _garch_params, _std_resids, _last_state, strategy_names, _strategy_weights_arr, theta=2.0, n_scenarios=2_000, n_steps=252, seed=42,):
+def run_garch_copula_all_strategies(_tick_rets, _garch_params, _std_resids, _last_state, strategy_names, _strategy_weights_arr, theta=2.0, n_scenarios=2_000, n_steps=252, seed=42, tickers_key: tuple = ()):
     """
     Runs one set of GARCH-Copula asset paths and applies all strategy weight
     vectors in a single pass — the expensive GARCH + copula sampling happens
@@ -1223,7 +1223,7 @@ with st.sidebar:
             label_visibility="collapsed",
         )
     with _btn_col:
-        _add_clicked = st.button("Add", use_container_width=True, key="add_ticker_btn")
+        _add_clicked = st.button("Add", width="stretch", key="add_ticker_btn")
 
     if _add_clicked and _new_ticker_raw.strip():
         _t = _new_ticker_raw.strip().upper()
@@ -1723,7 +1723,7 @@ with tab2:
         paper_bgcolor="rgba(0,0,0,0)",
         margin=dict(t=30),
     )
-    st.plotly_chart(_fg, use_container_width=True)
+    st.plotly_chart(_fg, width="stretch")
 
     st.divider()
  
@@ -1786,7 +1786,7 @@ with tab2:
 
     st.dataframe(
         _styled_conf,
-        use_container_width=True,
+        width="stretch",
         height=700,
         column_config={
             "BL Direction": st.column_config.TextColumn(
@@ -1900,7 +1900,7 @@ with tab3:
         .format("${:,.2f}", subset=dollar_cols) \
         .background_gradient(subset=["BL Posterior Return"], cmap="YlGnBu")
 
-    st.dataframe(styled, use_container_width=True)
+    st.dataframe(styled, width="stretch")
 
     fig = go.Figure()
     sorted_tickers = view_df.index.tolist()
@@ -1926,7 +1926,7 @@ with tab3:
         height=420,
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.divider()
 
@@ -1957,7 +1957,7 @@ with tab3:
         weight_df.style
             .format("{:.2%}")
             .background_gradient(subset=["BL Optimised"], cmap="YlGnBu"),
-        use_container_width=True,
+        width="stretch",
     )
 
     nonzero = weight_df[weight_df["BL Optimised"] > 0.001].reset_index()
@@ -1968,7 +1968,7 @@ with tab3:
         color="BL Optimised", color_continuous_scale="YlGnBu",
     )
     fig_tree.update_traces(textinfo="label+percent entry")
-    st.plotly_chart(fig_tree, use_container_width=True)
+    st.plotly_chart(fig_tree, width="stretch")
 
     fig2 = go.Figure()
     fig2.add_trace(go.Bar(
@@ -1984,7 +1984,7 @@ with tab3:
         yaxis_tickformat=".1%", height=380,
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 4 - Simulation & Stress Tests
@@ -2082,7 +2082,7 @@ with tab4:
         height=400,
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
-    col_fan.plotly_chart(fig_mc, use_container_width=True)
+    col_fan.plotly_chart(fig_mc, width="stretch")
 
     # Final value histogram
     fig_hist = go.Figure()
@@ -2106,7 +2106,7 @@ with tab4:
         yaxis_title="Frequency",
         height=400,
     )
-    col_hist.plotly_chart(fig_hist, use_container_width=True)
+    col_hist.plotly_chart(fig_hist, width="stretch")
 
     st.divider()
 
@@ -2170,7 +2170,7 @@ with tab4:
             .format("{:.2f}", subset=["Sharpe Ratio"])
             .background_gradient(subset=["Max Drawdown"], cmap="Reds_r", vmax=0.0)
             .background_gradient(subset=["SPY Max Drawdown"], cmap="Reds_r", vmax=0.0),
-        use_container_width=True,
+        width="stretch",
     )
 
     # Bar chart
@@ -2188,7 +2188,7 @@ with tab4:
         height=380,
         xaxis_tickangle=-20,
     )
-    st.plotly_chart(fig_stress, use_container_width=True)
+    st.plotly_chart(fig_stress, width="stretch")
 
     st.divider()
 
@@ -2196,7 +2196,7 @@ with tab4:
     # Called here (before Section 3) so fitted_theta is available as the default
     # for the copula slider. @st.cache_data means computation only happens once
     # per data load — instant on all subsequent interactions.
-    garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(tick_rets)
+    garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(tick_rets, tuple(tick_rets.columns))
 
     # Snap fitted_theta to the nearest slider step (0.5) within [0.5, 10.0]
     _theta_default = float(np.clip(round((fitted_theta or 2.0) / 0.1) * 0.1, 0.1, 10.0)) \
@@ -2299,7 +2299,7 @@ with tab4:
         height=400, legend=dict(orientation="h", yanchor="bottom", y=1.02),
         plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
     )
-    col_cfan.plotly_chart(fig_cop, use_container_width=True)
+    col_cfan.plotly_chart(fig_cop, width="stretch")
 
     # Overlay GBM vs Copula terminal distributions for direct comparison
     fig_overlay = go.Figure()
@@ -2322,7 +2322,7 @@ with tab4:
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
     )
-    col_chist.plotly_chart(fig_overlay, use_container_width=True)
+    col_chist.plotly_chart(fig_overlay, width="stretch")
 
     # ── Section 4: GARCH(1,1) + Copula Simulation ───────────────────────────────────────
     st.markdown("#### 4. GARCH(1,1) + Copula Simulation")
@@ -2384,7 +2384,7 @@ with tab4:
                 .format('{:.4f}', subset=['α (alpha)', 'β (beta)', 'α + β'])
                 .format('{:.2%}', subset=['Long-run Ann. Vol'])
                 .background_gradient(subset=['α + β'], cmap='YlOrRd', vmin=0.90, vmax=1.0),
-            use_container_width=True,
+            width="stretch",
             column_config={
                 'ω (omega)': st.column_config.Column(
                     help="Long-run baseline variance. Returns mean-revert toward this floor over time."
@@ -2440,7 +2440,7 @@ with tab4:
             paper_bgcolor='rgba(0,0,0,0)',
             margin=dict(t=20),
         )
-        st.plotly_chart(fig_gvol, use_container_width=True)
+        st.plotly_chart(fig_gvol, width="stretch")
 
         # ── Simulation Controls ───────────────────────────────────────────────
         st.info(
@@ -2515,7 +2515,7 @@ with tab4:
         for _vals, _name, _colour in [
             (final_values - 1, "GBM",          "steelblue"),
             (cop_final - 1,    "Copula",        "#C44E52"),
-            (gc_final,         "GARCH-Copula",  "#2ca02c"),
+            (gc_final - 1,     "GARCH-Copula",  "#2ca02c"),
         ]:
             fig_3way.add_trace(go.Histogram(
                 x=_vals, nbinsx=80,
@@ -2534,7 +2534,7 @@ with tab4:
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
         )
-        st.plotly_chart(fig_3way, use_container_width=True)
+        st.plotly_chart(fig_3way, width="stretch")
 
     st.divider()
 
@@ -2660,7 +2660,7 @@ with tab5:
         height=460,
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
     )
-    st.plotly_chart(fig_wealth, use_container_width=True)
+    st.plotly_chart(fig_wealth, width="stretch")
 
     #Summary Statistics for Wealth Index
     _ann_scale = np.sqrt(252)
@@ -2693,7 +2693,7 @@ with tab5:
             .format("{:.2%}", subset=["Ann. Return", "Ann. Vol", "Max Drawdown",
                                       "Ann. CF VaR (5%)", "Ann. CVaR (5%)"])
             .format("{:.2f}", subset=["Sharpe Ratio", "Kurtosis", "Skewness"]),
-        use_container_width=True,
+        width="stretch",
         column_config={
             "Skewness": st.column_config.Column(
                 "Skewness",
@@ -2777,7 +2777,7 @@ with tab5:
             .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
             .format("{:.3f}", subset=["Spread (95--5)"])
             .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
-        use_container_width=True,
+        width="stretch",
     )
 
     _dotplot_colours = {
@@ -2812,7 +2812,7 @@ with tab5:
         height=420,
         showlegend=False,
     )
-    st.plotly_chart(fig_comp, use_container_width=True)
+    st.plotly_chart(fig_comp, width="stretch")
 
     # ── GARCH-Copula 1Y Return Forecast ───────────────────────────────────
     if garch_params is not None:
@@ -2835,7 +2835,9 @@ with tab5:
                 tick_rets, garch_params, std_resids_g, last_state,
                 _gc_strat_names, _gc_weights_arr,
                 theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
+                tickers_key=tuple(tick_rets.columns),
             )
+            _spx_aligned = spx_rets.reindex(tick_rets.index).dropna()
             _spx_gc_fv = run_spy_garch_simulation(
                 _spx_aligned, n_scenarios=garch_n, n_steps=252, seed=int(seed) + 99,
             )
@@ -2861,7 +2863,7 @@ with tab5:
                 .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
                 .format("{:.3f}", subset=["Spread (95--5)"])
                 .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
-            use_container_width=True,
+            width="stretch",
         )
 
         _fig_gc_comp = go.Figure()
@@ -2887,12 +2889,12 @@ with tab5:
             height=420,
             showlegend=False,
         )
-        st.plotly_chart(_fig_gc_comp, use_container_width=True)
+        st.plotly_chart(_fig_gc_comp, width="stretch")
 
     st.divider()
 
-    # ── Section 3: CPPI Drawdown Protection Analysis ──────────────────────────
-    st.markdown("#### 3. CPPI Drawdown Protection Analysis")
+    # ── Section 4: CPPI Drawdown Protection Analysis ──────────────────────────
+    st.markdown("#### 4. CPPI Drawdown Protection Analysis")
 
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
@@ -2963,7 +2965,7 @@ with tab5:
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
     )
-    st.plotly_chart(fig_cppi, use_container_width=True)
+    st.plotly_chart(fig_cppi, width="stretch")
 
     # ── Equity allocation over time ───────────────────────────────────────────
     #Reindexed to backtest start date with rolling window constraint, not out of necessity, but consistency.
@@ -2994,7 +2996,7 @@ with tab5:
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
     )
-    st.plotly_chart(fig_alloc, use_container_width=True)
+    st.plotly_chart(fig_alloc, width="stretch")
 
     # ── Quarterly Allocation Snapshots ───────────────────────────────────────
     st.markdown("###### Quarterly Equity Allocation Snapshots")
@@ -3046,7 +3048,7 @@ with tab5:
         paper_bgcolor="rgba(0,0,0,0)",
         margin=dict(t=20, b=60),
     )
-    st.plotly_chart(fig_q, use_container_width=True)
+    st.plotly_chart(fig_q, width="stretch")
 
     # Summary counts
     _n_green  = int((_quarterly_alloc >= 80).sum())
@@ -3106,7 +3108,7 @@ with tab5:
             .background_gradient(subset=["CPPI Max Drawdown"], cmap="Reds_r",  vmax=0.0)
             .background_gradient(subset=["BL Max Drawdown"],   cmap="Reds_r",  vmax=0.0)
             .background_gradient(subset=["DD Reduction"],      cmap="RdYlGn", vmin=-0.1, vmax=0.0),
-        use_container_width=True,
+        width="stretch",
         column_config={
             "DD Reduction": st.column_config.Column(
                 "DD Reduction",
