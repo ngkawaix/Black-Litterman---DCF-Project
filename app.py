@@ -890,18 +890,13 @@ def run_garch_copula_all_strategies(
 ):
     """
     Runs one set of GARCH-Copula asset paths and applies all strategy weight
-    vectors in a single pass. Far more efficient than calling
-    run_garch_copula_simulation separately for each strategy — the expensive
-    GARCH + copula sampling happens once; weight application is a cheap matmul.
+    vectors in a single pass — the expensive GARCH + copula sampling happens
+    once; weight application is a cheap matmul per step.
 
-    Parameters
-    ----------
-    strategy_names        : tuple[str]  — strategy names, same order as weight rows
-    _strategy_weights_arr : np.ndarray (n_strategies, n_assets) — one weight vector per row
+    strategy_names        : tuple[str]  — names, same order as weight rows
+    _strategy_weights_arr : np.ndarray (n_strategies, n_assets)
 
-    Returns
-    -------
-    dict {strategy_name: terminal_portfolio_values  shape (n_scenarios,)}
+    Returns dict {strategy_name: terminal_portfolio_values (n_scenarios,)}
     """
     rng      = np.random.default_rng(seed)
     n_assets = len(_tick_rets.columns)
@@ -909,7 +904,7 @@ def run_garch_copula_all_strategies(
 
     sorted_std = np.stack(
         [np.sort(_std_resids[col]) for col in cols], axis=1
-    )  # (n_hist, n_assets)
+    )
     n_hist = sorted_std.shape[0]
 
     omegas = np.array([_garch_params[col]['omega'] for col in cols])
@@ -920,35 +915,86 @@ def run_garch_copula_all_strategies(
     sigma2_s  = np.tile([_last_state[col]['sigma2']  for col in cols], (n_scenarios, 1))
     epsilon_s = np.tile([_last_state[col]['epsilon'] for col in cols], (n_scenarios, 1))
 
-    # Track one portfolio value series per strategy: (n_strategies, n_scenarios)
     port_vals = np.ones((len(strategy_names), n_scenarios))
 
     for t in range(1, n_steps + 1):
-        # GARCH variance update: σ²_t = ω + α·ε²_{t-1} + β·σ²_{t-1}
         sigma2_s = omegas + alphas * epsilon_s ** 2 + betas * sigma2_s
         sigma_s  = np.sqrt(np.maximum(sigma2_s, 1e-8))
 
-        # Clayton copula draw
         W        = rng.gamma(1.0 / theta, 1.0, size=n_scenarios)
         indep_u  = rng.uniform(0.0, 1.0, size=(n_scenarios, n_assets))
         U        = (1.0 - np.log(indep_u) / W[:, None]) ** (-1.0 / theta)
         U        = np.clip(U, 1e-6, 1.0 - 1e-6)
 
-        # Empirical inverse transform on standardised residuals
         idx  = np.clip((U * n_hist).astype(int), 0, n_hist - 1)
-        z_t  = sorted_std[idx, np.arange(n_assets)]                 # (n_scenarios, n_assets)
+        z_t  = sorted_std[idx, np.arange(n_assets)]
 
-        # Reconstruct returns and update GARCH state
-        r_scaled  = mus + sigma_s * z_t                             # (n_scenarios, n_assets)
-        r_actual  = r_scaled / 100.0                                # decimal return
+        r_scaled  = mus + sigma_s * z_t
+        r_actual  = r_scaled / 100.0
         epsilon_s = r_scaled - mus
 
-        # Apply all strategies simultaneously via a single matmul:
+        # Apply all strategies simultaneously:
         # (n_strategies, n_assets) @ (n_assets, n_scenarios) → (n_strategies, n_scenarios)
-        port_step = _strategy_weights_arr @ r_actual.T
-        port_vals *= (1.0 + port_step)
+        port_vals *= (1.0 + _strategy_weights_arr @ r_actual.T)
 
     return {name: port_vals[k] for k, name in enumerate(strategy_names)}
+
+
+@st.cache_data(show_spinner=False)
+def run_spy_garch_simulation(_spx_rets_aligned, n_scenarios=2_000, n_steps=252, seed=42):
+    """
+    Single-asset GARCH(1,1) + empirical inverse-transform simulation for SPY.
+
+    No copula is needed — SPY is already a diversified index with no cross-asset
+    dependency to model. Uses the same GARCH + empirical residual approach as
+    the multi-asset simulation for methodological consistency.
+
+    Returns terminal portfolio values shape (n_scenarios,).
+    """
+    from arch import arch_model
+    import warnings
+
+    r = _spx_rets_aligned.dropna() * 100
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        res = arch_model(
+            r, vol='Garch', p=1, q=1, dist='normal', mean='Constant'
+        ).fit(disp='off', show_warning=False)
+
+    _mu = 0.0
+    for _k in ('mu', 'Const', 'constant'):
+        if _k in res.params.index:
+            _mu = float(res.params[_k])
+            break
+
+    omega = float(res.params['omega'])
+    alpha = float(res.params['alpha[1]'])
+    beta  = float(res.params['beta[1]'])
+
+    sorted_z    = np.sort((res.resid / res.conditional_volatility).values)
+    n_hist      = len(sorted_z)
+    last_sigma2 = float(res.conditional_volatility.iloc[-1] ** 2)
+    last_eps    = float(res.resid.iloc[-1])
+
+    rng      = np.random.default_rng(seed)
+    sigma2_s = np.full(n_scenarios, last_sigma2)
+    eps_s    = np.full(n_scenarios, last_eps)
+    port_v   = np.ones(n_scenarios)
+
+    for t in range(n_steps):
+        sigma2_s = omega + alpha * eps_s ** 2 + beta * sigma2_s
+        sigma_s  = np.sqrt(np.maximum(sigma2_s, 1e-8))
+
+        u   = rng.uniform(0, 1, n_scenarios)
+        idx = np.clip((u * n_hist).astype(int), 0, n_hist - 1)
+        z_t = sorted_z[idx]
+
+        r_scaled = _mu + sigma_s * z_t
+        r_actual = r_scaled / 100.0
+        eps_s    = r_scaled - _mu
+        port_v  *= (1.0 + r_actual)
+
+    return port_v
 
     
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2728,6 +2774,23 @@ with tab5:
             "Spread (95--5)":  np.percentile(fv, 95) - np.percentile(fv, 5),
         }
 
+    # SPY benchmark: single-asset GBM using historical mean and vol
+    _spx_aligned = spx_rets.reindex(tick_rets.index).dropna()
+    _spx_mu_d    = float(_spx_aligned.mean())
+    _spx_sig_d   = float(_spx_aligned.std())
+    _spx_rng     = np.random.default_rng(int(seed) + 99)
+    _spx_z       = _spx_rng.standard_normal(n_scenarios)
+    _spx_fv      = np.exp(
+        (_spx_mu_d - 0.5 * _spx_sig_d ** 2) * 252
+        + _spx_sig_d * np.sqrt(252) * _spx_z
+    )
+    comparison["S&P 500 (SPY)"] = {
+        "Expected Return": float(np.mean(_spx_fv) - 1),
+        "5th pct":         float(np.percentile(_spx_fv,  5) - 1),
+        "95th pct":        float(np.percentile(_spx_fv, 95) - 1),
+        "Spread (95--5)":  float(np.percentile(_spx_fv, 95) - np.percentile(_spx_fv, 5)),
+    }
+
     comp_df = pd.DataFrame(comparison).T.sort_values("Expected Return", ascending=False)
     st.dataframe(
         comp_df.style
@@ -2743,6 +2806,7 @@ with tab5:
         "Global Minimum Variance": "#41b6c4",
         "Risk Parity":             "#2c7fb8",
         "Black-Litterman":         "#253494",
+        "S&P 500 (SPY)":           "#888888",
     }
 
     fig_comp = go.Figure()
@@ -2775,13 +2839,11 @@ with tab5:
     if garch_params is not None:
         st.markdown("##### GARCH-Copula 1-Year Return Forecast")
         st.caption(
-            "The same five strategies run through the GARCH-Copula simulation — the more realistic "
-            "method from Tab 4, now applied to every strategy weight vector in one pass. "
-            "Compare directly with the GBM table above: the expected returns will be similar, "
-            "but the **5th percentile will be materially worse** across all strategies. "
-            "That gap is the tail risk GBM systematically misses. "
-            f"Uses θ = {theta_garch:.1f} (MLE-estimated) and {garch_n:,} scenarios — "
-            "the same parameters set in Tab 4."
+            "The same five strategies plus SPY, run through the GARCH-Copula simulation. "
+            "Compare the **5th percentile column** directly with the GBM table above — "
+            "that gap is the tail risk GBM systematically misses. "
+            "SPY uses a standalone GARCH simulation (no copula needed for a single index). "
+            f"Uses θ = {theta_garch:.1f} and {garch_n:,} scenarios — same as Tab 4."
         )
 
         _gc_strat_names = tuple(strategy_weights.keys())
@@ -2796,15 +2858,24 @@ with tab5:
                 _gc_strat_names, _gc_weights_arr,
                 theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
             )
+            _spx_gc_fv = run_spy_garch_simulation(
+                _spx_aligned, n_scenarios=garch_n, n_steps=252, seed=int(seed) + 99,
+            )
 
         _gc_comparison = {}
         for _sn, _fv in _gc_strat_results.items():
             _gc_comparison[_sn] = {
-                "Expected Return": float(np.mean(_fv))           - 1,
-                "5th pct":         float(np.percentile(_fv,  5)) - 1,
-                "95th pct":        float(np.percentile(_fv, 95)) - 1,
+                "Expected Return": float(np.mean(_fv))            - 1,
+                "5th pct":         float(np.percentile(_fv,  5))  - 1,
+                "95th pct":        float(np.percentile(_fv, 95))  - 1,
                 "Spread (95--5)":  float(np.percentile(_fv, 95) - np.percentile(_fv, 5)),
             }
+        _gc_comparison["S&P 500 (SPY)"] = {
+            "Expected Return": float(np.mean(_spx_gc_fv))            - 1,
+            "5th pct":         float(np.percentile(_spx_gc_fv,  5))  - 1,
+            "95th pct":        float(np.percentile(_spx_gc_fv, 95))  - 1,
+            "Spread (95--5)":  float(np.percentile(_spx_gc_fv, 95) - np.percentile(_spx_gc_fv, 5)),
+        }
 
         _gc_comp_df = pd.DataFrame(_gc_comparison).T.sort_values("Expected Return", ascending=False)
         st.dataframe(
@@ -2832,7 +2903,7 @@ with tab5:
                 name=_sn,
             ))
         _fig_gc_comp.update_layout(
-            title=f"GARCH-Copula: Expected 1Y Return with 95% CI (θ = {theta_garch:.1f})",
+            title=f"GARCH-Copula: Expected 1Y Return with 95% CI  (θ = {theta_garch:.1f})",
             yaxis_tickformat=".1%",
             yaxis_title="1-Year Return",
             height=420,
