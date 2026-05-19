@@ -3024,7 +3024,7 @@ with tab5:
     st.plotly_chart(fig_alloc, use_container_width=True)
 
     # ── Quarterly Allocation Snapshots ───────────────────────────────────────
-    st.markdown("#### Quarterly Equity Allocation Snapshots")
+    st.markdown("###### Quarterly Equity Allocation Snapshots")
     st.caption(
         "Quarter-end equity allocation (% of portfolio) derived from the CPPI strategy. "
         "Green = fully invested (≥ 80%), amber = partially de-risked (30–80%), "
