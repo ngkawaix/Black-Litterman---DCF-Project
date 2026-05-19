@@ -58,8 +58,6 @@ BASE_TARGETS = {
     "TSM":  463.00, "V":    399.00,
 }
 
-# FOR FUTURE IMPLEMENTATION: Bear = 20 % below base;  Bull = 25 % above base  (reserved for future DCF scenario toggle)
-
 BASE_CONFIDENCE = {
     "AAPL": 0.20, "ADBE": 0.25, "AMAT": 0.15,
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
@@ -886,11 +884,7 @@ def run_garch_copula_simulation(
 
 
 @st.cache_data(show_spinner="Running GARCH-Copula for all strategies…")
-def run_garch_copula_all_strategies(
-    _tick_rets, _garch_params, _std_resids, _last_state,
-    strategy_names, _strategy_weights_arr,
-    theta=2.0, n_scenarios=2_000, n_steps=252, seed=42,
-):
+def run_garch_copula_all_strategies(_tick_rets, _garch_params, _std_resids, _last_state, strategy_names, _strategy_weights_arr, theta=2.0, n_scenarios=2_000, n_steps=252, seed=42,):
     """
     Runs one set of GARCH-Copula asset paths and applies all strategy weight
     vectors in a single pass — the expensive GARCH + copula sampling happens
