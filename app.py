@@ -2452,17 +2452,14 @@ with tab5:
     )
 
     st.caption(
-        "**Note on returns series**: Wealth Index and Summary Stats assume all strategies "
-        "have Direct Reinvestment Plan (DRIP) enabled."
-    )
-    st.caption(
+        "**Note**: Wealth Index and Summary Stats assume all strategies "
+        "have Direct Reinvestment Plan (DRIP) enabled. "
         "GMV and Risk Parity use the Elton-Gruber Constant Correlation shrinkage estimator "
         "(δ = 0.7), which blends the sample covariance matrix with a structured prior where "
         "all pairwise correlations are equal. With only 17 assets, the sample matrix is noisy "
         "and unreliable, so shrinkage stabilises it. δ = 0.7 reflects that optimal shrinkage "
         "intensity rises as the asset universe shrinks; fewer assets means less trustworthy "
         "sample estimates, so a stronger pull toward the prior is warranted.")
-
 
     st.divider()
 
