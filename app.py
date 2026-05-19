@@ -2837,10 +2837,6 @@ with tab5:
                 theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
                 tickers_key=tuple(tick_rets.columns),
             )
-            _spx_aligned = spx_rets.reindex(tick_rets.index).dropna()
-            _spx_gc_fv = run_spy_garch_simulation(
-                _spx_aligned, n_scenarios=garch_n, n_steps=252, seed=int(seed) + 99,
-            )
 
         _gc_comparison = {}
         for _sn, _fv in _gc_strat_results.items():
@@ -2850,12 +2846,6 @@ with tab5:
                 "95th pct":        float(np.percentile(_fv, 95))  - 1,
                 "Spread (95--5)":  float(np.percentile(_fv, 95) - np.percentile(_fv, 5)),
             }
-        _gc_comparison["S&P 500 (SPY)"] = {
-            "Expected Return": float(np.mean(_spx_gc_fv))            - 1,
-            "5th pct":         float(np.percentile(_spx_gc_fv,  5))  - 1,
-            "95th pct":        float(np.percentile(_spx_gc_fv, 95))  - 1,
-            "Spread (95--5)":  float(np.percentile(_spx_gc_fv, 95) - np.percentile(_spx_gc_fv, 5)),
-        }
 
         _gc_comp_df = pd.DataFrame(_gc_comparison).T.sort_values("Expected Return", ascending=False)
         st.dataframe(
