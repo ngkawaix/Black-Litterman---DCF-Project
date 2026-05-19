@@ -1036,11 +1036,21 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
             ), []
         prices = raw["Close"].squeeze()
         n_days = int(prices.dropna().shape[0])
-        if n_days < 500:
+        # Minimum is set to 1 008 trading days (~4 years) rather than a shorter
+        # threshold for two reasons:
+        #   1. The default BL estimation window is 3 years (756 days) — a ticker
+        #      needs at least that to populate one full estimation window.
+        #   2. dropna(how='any') in run_copula_simulation aligns ALL tickers to
+        #      the shortest history, so a new ticker with only 500 days silently
+        #      truncates every other ticker's history too.
+        _MIN_DAYS = 1_008
+        if n_days < _MIN_DAYS:
             return False, (
-                f"**{ticker}** only has {n_days} trading days of data from {start_date_str} "
-                f"(minimum 500 required for a reliable covariance estimate). "
-                "Try a more recent start date, or choose a stock with a longer history."
+                f"**{ticker}** only has **{n_days} trading days** of data from {start_date_str} "
+                f"(minimum {_MIN_DAYS} required, roughly 4 years). "
+                "A short-history ticker truncates the covariance matrix and backtest period "
+                "for the entire universe, not just itself. "
+                "Try moving the start date forward, or choose a stock with a longer listing history."
             ), []
     except Exception as exc:
         return False, f"Failed to download price data for **{ticker}**: {exc}", []
@@ -1055,6 +1065,16 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
 
     # ── Soft warnings (non-blocking) ──────────────────────────────────────────
     soft_warnings = []
+
+    # Warn if the ticker would noticeably shorten the shared history
+    _PREFERRED_DAYS = 1_260   # ~5 years
+    if n_days < _PREFERRED_DAYS:
+        soft_warnings.append(
+            f"Only {n_days} trading days available (preferred ≥ {_PREFERRED_DAYS}, ~5 years). "
+            "Adding this ticker will shorten the effective analysis window for all other stocks. "
+            "Consider using a longer data start date or a stock with more history."
+        )
+
     try:
         mcap = t.fast_info.market_cap
         if mcap is not None and mcap < 10e9:
@@ -1203,6 +1223,20 @@ with st.sidebar:
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
+                # For custom tickers, surface the defaults so the user knows
+                # what they're starting from before adjusting.
+                if ticker not in TICKERS:
+                    _pt_src = (
+                        f"analyst consensus (${mean_t:,.0f})" if mean_t
+                        else "placeholder $100 — no consensus found"
+                    )
+                    st.info(
+                        f"📌 **Defaults for {ticker}:**  \n"
+                        f"Price target → {_pt_src}.  \n"
+                        "Confidence → **0.20** (conservative default).  \n"
+                        "Adjust both before running the model.",
+                        icon=None,
+                    )
 
     st.divider()
 
@@ -1210,8 +1244,10 @@ with st.sidebar:
     st.subheader("4. Custom Tickers")
     st.caption(
         "Add any valid Yahoo Finance ticker. "
-        "Tickers are validated for existence, minimum price history (500 trading days "
-        "from your chosen start date), and data completeness before being admitted."
+        "Tickers must have at least **1 008 trading days (~4 years)** of data from your chosen "
+        "start date and less than 5% missing values before being admitted. "
+        "A shorter-history ticker would truncate the covariance and backtest window for every "
+        "other stock in the universe."
     )
 
     _inp_col, _btn_col = st.columns([3, 1])
