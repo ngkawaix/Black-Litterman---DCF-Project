@@ -631,9 +631,13 @@ def run_copula_simulation(tick_rets, bl_w_series, theta=2.0, n_scenarios=3_000, 
     n_assets = len(tick_rets.columns)
     w        = bl_w_series.reindex(tick_rets.columns).fillna(0).values
 
+    # Drop any rows where ANY ticker has a NaN — custom tickers with shorter
+    # listing history cause per-column lengths to differ, which breaks np.stack.
+    tick_rets_aligned = tick_rets.dropna()
+
     # Pre-sort each asset's historical daily returns once (non-parametric CDF lookup table)
     sorted_hists = np.stack(
-        [np.sort(tick_rets[col].dropna().values) for col in tick_rets.columns],
+        [np.sort(tick_rets_aligned[col].values) for col in tick_rets_aligned.columns],
         axis=1,
     )  # shape: (n_hist, n_assets)
     n_hist = sorted_hists.shape[0]
@@ -790,7 +794,12 @@ def fit_garch_params(_tick_rets):
     _opt         = minimize_scalar(_clayton_neg_ll, bounds=(-2.0, 3.0), method='bounded')
     fitted_theta = float(np.exp(_opt.x))
 
-    return garch_params, std_resids, last_state, cond_vol_df, fitted_theta
+    # Align std_resids to min_len so run_garch_copula_simulation receives
+    # equal-length arrays for every ticker — custom tickers with shorter history
+    # produce shorter residual series, which breaks np.stack downstream.
+    std_resids_aligned = {col: std_resids[col][-min_len:] for col in _tick_rets.columns}
+
+    return garch_params, std_resids_aligned, last_state, cond_vol_df, fitted_theta
 
 
 def run_garch_copula_simulation(
