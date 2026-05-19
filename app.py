@@ -2745,8 +2745,8 @@ with tab5:
 
     st.divider()
 
-    # ── Section 2: 1-Year Monte Carlo Return Forecast ─────────────────────────
-    st.markdown("#### 2. 1-Year Monte Carlo Return Forecast")
+    # ── Section 2: 1Y Correlated GBM Forecast ─────────────────────────
+    st.markdown("#### 2. Correlated GBM 1Y Return Forecast")
     st.caption(
         "Uses the same  paths from the Simulation & Stress Tests tab but applied "
         "to each strategy's weights. Lets you see whether BL adds value over simpler alternatives."
@@ -2824,7 +2824,7 @@ with tab5:
         ))
 
     fig_comp.update_layout(
-        title="Expected 1Y Return with 95% Confidence Interval",
+        title="Correlated GBM: Expected 1Y Return with 95% CI",
         yaxis_tickformat=".1%",
         yaxis_title="1-Year Return",
         height=420,
@@ -2840,9 +2840,9 @@ with tab5:
         "the dots to read the exact 5th/95th pct values from the table above."
     )
 
-    # ── GARCH-Copula 1-Year Return Forecast ───────────────────────────────────
+    # ── GARCH-Copula 1Y Return Forecast ───────────────────────────────────
     if garch_params is not None:
-        st.markdown("##### GARCH-Copula 1-Year Return Forecast")
+        st.markdown("#### 3. GARCH-Copula 1Y Return Forecast")
         st.caption(
             "The same five strategies plus SPY, run through the GARCH-Copula simulation. "
             "Compare the **5th percentile column** directly with the GBM table above — "
@@ -3022,8 +3022,6 @@ with tab5:
         paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_alloc, use_container_width=True)
-
-    st.divider()
 
     # ── Quarterly Allocation Snapshots ───────────────────────────────────────
     st.markdown("##### Quarterly Equity Allocation Snapshots")
