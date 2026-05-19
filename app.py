@@ -880,6 +880,76 @@ def run_garch_copula_simulation(
         port_paths[t] = port_paths[t - 1] * (1.0 + r_actual @ w)
 
     return port_paths
+
+
+@st.cache_data(show_spinner="Running GARCH-Copula for all strategies…")
+def run_garch_copula_all_strategies(
+    _tick_rets, _garch_params, _std_resids, _last_state,
+    strategy_names, _strategy_weights_arr,
+    theta=2.0, n_scenarios=2_000, n_steps=252, seed=42,
+):
+    """
+    Runs one set of GARCH-Copula asset paths and applies all strategy weight
+    vectors in a single pass. Far more efficient than calling
+    run_garch_copula_simulation separately for each strategy — the expensive
+    GARCH + copula sampling happens once; weight application is a cheap matmul.
+
+    Parameters
+    ----------
+    strategy_names        : tuple[str]  — strategy names, same order as weight rows
+    _strategy_weights_arr : np.ndarray (n_strategies, n_assets) — one weight vector per row
+
+    Returns
+    -------
+    dict {strategy_name: terminal_portfolio_values  shape (n_scenarios,)}
+    """
+    rng      = np.random.default_rng(seed)
+    n_assets = len(_tick_rets.columns)
+    cols     = _tick_rets.columns.tolist()
+
+    sorted_std = np.stack(
+        [np.sort(_std_resids[col]) for col in cols], axis=1
+    )  # (n_hist, n_assets)
+    n_hist = sorted_std.shape[0]
+
+    omegas = np.array([_garch_params[col]['omega'] for col in cols])
+    alphas = np.array([_garch_params[col]['alpha'] for col in cols])
+    betas  = np.array([_garch_params[col]['beta']  for col in cols])
+    mus    = np.array([_garch_params[col]['mu']     for col in cols])
+
+    sigma2_s  = np.tile([_last_state[col]['sigma2']  for col in cols], (n_scenarios, 1))
+    epsilon_s = np.tile([_last_state[col]['epsilon'] for col in cols], (n_scenarios, 1))
+
+    # Track one portfolio value series per strategy: (n_strategies, n_scenarios)
+    port_vals = np.ones((len(strategy_names), n_scenarios))
+
+    for t in range(1, n_steps + 1):
+        # GARCH variance update: σ²_t = ω + α·ε²_{t-1} + β·σ²_{t-1}
+        sigma2_s = omegas + alphas * epsilon_s ** 2 + betas * sigma2_s
+        sigma_s  = np.sqrt(np.maximum(sigma2_s, 1e-8))
+
+        # Clayton copula draw
+        W        = rng.gamma(1.0 / theta, 1.0, size=n_scenarios)
+        indep_u  = rng.uniform(0.0, 1.0, size=(n_scenarios, n_assets))
+        U        = (1.0 - np.log(indep_u) / W[:, None]) ** (-1.0 / theta)
+        U        = np.clip(U, 1e-6, 1.0 - 1e-6)
+
+        # Empirical inverse transform on standardised residuals
+        idx  = np.clip((U * n_hist).astype(int), 0, n_hist - 1)
+        z_t  = sorted_std[idx, np.arange(n_assets)]                 # (n_scenarios, n_assets)
+
+        # Reconstruct returns and update GARCH state
+        r_scaled  = mus + sigma_s * z_t                             # (n_scenarios, n_assets)
+        r_actual  = r_scaled / 100.0                                # decimal return
+        epsilon_s = r_scaled - mus
+
+        # Apply all strategies simultaneously via a single matmul:
+        # (n_strategies, n_assets) @ (n_assets, n_scenarios) → (n_strategies, n_scenarios)
+        port_step = _strategy_weights_arr @ r_actual.T
+        port_vals *= (1.0 + port_step)
+
+    return {name: port_vals[k] for k, name in enumerate(strategy_names)}
+
     
 # ─────────────────────────────────────────────────────────────────────────────
 # CUSTOM TICKER VALIDATION
@@ -2701,6 +2771,75 @@ with tab5:
     )
     st.plotly_chart(fig_comp, use_container_width=True)
 
+    # ── GARCH-Copula 1-Year Return Forecast ───────────────────────────────────
+    if garch_params is not None:
+        st.markdown("##### GARCH-Copula 1-Year Return Forecast")
+        st.caption(
+            "The same five strategies run through the GARCH-Copula simulation — the more realistic "
+            "method from Tab 4, now applied to every strategy weight vector in one pass. "
+            "Compare directly with the GBM table above: the expected returns will be similar, "
+            "but the **5th percentile will be materially worse** across all strategies. "
+            "That gap is the tail risk GBM systematically misses. "
+            f"Uses θ = {theta_garch:.1f} (MLE-estimated) and {garch_n:,} scenarios — "
+            "the same parameters set in Tab 4."
+        )
+
+        _gc_strat_names = tuple(strategy_weights.keys())
+        _gc_weights_arr = np.stack([
+            w.reindex(tick_rets.columns).fillna(0).values
+            for w in strategy_weights.values()
+        ])
+
+        with st.spinner("Running GARCH-Copula for all strategies…"):
+            _gc_strat_results = run_garch_copula_all_strategies(
+                tick_rets, garch_params, std_resids_g, last_state,
+                _gc_strat_names, _gc_weights_arr,
+                theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
+            )
+
+        _gc_comparison = {}
+        for _sn, _fv in _gc_strat_results.items():
+            _gc_comparison[_sn] = {
+                "Expected Return": float(np.mean(_fv))           - 1,
+                "5th pct":         float(np.percentile(_fv,  5)) - 1,
+                "95th pct":        float(np.percentile(_fv, 95)) - 1,
+                "Spread (95--5)":  float(np.percentile(_fv, 95) - np.percentile(_fv, 5)),
+            }
+
+        _gc_comp_df = pd.DataFrame(_gc_comparison).T.sort_values("Expected Return", ascending=False)
+        st.dataframe(
+            _gc_comp_df.style
+                .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
+                .format("{:.3f}", subset=["Spread (95--5)"])
+                .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
+            use_container_width=True,
+        )
+
+        _fig_gc_comp = go.Figure()
+        for _sn, _row in _gc_comparison.items():
+            _c = _dotplot_colours.get(_sn, "#888888")
+            _fig_gc_comp.add_trace(go.Scatter(
+                x=[_sn],
+                y=[_row["Expected Return"]],
+                mode="markers",
+                marker=dict(size=14, symbol="circle", color=_c),
+                error_y=dict(
+                    type="data", symmetric=False,
+                    array     =[_row["95th pct"] - _row["Expected Return"]],
+                    arrayminus=[_row["Expected Return"] - _row["5th pct"]],
+                    color=_c,
+                ),
+                name=_sn,
+            ))
+        _fig_gc_comp.update_layout(
+            title=f"GARCH-Copula: Expected 1Y Return with 95% CI (θ = {theta_garch:.1f})",
+            yaxis_tickformat=".1%",
+            yaxis_title="1-Year Return",
+            height=420,
+            showlegend=False,
+        )
+        st.plotly_chart(_fig_gc_comp, use_container_width=True)
+
     st.divider()
 
     # ── Section 3: CPPI Drawdown Protection Analysis ──────────────────────────
@@ -2948,176 +3087,6 @@ with tab5:
         "improve return attribution precision, but the primary outputs here (drawdown reduction, floor breach, "
         "and equity allocation dynamics) are determined entirely by the equity sleeve and are unaffected by "
         "this assumption."
-    )
-
-    st.divider()
-
-    # ── Section 4: Forward-Looking Risk Summary ───────────────────────────────
-    st.markdown("#### 4. Forward-Looking Risk Summary (BL Allocation)")
-    st.markdown(
-        """
-        The three simulation methods in Tab 4 each make progressively fewer assumptions
-        about how returns behave. This section brings their outputs together in one place
-        for the BL allocation specifically, so you can see at a glance how much the tail
-        risk estimate changes as the model becomes more realistic.
-
-        **The number to focus on is the 5th percentile.** In roughly 1 out of every 20
-        simulated years, your return would be at or below that figure. The gap between
-        the GBM row and the GARCH-Copula row is the tail risk that the simpler model
-        systematically misses — volatility clustering and crash co-movement working
-        together in the worst outcomes.
-
-        No new computation happens here — these figures come directly from the simulations
-        already run in Tab 4 using the parameters you set there.
-        """
-    )
-
-    # ── Build comparison table from already-computed Tab 4 variables ──────────
-    _fwd_rows = {}
-
-    _fwd_rows["GBM"] = {
-        "Assumption":      "Normal returns, symmetric correlation",
-        "Expected Return": comparison["Black-Litterman"]["Expected Return"],
-        "5th Percentile":  comparison["Black-Litterman"]["5th pct"],
-        "95th Percentile": comparison["Black-Litterman"]["95th pct"],
-        "Uncertainty Band (95th−5th)": comparison["Black-Litterman"]["Spread (95--5)"],
-    }
-
-    _fwd_rows["Copula"] = {
-        "Assumption":      "Empirical margins, lower-tail dependence",
-        "Expected Return": cop_mean,
-        "5th Percentile":  cop_p5,
-        "95th Percentile": cop_p95,
-        "Uncertainty Band (95th−5th)": cop_spread,
-    }
-
-    if garch_params is not None:
-        _fwd_rows["GARCH-Copula"] = {
-            "Assumption":      "Copula + time-varying volatility clustering",
-            "Expected Return": gc_mean,
-            "5th Percentile":  gc_p5,
-            "95th Percentile": gc_p95,
-            "Uncertainty Band (95th−5th)": gc_spread,
-        }
-
-    _fwd_df = pd.DataFrame(_fwd_rows).T
-
-    st.dataframe(
-        _fwd_df.style
-            .format("{:.2%}", subset=["Expected Return", "5th Percentile",
-                                      "95th Percentile"])
-            .format("{:.3f}", subset=["Uncertainty Band (95th−5th)"])
-            .background_gradient(subset=["5th Percentile"], cmap="Reds_r", vmax=0.0)
-            .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
-        use_container_width=True,
-        column_config={
-            "Assumption": st.column_config.TextColumn(
-                "What each model assumes",
-                width="large",
-                help=(
-                    "GBM: returns are normally distributed and correlations are fixed and symmetric. "
-                    "Copula: each asset's return distribution matches its actual historical shape "
-                    "(fat tails, skew preserved), and assets crash together more tightly than they rally. "
-                    "GARCH-Copula: adds time-varying volatility — a large shock today raises tomorrow's "
-                    "variance, producing the self-reinforcing drawdowns visible in real crashes."
-                ),
-            ),
-            "5th Percentile": st.column_config.NumberColumn(
-                "5th Percentile",
-                help=(
-                    "In roughly 1 out of 20 simulated years, the return would be at or below this. "
-                    "This is the most important column: it shows how the tail risk estimate changes "
-                    "as model realism increases. GBM typically gives the most optimistic (least negative) "
-                    "figure; GARCH-Copula the most conservative."
-                ),
-            ),
-            "Uncertainty Band (95th−5th)": st.column_config.NumberColumn(
-                "Uncertainty Band",
-                help=(
-                    "Width of the 90% return interval (95th minus 5th percentile). "
-                    "A wider band means the simulation produces a wider range of outcomes — "
-                    "both better upside and worse downside. More realistic models tend to produce "
-                    "wider bands because fat tails and volatility clustering generate more extreme paths."
-                ),
-            ),
-        },
-    )
-
-    # ── Tail risk gap callout metrics ─────────────────────────────────────────
-    st.caption(
-        "**How to read this:** the metrics below show how much the 5th percentile worsens "
-        "as the model becomes more realistic. A negative delta means the realistic model "
-        "predicts a worse tail outcome than GBM — i.e. risk GBM was hiding."
-    )
-
-    _gbm_p5   = comparison["Black-Litterman"]["5th pct"]
-    _gbm_exp  = comparison["Black-Litterman"]["Expected Return"]
-    _cop_gap  = cop_p5 - _gbm_p5
-
-    if garch_params is not None:
-        _gc_gap = gc_p5 - _gbm_p5
-        _fr1, _fr2, _fr3, _fr4 = st.columns(4)
-    else:
-        _fr1, _fr2, _fr3 = st.columns(3)
-
-    _fr1.metric(
-        "GBM 5th Percentile",
-        f"{_gbm_p5:+.1%}",
-        delta="Baseline estimate",
-        delta_color="off",
-        help="The tail estimate under the simplest model. Treats returns as normally distributed.",
-    )
-    _fr2.metric(
-        "Copula 5th Percentile",
-        f"{cop_p5:+.1%}",
-        delta=f"{_cop_gap:+.1%} vs GBM",
-        delta_color="inverse",
-        help=(
-            "The tail estimate once fat tails and crash co-movement are accounted for. "
-            "A negative delta means the copula reveals more downside risk than GBM suggested."
-        ),
-    )
-
-    if garch_params is not None:
-        _fr3.metric(
-            "GARCH-Copula 5th Percentile",
-            f"{gc_p5:+.1%}",
-            delta=f"{_gc_gap:+.1%} vs GBM",
-            delta_color="inverse",
-            help=(
-                "The most conservative tail estimate, adding volatility clustering to the copula. "
-                "This is the figure closest to what you might actually experience in a bad year."
-            ),
-        )
-        _fr4.metric(
-            "Hidden Tail Risk",
-            f"{_gc_gap:+.1%}",
-            delta="GARCH-Copula minus GBM",
-            delta_color="off",
-            help=(
-                "The additional downside risk that GBM systematically misses. "
-                "If this is −5%, it means the true 1-in-20 loss year is 5 percentage points "
-                "worse than the GBM baseline suggests."
-            ),
-        )
-    else:
-        _fr3.metric(
-            "Hidden Tail Risk",
-            f"{_cop_gap:+.1%}",
-            delta="Copula minus GBM",
-            delta_color="off",
-            help=(
-                "The additional downside risk that GBM misses once fat tails and crash "
-                "co-movement are accounted for. Install `arch` locally to also see the "
-                "GARCH-Copula estimate, which typically widens this gap further."
-            ),
-        )
-
-    st.caption(
-        "**Note:** these figures use the scenario count and θ set in Tab 4. "
-        "More scenarios produce smoother estimates with less Monte Carlo noise; "
-        "a higher θ widens the left tail further. The figures here will update "
-        "if you change those parameters and revisit this tab."
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
