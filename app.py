@@ -704,11 +704,19 @@ def fit_garch_params(_tick_rets):
                 r, vol='Garch', p=1, q=1, dist='normal', mean='Constant'
             ).fit(disp='off', show_warning=False)
 
+        # The constant mean parameter name differs across arch versions:
+        # older versions use 'Const', newer use 'mu'. Try both, fall back to 0.
+        _mu_val = 0.0
+        for _mu_key in ('mu', 'Const', 'constant'):
+            if _mu_key in res.params.index:
+                _mu_val = float(res.params[_mu_key])
+                break
+
         garch_params[col] = {
             'omega': float(res.params['omega']),      # ω: long-run baseline variance
             'alpha': float(res.params['alpha[1]']),   # α: sensitivity to last shock
             'beta':  float(res.params['beta[1]']),    # β: persistence of last variance
-            'mu':    float(res.params['Const']),      # μ: mean return (scaled)
+            'mu':    _mu_val,                          # μ: mean return (scaled)
         }
 
         # Standardised residuals: z_t = ε_t / σ_t  ≈ i.i.d. once vol is stripped out
