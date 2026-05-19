@@ -1218,7 +1218,7 @@ with st.sidebar:
     with _inp_col:
         _new_ticker_raw = st.text_input(
             "Ticker symbol",
-            placeholder="e.g. TSLA",
+            placeholder="e.g. SPOT",
             key="new_ticker_input",
             label_visibility="collapsed",
         )
@@ -2771,23 +2771,6 @@ with tab5:
             "Spread (95--5)":  np.percentile(fv, 95) - np.percentile(fv, 5),
         }
 
-    # SPY benchmark: single-asset GBM using historical mean and vol
-    _spx_aligned = spx_rets.reindex(tick_rets.index).dropna()
-    _spx_mu_d    = float(_spx_aligned.mean())
-    _spx_sig_d   = float(_spx_aligned.std())
-    _spx_rng     = np.random.default_rng(int(seed) + 99)
-    _spx_z       = _spx_rng.standard_normal(n_scenarios)
-    _spx_fv      = np.exp(
-        (_spx_mu_d - 0.5 * _spx_sig_d ** 2) * 252
-        + _spx_sig_d * np.sqrt(252) * _spx_z
-    )
-    comparison["S&P 500 (SPY)"] = {
-        "Expected Return": float(np.mean(_spx_fv) - 1),
-        "5th pct":         float(np.percentile(_spx_fv,  5) - 1),
-        "95th pct":        float(np.percentile(_spx_fv, 95) - 1),
-        "Spread (95--5)":  float(np.percentile(_spx_fv, 95) - np.percentile(_spx_fv, 5)),
-    }
-
     comp_df = pd.DataFrame(comparison).T.sort_values("Expected Return", ascending=False)
     st.dataframe(
         comp_df.style
@@ -2803,7 +2786,6 @@ with tab5:
         "Global Minimum Variance": "#41b6c4",
         "Risk Parity":             "#2c7fb8",
         "Black-Litterman":         "#253494",
-        "S&P 500 (SPY)":           "#888888",
     }
 
     fig_comp = go.Figure()
@@ -2831,24 +2813,15 @@ with tab5:
         showlegend=False,
     )
     st.plotly_chart(fig_comp, use_container_width=True)
-    st.caption(
-        "**Note on the chart scale:** SPY's error bar (−16% to +50%) is much wider than the "
-        "five strategies (spreads of ~0.02) because the strategies use BL posterior returns "
-        "as drift — your current bullish views shift the entire distribution rightward and "
-        "compress it. SPY uses its historical mean, giving a more realistic spread. "
-        "The strategy error bars exist but are too narrow to see at this scale; hover over "
-        "the dots to read the exact 5th/95th pct values from the table above."
-    )
 
     # ── GARCH-Copula 1Y Return Forecast ───────────────────────────────────
     if garch_params is not None:
         st.markdown("#### 3. GARCH-Copula 1Y Return Forecast")
         st.caption(
-            "The same five strategies plus SPY, run through the GARCH-Copula simulation. "
-            "Compare the **5th percentile column** directly with the GBM table above — "
-            "that gap is the tail risk GBM systematically misses. "
-            "SPY uses a standalone GARCH simulation (no copula needed for a single index). "
-            f"Uses θ = {theta_garch:.1f} and {garch_n:,} scenarios — same as Tab 4."
+            "The same five strategies plus run through the GARCH-Copula simulation. "
+            "Compare the **5th percentile column** directly with the GBM table above. "
+            "The gap is the tail risk that GBM systematically misses. "
+            f"Uses θ = {theta_garch:.1f} and {garch_n:,} scenarios."
         )
 
         _gc_strat_names = tuple(strategy_weights.keys())
