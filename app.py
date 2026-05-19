@@ -3086,7 +3086,7 @@ with tab5:
     _sc3.metric("🔴 Near / at cash lock-in",     f"{_n_red}   / {_n_total}",  f"{_n_red/_n_total:.0%} of backtest")
 
     # ── CPPI Performance During Stress Periods ────────────────────────────────
-    st.markdown("##### CPPI Protection During Historical Stress Periods")
+    st.markdown("###### CPPI Protection During Historical Stress Periods")
     st.caption(
         "The table below checks how the BL with CPPI sleeve would have performed "
         "relative to the unprotected BL allocation."
