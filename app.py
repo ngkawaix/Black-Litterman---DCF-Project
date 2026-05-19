@@ -287,7 +287,7 @@ def load_ticker_metadata(tickers):
             pass
         recent_earnings[ticker] = flagged
 
-        time.sleep(0.25)   
+        time.sleep(0.30)   
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
