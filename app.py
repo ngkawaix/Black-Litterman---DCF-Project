@@ -59,11 +59,11 @@ BASE_TARGETS = {
 }
 
 BASE_CONFIDENCE = {
-    "AAPL": 0.20, "ADBE": 0.25, "AMAT": 0.15,
+    "AAPL": 0.20, "ADBE": 0.15, "AMAT": 0.15,
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
     "FICO": 0.45, "GOOGL":0.15, "LRCX": 0.10,
     "MA":   0.55, "META": 0.65, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.55, "NVDA": 0.10,
+    "MSFT": 0.60, "NFLX": 0.30, "NVDA": 0.10,
     "TSM":  0.25, "V":    0.50,
 }
 
@@ -105,7 +105,8 @@ CONFIDENCE_RATIONALE = {
     ),
     "ADBE": (
         "Target is 12% above the market-implied price, a bullish view against a structurally challenged backdrop. "
-        "Confidence at 0.25 is the lowest among bullish names | Reflects two consecutive ARR misses and unproven Firefly AI monetisation."
+        "Confidence at 0.15 is the lowest among bullish names | Reflects two consecutive ARR misses and unproven Firefly AI monetisation. Increased compeition from AI Generative Tools and Figma."
+        "
     ),
     "AMAT": (
         "Target is 9% below the market-implied price on continued NAND and trailing-edge weakness. "
@@ -153,7 +154,7 @@ CONFIDENCE_RATIONALE = {
     ),
     "NFLX": (
         "Target is 10% above the market, implied price on ad-supported tier momentum (~40% of new sign-ups) and raised FCF guidance. "
-        "Confidence at 0.55 rather than higher; this remains a street estimate with no completed DCF model."
+        "Confidence at 0.30 rather than higher; this remains a street estimate with no completed DCF model."
     ),
     "NVDA": (
         "Target is 8.5% below the market-implied price, an intentional neutralisation given NVDA carries the highest π in the universe (largest cap weight, beta 1.7) and the current target implies meaningful underperformance. "
