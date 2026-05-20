@@ -2256,7 +2256,7 @@ with tab4:
             "lower to see what the distribution looks like if crashes are more asset-specific."
         ),
     )
-    cop_n = col_cop_n.select_slider(
+    cop_n = col_cop_n.slider(
         "Scenarios", min_value=500, max_value=10000, value=2000, step=500,
         key="cop_n")
 
