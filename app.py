@@ -1034,13 +1034,8 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
             ), []
         prices = raw["Close"].squeeze()
         n_days = int(prices.dropna().shape[0])
-        # Minimum is set to 1 008 trading days (~4 years) rather than a shorter
-        # threshold for two reasons:
-        #   1. The default BL estimation window is 3 years (756 days) — a ticker
-        #      needs at least that to populate one full estimation window.
-        #   2. dropna(how='any') in run_copula_simulation aligns ALL tickers to
-        #      the shortest history, so a new ticker with only 500 days silently
-        #      truncates every other ticker's history too.
+        
+        # Minimum is set to 1 008 trading days (~4 years) to make sure data isnt cut
         _MIN_DAYS = 1_008
         if n_days < _MIN_DAYS:
             return False, (
@@ -2491,7 +2486,7 @@ with tab4:
             ),
         )
         garch_n = _gc2.select_slider(
-            "Scenarios", , 500, 10000, 2000, step=500,
+            "Scenarios", 500, 10000, 2000, step=500,
             key="garch_n",
             )
 
