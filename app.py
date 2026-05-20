@@ -2248,7 +2248,7 @@ with tab5:
         """
         **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
         and the S&P 500 across three lenses: a historical wealth index, a 1-year Monte Carlo 
-        return forecast, and (uniquely) a CPPI drawdown protection analysis.** The wealth index 
+        return forecast, lastly a CPPI drawdown protection analysis.** The wealth index 
         and Monte Carlo answer *how does BL compare to simpler approaches?* The CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
         behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
@@ -2595,7 +2595,7 @@ with tab5:
 
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
-            "At each step, CPPI allocates equity exposure equal to the multiplier times the cushion "
+            "At each step, the Constant Portfolio Protection Insurance (CPPI) allocates equity exposure equal to the multiplier times the cushion "
             "(portfolio value minus floor), with the remainder in a safe asset. "
             "The two parameters below set how aggressively equity is sized and where the floor sits."
         )
