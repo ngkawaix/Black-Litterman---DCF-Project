@@ -790,8 +790,6 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
         return -log_density.sum()
 
     # bounds=(-3, 3) → θ ∈ (e^-3 ≈ 0.05,  e^3 ≈ 20)
-    # The previous lower bound of -2 (θ_min ≈ 0.14) was clipping the MLE
-    # for low-dependence universes; widening lets the estimate reach its true minimum
     _opt         = minimize_scalar(_clayton_neg_ll, bounds=(-3.0, 3.0), method='bounded')
     fitted_theta = float(np.exp(_opt.x))
 
@@ -2042,7 +2040,7 @@ with tab4:
     # ── Section 1: Correlated GBM Simulation ───────────────────────────────────────────────
     st.markdown("#### 1. Correlated GBM Simulation")
     col1, col2 = st.columns(2)
-    n_scenarios = col1.slider("Number of scenarios", 100, 1000, 500, step=100)
+    n_scenarios = col1.slider("Scenarios", 500, 10000, 2000, step=500)
     seed        = col2.number_input("Random seed (for reproducibility)", value=42, step=1)
 
     np.random.seed(int(seed))
@@ -2264,11 +2262,8 @@ with tab4:
         ),
     )
     cop_n = col_cop_n.select_slider(
-        "Scenarios",
-        options=[500, 1_000, 2_000, 3_000],
-        value=2_000,
-        help="More scenarios = smoother distribution. 2,000 is a reasonable balance for Streamlit Cloud.",
-    )
+        "Scenarios", 500, 10000, 2000, step=500,
+        )
 
     with st.spinner("Running copula simulation…"):
         cop_paths = run_copula_simulation(
@@ -2496,11 +2491,9 @@ with tab4:
             ),
         )
         garch_n = _gc2.select_slider(
-            "Scenarios (GARCH-Copula)",
-            options=[500, 1_000, 2_000, 3_000],
-            value=2_000,
+            "Scenarios", , 500, 10000, 2000, step=500,
             key="garch_n",
-        )
+            )
 
         with st.spinner("Running GARCH-Copula simulation…"):
             gc_paths = run_garch_copula_simulation(
