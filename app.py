@@ -2256,8 +2256,9 @@ with tab4:
             "lower to see what the distribution looks like if crashes are more asset-specific."
         ),
     )
-    cop_n = col_cop_n.slider(
-        "Scenarios", min_value=500, max_value=10000, value=2000, step=500)
+    cop_n = col_cop_n.select_slider(
+        "Scenarios", min_value=500, max_value=10000, value=2000, step=500,
+        key="cop_n")
 
     with st.spinner("Running copula simulation…"):
         cop_paths = run_copula_simulation(
@@ -2904,7 +2905,7 @@ with tab5:
         _col_m, _col_mdd = st.columns(2)
         _col_m.slider(
             "Multiplier (m)",
-            min_value=1.0, max_value=10.0, value=3.0, step=0.5, 
+            min_value=1.0, max_value=10.0, step=0.5, 
             key="m_cppi",
             help=(
                 "Scales equity exposure relative to the available cushion. "
