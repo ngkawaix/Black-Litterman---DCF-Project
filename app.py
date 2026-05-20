@@ -2000,6 +2000,15 @@ with tab3:
     )
     st.plotly_chart(fig2, width="stretch")
 
+# ── GARCH fitting (cached) — shared by Tab 4 stress context and Tab 5 GARCH-Copula ──
+garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(
+    tick_rets, tuple(tick_rets.columns)
+)
+_theta_default = (
+    float(np.clip(round((fitted_theta or 2.0) / 0.1) * 0.1, 0.1, 10.0))
+    if fitted_theta is not None else 2.0
+)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 4 - Simulation & Stress Tests
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2008,7 +2017,7 @@ with tab4:
     st.markdown(
         """
         **This tab evaluates Black-Litterman portfolio weights under market 
-        stress using two distinct methodologies:** 
+        stress using two methodologies:** 
         1. **Correlated Geometric Brownian Motion (GBM) Monte Carlo Simulation**: 
         Projects future returns as a random walk, preserving asset interdependencies 
         via Cholesky decomposition. Given the heavy concentration of technology 
@@ -2017,16 +2026,14 @@ with tab4:
         2. **Historical Stress Testing**: Backtests the portfolio against actual 
         historical market shocks to evaluate performance during systemic crises.
 
-        **Model Caveats**: While the  captures *typical* 
-        market uncertainty, it fundamentally assumes a Gaussian distribution. 
+        **Model Caveats**: While GBM captures *typical* market uncertainty, it 
+        fundamentally assumes a Gaussian distribution and constant volatility. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
-        diversification benefits often vanish-a tail-risk reality that standard GBM 
-        systematically understates. Consequently, the Monte Carlo simulation represents 
+        diversification benefits often vanish — a tail-risk reality that standard GBM 
+        systematically understates. The Monte Carlo simulation therefore represents 
         a baseline for normal market regimes, while the historical stress test provides 
-        the necessary reality check for tail risk. A more robust approach would replace 
-        the Gaussian assumption with a model that allows for fatter tails and volatility 
-        clustering, such as a GARCH-based simulation, and is a natural extension of this work.
+        the necessary reality check for tail risk.
         """
     )
     st.divider()
@@ -2173,7 +2180,8 @@ with tab4:
             "Max Drawdown":     max_dd_bl,
             "SPY Max Drawdown": max_dd_spx 
         }
-
+    
+    #Creation of Stress Test Data Frame
     stress_df = pd.DataFrame(stress_rows).T
     st.dataframe(
         stress_df.sort_values("Max Drawdown", ascending=True)
@@ -2203,349 +2211,6 @@ with tab4:
         xaxis_tickangle=-20,
     )
     st.plotly_chart(fig_stress, width="stretch")
-
-    st.divider()
-
-    # ── Fit GARCH + θ once, shared by Sections 3 and 4 ───────────────────────
-    # Called here (before Section 3) so fitted_theta is available as the default
-    # for the copula slider. @st.cache_data means computation only happens once
-    # per data load — instant on all subsequent interactions.
-    garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(tick_rets, tuple(tick_rets.columns))
-
-    # Snap fitted_theta to the nearest slider step (0.5) within [0.5, 10.0]
-    _theta_default = float(np.clip(round((fitted_theta or 2.0) / 0.1) * 0.1, 0.1, 10.0)) \
-                     if fitted_theta is not None else 2.0
-
-    # ── Section 3: Clayton Copula + Empirical Simulation ─────────────────────────────────
-    st.markdown("#### 3. Clayton Copula + Empirical Simulation")
-    st.markdown(
-        """
-        The GBM above models asset correlations as symmetric and Gaussian. In reality,
-        correlations **spike in a crash** and assets fall together far more tightly than they rise
-        together. This section replaces GBM with two changes:
-
-        - **Clayton Copula** (Frailty method): introduces **lower-tail dependence** such that a higher
-          θ (theta), the more assets crash in unison. As θ approaches 0, the assets are independent and 
-          at high θ they are nearly perfectly co-dependent in the left tail.
-        - **Empirical margins**: each asset's individual return distribution is drawn directly
-          from its historical quantiles, preserving fat tails and skew without any Gaussian
-          assumption on the margins.
-
-        Note what this does **not** capture: volatility clustering over time (GARCH). Each
-        day's draw is i.i.d., so a crash day does not make tomorrow's variance higher.
-        That would require layering GARCH on top and is in the next section.
-        """
-    )
-
-    col_theta, col_cop_n = st.columns(2)
-    theta_val = col_theta.slider(
-        "θ — tail dependence parameter",
-        min_value=0.1, max_value=10.0, value=_theta_default, step=0.1,
-        help=(
-            f"**Default ({_theta_default:.2f}) is MLE-estimated** from the joint lower-tail "
-            f"behaviour of GARCH standardised residuals across all {len(tick_rets.columns)} assets. "
-            "It is the θ that makes the observed pattern of simultaneous extreme residuals "
-            "most probable under the Clayton copula family — a data-driven starting point "
-            "rather than an arbitrary guess.\n\n"
-            "**What θ controls:** how tightly assets crash together in the left tail. "
-            "At θ → 0, assets are independent (crashes are idiosyncratic). "
-            "At high θ, they are nearly perfectly co-dependent — one asset in its worst "
-            "quantile implies all others are too.\n\n"
-            "Slide higher to stress-test a more synchronised crash scenario; "
-            "lower to see what the distribution looks like if crashes are more asset-specific."
-        ),
-    )
-    cop_n = col_cop_n.slider(
-        "Scenarios", min_value=500, max_value=10000, value=2000, step=500,
-        key="cop_n")
-
-    with st.spinner("Running copula simulation…"):
-        cop_paths = run_copula_simulation(
-            tick_rets, bl_w_series,
-            theta=theta_val, n_scenarios=cop_n, n_steps=252, seed=int(seed),
-        )
-
-    cop_final  = cop_paths[-1]
-    cop_mean   = float(np.mean(cop_final))            - 1
-    cop_median = float(np.median(cop_final))          - 1
-    cop_p5     = float(np.percentile(cop_final,  5))  - 1
-    cop_p95    = float(np.percentile(cop_final, 95))  - 1
-    cop_spread = cop_p95 - cop_p5
-
-    cm1, cm2, cm3, cm4, cm5 = st.columns(5)
-    cm1.metric("Expected Return",  f"{cop_mean:+.1%}",   delta=f"${(1 + cop_mean)  * 10_000:,.0f} on $10k", delta_color="off")
-    cm2.metric("Median Return",    f"{cop_median:+.1%}", delta=f"${(1 + cop_median)* 10_000:,.0f} on $10k", delta_color="off")
-    cm3.metric("5th Percentile",   f"{cop_p5:+.1%}",     delta=f"${(1 + cop_p5)   * 10_000:,.0f} on $10k", delta_color="off")
-    cm4.metric("95th Percentile",  f"{cop_p95:+.1%}",    delta=f"${(1 + cop_p95)  * 10_000:,.0f} on $10k", delta_color="off")
-    cm5.metric("Uncertainty Band", f"{cop_spread:.1%}",  delta="95th − 5th pct width",                      delta_color="off")
-
-    # Fan chart and comparative histogram side by side
-    col_cfan, col_chist = st.columns([3, 2])
-
-    cop_df = pd.DataFrame(cop_paths)
-    x_cop  = list(range(cop_paths.shape[0]))
-
-    fig_cop = go.Figure()
-    for c in cop_df.columns[:150]:
-        fig_cop.add_trace(go.Scatter(
-            x=x_cop, y=cop_df[c], mode="lines",
-            line=dict(color="#C44E52", width=0.4),
-            opacity=0.12, showlegend=False,
-        ))
-    fig_cop.add_trace(go.Scatter(
-        x=x_cop, y=np.percentile(cop_paths, 50, axis=1),
-        mode="lines", name="Median", line=dict(color="black", width=2),
-    ))
-    fig_cop.add_trace(go.Scatter(
-        x=x_cop, y=np.percentile(cop_paths, 5, axis=1),
-        mode="lines", name="5th pct", line=dict(color="#C44E52", width=1.5, dash="dash"),
-    ))
-    fig_cop.add_trace(go.Scatter(
-        x=x_cop, y=np.percentile(cop_paths, 95, axis=1),
-        mode="lines", name="95th pct", line=dict(color="#55A868", width=1.5, dash="dash"),
-    ))
-    fig_cop.update_layout(
-        title=f"Copula Portfolio Paths (θ = {theta_val})",
-        xaxis_title="Trading Day", yaxis_title="Portfolio Value ($)",
-        height=400, legend=dict(orientation="h", yanchor="bottom", y=1.02),
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-    )
-    col_cfan.plotly_chart(fig_cop, width="stretch")
-
-    # Overlay GBM vs Copula terminal distributions for direct comparison
-    fig_overlay = go.Figure()
-    fig_overlay.add_trace(go.Histogram(
-        x=final_values - 1, nbinsx=60,
-        name="GBM", marker_color="steelblue", opacity=0.6,
-        histnorm="probability density",
-    ))
-    fig_overlay.add_trace(go.Histogram(
-        x=cop_final - 1, nbinsx=60,
-        name="Copula", marker_color="#C44E52", opacity=0.6,
-        histnorm="probability density",
-    ))
-    fig_overlay.update_layout(
-        barmode="overlay",
-        title="1Y Return Distribution: GBM vs Copula",
-        xaxis_title="1Y Return", yaxis_title="Density",
-        xaxis_tickformat=".0%",
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-    )
-    col_chist.plotly_chart(fig_overlay, width="stretch")
-
-    # ── Section 4: GARCH(1,1) + Copula Simulation ───────────────────────────────────────
-    st.markdown("#### 4. GARCH(1,1) + Copula Simulation")
-    st.markdown(
-        """
-        This section layers GARCH(1,1) on top of the copula, adding the one thing the
-        copula section still lacked: **volatility clustering over time**.
-
-        The key difference from Section 2 is that each scenario now carries its own
-        running volatility state. A large shock on day *t* raises σ² for day *t+1*,
-        which raises the scale of the next draw — exactly the self-reinforcing pattern
-        visible in every major market drawdown.
-
-        The copula still governs the cross-asset crash co-movement. GARCH governs
-        how severe individual shocks propagate forward in time. Together they
-        represent a more complete picture of how portfolio risk actually behaves.
-
-        The chart below shows the GARCH model's *fitted* conditional volatility on
-        the historical data — the volatility spikes at COVID, 2022, and the 2025
-        tariff shock are the clustering the model learns and carries forward into
-        the simulation.
-        """
-    )
-
-    if garch_params is None:
-        st.error(
-            "❌ The `arch` package is not installed. Run `pip install arch` in your "
-            "local environment and restart the app to enable this section."
-        )
-    else:
-        # ── GARCH Parameter Table ─────────────────────────────────────────────
-        st.markdown("##### Fitted GARCH(1,1) Parameters")
-        st.caption(
-            "**α + β (Persistence)** is the key column — values close to 1 mean volatility "
-            "is slow to revert after a shock. Tech stocks typically sit above 0.97. "
-            "**ω (omega)** is the long-run variance floor; smaller = lower baseline vol."
-        )
-
-        _param_rows = {}
-        for col in tick_rets.columns:
-            a = garch_params[col]['alpha']
-            b = garch_params[col]['beta']
-            o = garch_params[col]['omega']
-            _param_rows[col] = {
-                'ω (omega)':       o,
-                'α (alpha)':       a,
-                'β (beta)':        b,
-                'α + β':           a + b,
-                'Long-run Ann. Vol': np.sqrt(o / (1 - a - b)) / 10 * np.sqrt(252) if (a + b) < 1 else float('nan'),
-            }
-
-        _param_df = (
-            pd.DataFrame(_param_rows).T
-            .sort_values('α + β', ascending=False)
-        )
-        st.dataframe(
-            _param_df.style
-                .format('{:.6f}', subset=['ω (omega)'])
-                .format('{:.4f}', subset=['α (alpha)', 'β (beta)', 'α + β'])
-                .format('{:.2%}', subset=['Long-run Ann. Vol'])
-                .background_gradient(subset=['α + β'], cmap='YlOrRd', vmin=0.90, vmax=1.0),
-            width="stretch",
-            column_config={
-                'ω (omega)': st.column_config.Column(
-                    help="Long-run baseline variance. Returns mean-revert toward this floor over time."
-                ),
-                'α (alpha)': st.column_config.Column(
-                    help="Shock sensitivity. How much last period's squared return shock raises today's variance."
-                ),
-                'β (beta)': st.column_config.Column(
-                    help="Variance persistence. How much of yesterday's variance estimate carries forward."
-                ),
-                'α + β': st.column_config.Column(
-                    help="Total persistence. Above 0.99 = volatility is very slow to revert. "
-                         "Exactly 1.0 = IGARCH (non-stationary, no mean reversion)."
-                ),
-                'Long-run Ann. Vol': st.column_config.Column(
-                    help="Annualised volatility the model converges to in the long run: √(ω / (1 − α − β)) × √252. "
-                         "NaN if α + β ≥ 1 (non-stationary, no finite long-run variance)."
-                ),
-            },
-        )
-
-        # ── Conditional Volatility Chart ──────────────────────────────────────
-        st.markdown("##### Historical Conditional Volatility (Annualised)")
-        st.caption(
-            "The GARCH model's fitted σ_t over the historical data. "
-            "Showing the top BL-weighted assets — the spikes are the clustering "
-            "the model learns and projects forward into the simulation."
-        )
-
-        _top_assets = (
-            bl_w_series.reindex(tick_rets.columns).fillna(0)
-            .nlargest(5).index.tolist()
-        )
-
-        fig_gvol = go.Figure()
-        _vol_palette = ["#253494", "#41b6c4", "#fecc5c", "#C44E52", "#55A868"]
-        for _asset, _colour in zip(_top_assets, _vol_palette):
-            if _asset not in cond_vol_df.columns:
-                continue
-            fig_gvol.add_trace(go.Scatter(
-                x=cond_vol_df.index,
-                y=cond_vol_df[_asset],
-                mode='lines', name=_asset,
-                line=dict(color=_colour, width=1.2),
-            ))
-        fig_gvol.update_layout(
-            xaxis_title='Date',
-            yaxis_title='Annualised Conditional Volatility',
-            yaxis_tickformat='.0%',
-            height=340,
-            legend=dict(orientation='h', yanchor='bottom', y=1.02),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            margin=dict(t=20),
-        )
-        st.plotly_chart(fig_gvol, width="stretch")
-
-        # ── Simulation Controls ───────────────────────────────────────────────
-        st.info(
-            f"**MLE-estimated θ = {fitted_theta:.2f}** — derived by fitting the Clayton copula "
-            f"to the joint distribution of GARCH standardised residuals across all "
-            f"{len(tick_rets.columns)} assets. "
-            "This is the θ that maximises the likelihood of observing the historical pattern "
-            "of simultaneous extreme shocks. The slider below defaults to this value; "
-            "adjust it to explore sensitivity around the data-implied estimate."
-        )
-        _gc1, _gc2 = st.columns(2)
-        theta_garch = _gc1.slider(
-            "θ — tail dependence (GARCH-Copula)",
-            min_value=0.1, max_value=10.0, value=_theta_default, step=0.1,
-            key="theta_garch",
-            help=(
-                f"**Default ({_theta_default:.1f}) is MLE-estimated** from GARCH standardised "
-                f"residuals across all {len(tick_rets.columns)} assets — the θ that makes the "
-                "observed pattern of simultaneous crash residuals most probable under the "
-                "Clayton copula family.\n\n"
-                "**Why this is more defensible than an arbitrary default:** the MLE anchors "
-                "the simulation to the actual historical tail dependency of your specific "
-                "universe rather than a textbook example value. It reflects how much this "
-                "particular set of 17 correlated tech names genuinely tend to fall together "
-                "in the left tail after stripping out each asset's individual volatility "
-                "dynamics via GARCH.\n\n"
-                "**Interpretation:** for a concentrated tech portfolio, the MLE estimate "
-                "typically lands between 1.5 and 4. A higher value means assets crash more "
-                "synchronously — consistent with periods like the 2022 rate hike selloff "
-                "where nearly every name in this universe fell together."
-            ),
-        )
-        garch_n = _gc2.slider(
-            "Scenarios", min_value=500, max_value=10000, value=2000, step=500,
-            key="garch_n",
-            )
-
-        with st.spinner("Running GARCH-Copula simulation…"):
-            gc_paths = run_garch_copula_simulation(
-                tick_rets, bl_w_series,
-                garch_params, std_resids_g, last_state,
-                theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
-            )
-
-        gc_final  = gc_paths[-1]
-        gc_mean   = float(np.mean(gc_final))           - 1
-        gc_median = float(np.median(gc_final))         - 1
-        gc_p5     = float(np.percentile(gc_final,  5)) - 1
-        gc_p95    = float(np.percentile(gc_final, 95)) - 1
-        gc_spread = gc_p95 - gc_p5
-
-        gm1, gm2, gm3, gm4, gm5 = st.columns(5)
-        gm1.metric("Expected Return",  f"{gc_mean:+.1%}",   delta=f"${(1 + gc_mean)  * 10_000:,.0f} on $10k", delta_color="off")
-        gm2.metric("Median Return",    f"{gc_median:+.1%}", delta=f"${(1 + gc_median)* 10_000:,.0f} on $10k", delta_color="off")
-        gm3.metric("5th Percentile",   f"{gc_p5:+.1%}",     delta=f"${(1 + gc_p5)   * 10_000:,.0f} on $10k", delta_color="off")
-        gm4.metric("95th Percentile",  f"{gc_p95:+.1%}",    delta=f"${(1 + gc_p95)  * 10_000:,.0f} on $10k", delta_color="off")
-        gm5.metric("Uncertainty Band", f"{gc_spread:.1%}",  delta="95th − 5th pct width",                     delta_color="off")
-
-        # ── Three-way Overlay Histogram ───────────────────────────────────────
-        st.markdown("##### Return Distribution: GBM vs Copula vs GARCH-Copula")
-        st.caption(
-            "The left tail is the main thing to compare. GBM (blue) will typically show the "
-            "narrowest downside. Copula (red) widens it via fat empirical margins and tail "
-            "co-movement. GARCH-Copula (green) widens it further because a bad early draw "
-            "amplifies subsequent variance — the self-reinforcing dynamic that GBM and the "
-            "static copula both miss."
-        )
-
-        fig_3way = go.Figure()
-        for _vals, _name, _colour in [
-            (final_values - 1, "GBM",          "steelblue"),
-            (cop_final - 1,    "Copula",        "#C44E52"),
-            (gc_final - 1,     "GARCH-Copula",  "#2ca02c"),
-        ]:
-            fig_3way.add_trace(go.Histogram(
-                x=_vals, nbinsx=80,
-                name=_name,
-                marker_color=_colour,
-                opacity=0.55,
-                histnorm='probability density',
-            ))
-        fig_3way.update_layout(
-            barmode='overlay',
-            xaxis_title='1-Year Return',
-            yaxis_title='Density',
-            xaxis_tickformat='.0%',
-            height=400,
-            legend=dict(orientation='h', yanchor='bottom', y=1.02),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-        )
-        st.plotly_chart(fig_3way, width="stretch")
-
-    st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 - Strategy Comparison
@@ -2613,6 +2278,7 @@ with tab5:
         risky_r=bl_r, rf=RF, multiplier=m_cppi, max_drawdown=mdd_cppi
     )
 
+    # Create Wealth Index
     btr = pd.DataFrame({
         "Equal-Weighted":          pd.Series(ew_r).squeeze(),
         "Cap-Weighted":            pd.Series(cw_r).squeeze(),
@@ -2626,6 +2292,7 @@ with tab5:
     # ── Section 1: Historical Wealth Index ────────────────────────────────────
     st.markdown("#### 1. Historical Wealth Index")
 
+    #Define start and end dates of BL and backtest data
     bl_estimation_start = tick_rets.index[0].date()
     bl_estimation_end   = tick_rets.index[-1].date()
     backtest_start      = btr.index[0].date()
@@ -2743,7 +2410,7 @@ with tab5:
     )
 
     st.caption(
-        "**Note**: Wealth Index and Summary Stats assume all strategies "
+        "**Note**: Historic wealth index and summary statistics assume all strategies "
         "have Direct Reinvestment Plan (DRIP) enabled. "
         "GMV and Risk Parity use the Elton-Gruber Constant Correlation shrinkage estimator "
         "(δ = 0.7), which blends the sample covariance matrix with a structured prior where "
@@ -2757,8 +2424,10 @@ with tab5:
     # ── Section 2: 1Y Correlated GBM Forecast ─────────────────────────
     st.markdown("#### 2. Correlated GBM 1Y Return Forecast")
     st.caption(
-        "Uses the same  paths from the Simulation & Stress Tests tab but applied "
-        "to each strategy's weights. Lets you see whether BL adds value over simpler alternatives."
+        "Uses the same paths from the Simulation & Stress Tests tab but applied "
+        "to each strategy's weights. Lets you see whether BL adds value over simpler alternatives "
+        "but should be read as a naive estimation of actual expected returns since it does not model "
+        "correlated crashes nd volitlity clustering. "
     )
 
     strategy_weights = {
@@ -2827,10 +2496,12 @@ with tab5:
     if garch_params is not None:
         st.markdown("#### 3. GARCH-Copula 1Y Return Forecast")
         st.caption(
-            "The same five strategies plus run through the GARCH-Copula simulation. "
+            "The same five strategies ran through a more robust GARCH-Copula simulation "
+            "which accounts for (1) correlated crashes and independent rallies (through Clayton-Copula) "
+            "and (2) volatility clustering (through GARCH(1,1))
             "Compare the **5th percentile column** directly with the GBM table above. "
             "The gap is the tail risk that GBM systematically misses. "
-            f"Uses θ = {theta_garch:.1f} and {garch_n:,} scenarios."
+            f"Uses Maximum Likelihood Estimation (MLE)-fitted θ = {_theta_default:.2f} and 2,000 scenarios."
         )
 
         _gc_strat_names = tuple(strategy_weights.keys())
@@ -2843,7 +2514,7 @@ with tab5:
             _gc_strat_results = run_garch_copula_all_strategies(
                 tick_rets, garch_params, std_resids_g, last_state,
                 _gc_strat_names, _gc_weights_arr,
-                theta=theta_garch, n_scenarios=garch_n, n_steps=252, seed=int(seed),
+                theta=_theta_default, n_scenarios=2_000, n_steps=252, seed=int(seed),
                 tickers_key=tuple(tick_rets.columns),
             )
 
@@ -2882,7 +2553,7 @@ with tab5:
                 name=_sn,
             ))
         _fig_gc_comp.update_layout(
-            title=f"GARCH-Copula: Expected 1Y Return with 95% CI  (θ = {theta_garch:.1f})",
+            title=f"GARCH-Copula: Expected 1Y Return with 95% CI  (θ = {_theta_default:.1f})",
             yaxis_tickformat=".1%",
             yaxis_title="1-Year Return",
             height=420,
@@ -2916,7 +2587,7 @@ with tab5:
         )
         _col_mdd.slider(
             "Max Drawdown Floor (%)",
-            min_value=5.0, max_value=40.0, value=15.0, step=1.0, 
+            min_value=5.0, max_value=40.0, step=1.0, 
             key="mdd_cppi_pct",
             help=(
                 "Maximum tolerated drawdown from the portfolio's all-time high. "
