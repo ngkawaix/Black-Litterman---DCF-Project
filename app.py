@@ -695,6 +695,7 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
     last_state   = {}
     cond_vol     = {}
 
+    #GARCH fitting for each individual stock''s return series
     for col in _tick_rets.columns:
         # Scale returns to percentage points (e.g. 0.02 → 2.0) for numerical stability
         # GARCH optimisers work better when the series has variance ~1–5 rather than ~0.0001
