@@ -2035,7 +2035,7 @@ with tab4:
     # ── Section 1: Correlated GBM Simulation ───────────────────────────────────────────────
     st.markdown("#### 1. Correlated GBM Simulation")
     col1, col2 = st.columns(2)
-    n_scenarios = col1.slider("Scenarios", 500, 10000, 2000, step=500)
+    n_scenarios = col1.slider("Scenarios", min_value=500, max_value=10000, value=2000, step=500)
     seed        = col2.number_input("Random seed (for reproducibility)", value=42, step=1)
 
     np.random.seed(int(seed))
@@ -2257,8 +2257,7 @@ with tab4:
         ),
     )
     cop_n = col_cop_n.select_slider(
-        "Scenarios", 500, 10000, 2000, step=500,
-        )
+        "Scenarios", min_value=500, max_value=10000, value=2000, step=500)
 
     with st.spinner("Running copula simulation…"):
         cop_paths = run_copula_simulation(
@@ -2486,7 +2485,7 @@ with tab4:
             ),
         )
         garch_n = _gc2.select_slider(
-            "Scenarios", 500, 10000, 2000, step=500,
+            "Scenarios", min_value=500, max_value=10000, value=2000, step=500,
             key="garch_n",
             )
 
