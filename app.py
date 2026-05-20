@@ -2143,7 +2143,7 @@ with tab4:
     w_stress = bl_w_series.reindex(tick_rets.columns).fillna(0).values
     stress_rows = {}
     
-    # Summary Stats for Stress Periods
+    # Summary Stats for Stress Periods (including SPY)
     for name, (start, end) in STRESS_PERIODS.items():
         period_rets = tick_rets.loc[start:end]
         if period_rets.empty:
@@ -2250,7 +2250,7 @@ with tab4:
         "θ — tail dependence parameter",
         min_value=0.1, max_value=10.0, value=_theta_default, step=0.1,
         help=(
-            f"**Default ({_theta_default:.1f}) is MLE-estimated** from the joint lower-tail "
+            f"**Default ({_theta_default:.2f}) is MLE-estimated** from the joint lower-tail "
             f"behaviour of GARCH standardised residuals across all {len(tick_rets.columns)} assets. "
             "It is the θ that makes the observed pattern of simultaneous extreme residuals "
             "most probable under the Clayton copula family — a data-driven starting point "
@@ -2350,7 +2350,7 @@ with tab4:
     st.markdown("#### 4. GARCH(1,1) + Copula Simulation")
     st.markdown(
         """
-        This layers GARCH(1,1) on top of the copula, adding the one thing the
+        This section layers GARCH(1,1) on top of the copula, adding the one thing the
         copula section still lacked: **volatility clustering over time**.
 
         The key difference from Section 2 is that each scenario now carries its own
