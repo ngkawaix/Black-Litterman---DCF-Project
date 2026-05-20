@@ -204,7 +204,7 @@ def load_market_data(tickers, start="2012-01-01"):
     return price_data, tick_rets
 
 # Retrieval of Market Cap, Consensus Estimates and Earnings Data
-@st.cache_data(show_spinner="Fetching ticker metadata (mcap, consensus, earnings)…", ttl=86400)
+@st.cache_data(show_spinner="Fetching ticker metadata (market cap, price data, consensus, earnings)…", ttl=86400)
 def load_ticker_metadata(tickers):
     import time
 
@@ -2025,7 +2025,7 @@ with tab4:
         2. **Historical Stress Testing**: Backtests the portfolio against actual 
         historical market shocks to evaluate performance during systemic crises.
 
-        **Critical Model Caveats**: While the  captures *typical* 
+        **Model Caveats**: While the  captures *typical* 
         market uncertainty, it fundamentally assumes a Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
@@ -2229,11 +2229,11 @@ with tab4:
     st.markdown(
         """
         The GBM above models asset correlations as symmetric and Gaussian. In reality,
-        correlations **spike in a crash** — assets fall together far more tightly than they rise
+        correlations **spike in a crash** and assets fall together far more tightly than they rise
         together. This section replaces GBM with two changes:
 
-        - **Clayton Copula** (Frailty method): introduces **lower-tail dependence** — the higher
-          θ (theta), the more assets crash in unison. At θ → 0 the assets are independent;
+        - **Clayton Copula** (Frailty method): introduces **lower-tail dependence** such that a higher
+          θ (theta), the more assets crash in unison. As θ approaches 0, the assets are independent and 
           at high θ they are nearly perfectly co-dependent in the left tail.
         - **Empirical margins**: each asset's individual return distribution is drawn directly
           from its historical quantiles, preserving fat tails and skew without any Gaussian
@@ -2241,7 +2241,7 @@ with tab4:
 
         Note what this does **not** capture: volatility clustering over time (GARCH). Each
         day's draw is i.i.d., so a crash day does not make tomorrow's variance higher.
-        That would require layering GARCH on top and is a natural next extension.
+        That would require layering GARCH on top and is in the next section.
         """
     )
 
