@@ -2499,7 +2499,7 @@ with tab5:
         st.caption(
             "The same five strategies ran through a more robust GARCH-Copula simulation "
             "which accounts for (1) correlated crashes and independent rallies (through Clayton-Copula) "
-            "and (2) volatility clustering (through GARCH(1,1))
+            "and (2) volatility clustering (through GARCH(1,1))."
             "Compare the **5th percentile column** directly with the GBM table above. "
             "The gap is the tail risk that GBM systematically misses. "
             f"Uses Maximum Likelihood Estimation (MLE)-fitted θ = {_theta_default:.2f} and 2,000 scenarios."
