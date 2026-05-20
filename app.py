@@ -1514,10 +1514,11 @@ with tab0:
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB1 - Confidence
+# TAB1 - DCF Models
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
     # ── Section 1: Stock Universe & Selection Criteria ───────────────────────────────────
+    
     st.markdown("#### 1. Stock Universe & Selection Criteria")
     st.markdown(
         """
@@ -1558,6 +1559,31 @@ with tab1:
         "view input, with confidence set conservatively to reflect the lower "
         "specificity of street estimates versus a bottom-up model.",
         icon="🔬",
+    )
+    st.markdown(
+        r"""
+        The discount rate used in each DCF model is the **Weighted Average Cost of Capital (WACC)**,
+        which blends the required return of equity holders and debt holders in proportion to how the
+        company is actually financed:
+ 
+        $$
+        \text{WACC} = \underbrace{\frac{E}{E + D}}_{\text{equity weight}} \times \underbrace{r_e}_{\text{cost of equity}}
+        \;+\;
+        \underbrace{\frac{D}{E + D}}_{\text{debt weight}} \times \underbrace{r_d}_{\text{cost of debt}}
+        \times \underbrace{(1 - t)}_{\text{tax shield}}
+        $$
+ 
+        Where:
+        - **E** — market value of equity (market capitalisation)
+        - **D** — market value of debt (total interest-bearing debt)
+        - **r_e** — cost of equity, estimated via CAPM:
+          $r_e = r_f + \beta \times (r_m - r_f)$, where $r_f$ is the risk-free rate,
+          $\beta$ measures the stock's sensitivity to market moves,
+          and $(r_m - r_f)$ is the equity risk premium
+        - **r_d** — pre-tax cost of debt (the yield on the company's borrowings)
+        - **t** — corporate tax rate; the $(1-t)$ term reflects that interest payments
+          are tax-deductible, making debt cheaper on an after-tax basis than its face rate implies
+        """
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
