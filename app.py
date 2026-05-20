@@ -106,7 +106,6 @@ CONFIDENCE_RATIONALE = {
     "ADBE": (
         "Target is 12% above the market-implied price, a bullish view against a structurally challenged backdrop. "
         "Confidence at 0.15 is the lowest among bullish names | Reflects two consecutive ARR misses and unproven Firefly AI monetisation. Increased compeition from AI Generative Tools and Figma."
-        "
     ),
     "AMAT": (
         "Target is 9% below the market-implied price on continued NAND and trailing-edge weakness. "
