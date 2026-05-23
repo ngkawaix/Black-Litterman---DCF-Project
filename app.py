@@ -231,8 +231,8 @@ DCF_OUTPUTS = {
         # Perpetuity and exit multiple ranges use 9% WACC (bull-case assumption) per the model output.
         # Base-case diamonds use the actual model WACC of 11.59%.
         "football_field": [
-            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 119.82, "base": 183.71},
-            {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 266.07, "high": 287.41, "base": 276.74},
+            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71},
+            {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 255.40, "high": 287.41, "base": 298.08},
             {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00},
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None},
         ],
@@ -330,7 +330,7 @@ DCF_OUTPUTS = {
                 "bear": "~$241",
                 "base": "$277",
                 "bull": "~$294",
-                "note": "Base at actual WACC of 11.59%, 18x terminal EBITDA. Range from model football field: 11.59% WACC, 17-19x.",
+                "note": "Base at actual WACC of 11.59%, 18x terminal EBITDA. Range from model football field: 11.59% WACC, 16-20x.",
             },
         ],
     },
