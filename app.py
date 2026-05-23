@@ -228,20 +228,19 @@ DCF_OUTPUTS = {
         "model_link": "https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing",
 
         "football_field": [
-            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71},
+            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71}, #Taken from sensitivity tables
             {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 255.40, "high": 298.08, "base": 277.04},
-            {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00},
-            {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None},
+            {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00}, #Taken from TipRanks, dont chanage
+            {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
         ],
 
         "is_assumptions": [
-            {
-                "name":   "Revenue Growth (FY2027E)",
+            {    "name":   "Revenue Growth (FY2027E)",
                 "actual": "+65.5%",
                 "bear":   "+70.0%",
                 "base":   "+75.6%",
                 "bull":   "+81.3%",
-                "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.",
+                "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.", 
             },
             {
                 "name":   "Revenue Growth (FY2028–30E avg)",
