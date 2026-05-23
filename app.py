@@ -222,7 +222,7 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 220,
-        "DCF Fair Value": 22
+        "DCF Fair Value": 268
         "wacc":                    0.1159,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 18,
@@ -235,6 +235,18 @@ DCF_OUTPUTS = {
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
         ],
 
+        "wacc_assumptions": [
+            {"Cost of Debt": 3.20%,
+             "Tax Rate": 17.00%,
+             "Cost of Debt (After Tax)": 2.66%,
+             "Risk Free Rate": 4.00%,
+             "Observed Beta": 2.250,
+             "Industry Beta (Adjusted)": 1.666,
+             "Market Risk Premium": 4.50%,
+             "Cost of Equity": 11.5%,
+             "WACC": 11.59%}
+        ]
+                
         "is_assumptions": [
             {    "name":   "Revenue Growth (FY2027E)",
                 "actual": "+65.5%",
@@ -1855,7 +1867,7 @@ with tab1:
 
             _is_df = (
                 pd.DataFrame(_dcf["is_assumptions"])
-                .set_index("name")
+                .set_index("I/S")
                 .rename(columns={
                     "actual": "FY2026 Actual",
                     "bear":   "Bear Case",
@@ -1875,8 +1887,17 @@ with tab1:
                     "Note":          st.column_config.TextColumn("Note",          width="large"),
                 },
             )
+            
+            # Part B — WACC Assumptions
+            st.markdown("###### Derivation of WACC")
 
-            # Part B — DCF & Terminal Value Assumptions
+            _wacc_df = (
+                pd.DataFrame(_dcf["wacc_assumptions"])
+
+            st.dataframe(_wacc_df,
+                         use_container_width=True,)
+            
+            # Part C — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
             st.caption(
                 "WACC is held constant across all three scenarios; bear and bull sensitivity is "
