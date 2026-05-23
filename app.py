@@ -231,10 +231,10 @@ DCF_OUTPUTS = {
         # Perpetuity and exit multiple ranges use 9% WACC (bull-case assumption) per the model output.
         # Base-case diamonds use the actual model WACC of 11.59%.
         "football_field": [
-            {"label": "DCF: Perpetuity (2-4% g, 9% WACC)",    "low": 245, "high": 309, "base": 184},
-            {"label": "DCF: Exit Multiple (11-15x, 9% WACC)", "low": 241, "high": 294, "base": 277},
+            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 119.82, "base": 183.71},
+            {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 266.07, "high": 287.41, "base": 276.74},
             {"label": "Analyst Consensus",                     "low": 240, "high": 310, "base": 270},
-            {"label": "52-Week Range",                         "low": 170, "high": 328, "base": None},
+            {"label": "52-Week Range",                         "low": 133, "high": 236, "base": None},
         ],
         # Income-statement drivers: FY2026 actuals plus bear / base / bull scenario forecasts.
         "is_assumptions": [
@@ -1742,7 +1742,7 @@ with tab1:
             _cp     = _dcf["current_price"]
 
             # ── Company header ─────────────────────────────────────────────────
-            st.markdown(f"### {_ticker} — {_thesis['tagline']}")
+            st.markdown(f"### {_ticker} : {_thesis['tagline']}")
 
             # ── 1. Thesis & Management Guidance ───────────────────────────────
             st.markdown("##### 1. Investment Thesis & Management Guidance")
