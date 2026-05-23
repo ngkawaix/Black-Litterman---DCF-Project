@@ -1892,12 +1892,41 @@ with tab1:
             # Part B — WACC Assumptions
             st.markdown("###### Derivation of WACC")
 
-            _wacc_df = (
-                pd.DataFrame(_dcf["wacc_assumptions"])
-            )
+            # 1. Display the standard WACC Formula
+            st.latex(r"WACC = \left( \frac{E}{V} \times R_e \right) + \left( \frac{D}{V} \times R_d \times (1 - T_c) \right)")
 
-            st.dataframe(_wacc_df,
-                         use_container_width=True,)
+            # 2. Extract the WACC dictionary
+            _wacc_data = _dcf["wacc_assumptions"][0]
+
+            # 3. Create a clean 3-column "card" layout
+            _wcol1, _wcol2, _wcol3 = st.columns(3)
+
+            with _wcol1:
+                with st.container(border=True):
+                    st.markdown("**Cost of Equity ($R_e$)**")
+                    st.caption(f"Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
+                    st.caption(f"Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
+                    st.caption(f"Observed Beta: **{_wacc_data.get('Observed Beta', '-')}**")
+                    st.caption(f"Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
+                    st.divider()
+                    st.markdown(f"Implied $R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
+
+            with _wcol2:
+                with st.container(border=True):
+                    st.markdown("**Cost of Debt ($R_d$)**")
+                    st.caption(f"Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
+                    st.caption(f"Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
+                    st.html("<div style='height: 52px;'></div>") # Spacer to keep card heights visually aligned
+                    st.divider()
+                    st.markdown(f"After-Tax $R_d$: **{_wacc_data.get('Cost of Debt (After Tax)', '-')}**")
+
+            with _wcol3:
+                with st.container(border=True):
+                    st.markdown("**Cost of Capital**")
+                    st.caption("Blended discount rate applied to projected Unlevered Free Cash Flows.")
+                    st.html("<div style='height: 31px;'></div>") # Spacer
+                    st.divider()
+                    st.metric(label="Final WACC", value=_wacc_data.get('WACC', '-'))
                 
             
             # Part C — DCF & Terminal Value Assumptions
