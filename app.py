@@ -1737,7 +1737,7 @@ with tab1:
     )
 
     _dcf_tabs = st.tabs(
-        [f"{'✅ ' if t in DCF_OUTPUTS else '🔜 '}{t}" for t in HIGH_CONVICTION]
+        [f"{'✅ ' if t in DCF_OUTPUTS else '❌ '}{t}" for t in HIGH_CONVICTION]
     )
 
     for _ctab, _ticker in zip(_dcf_tabs, HIGH_CONVICTION):
@@ -1749,7 +1749,7 @@ with tab1:
                     f"**{_ticker}** — DCF model in progress. This tab will show the full "
                     "investment thesis, football field valuation, and assumptions table once "
                     "the Wall Street Prep model is finalised.",
-                    icon="🔜",
+                    icon="⚡",
                 )
                 continue
 
@@ -1893,7 +1893,8 @@ with tab1:
             st.markdown("###### Derivation of WACC")
 
             _wacc_df = (
-                pd.DataFrame(_dcf["wacc_assumptions"])
+                pd.DataFrame(_dcf["wacc_assumptions"]),
+            )
 
             st.dataframe(_wacc_df,
                          use_container_width=True,)
