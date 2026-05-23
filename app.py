@@ -236,15 +236,16 @@ DCF_OUTPUTS = {
         ],
 
         "wacc_assumptions": [
-            {"Cost of Debt": 3.20% ,
-             "Tax Rate": 17.00% ,
-             "Cost of Debt (After Tax)": 2.66% ,
-             "Risk Free Rate": 4.00% ,
-             "Observed Beta": 2.250 ,
-             "Industry Beta (Adjusted)": 1.666 ,
-             "Market Risk Premium": 4.50% ,
-             "Cost of Equity": 11.5% ,
-             "WACC": 11.59%} ,
+            {"Cost of Debt": "3.20%",
+             "Tax Rate": "17.00%",
+             "Cost of Debt (After Tax)": "2.66%",
+             "Risk Free Rate": "4.00%",
+             "Observed Beta": "2.250",
+             "Industry Beta (Adjusted)": "1.666",
+             "Market Risk Premium": "4.50%",
+             "Cost of Equity": "11.5%",
+             "WACC": "11.59%"
+            },
         ],
                 
         "is_assumptions": [
@@ -1887,7 +1888,7 @@ with tab1:
                     "Note":          st.column_config.TextColumn("Note",          width="large"),
                 },
             )
-            
+
             # Part B — WACC Assumptions
             st.markdown("###### Derivation of WACC")
 
@@ -1896,6 +1897,7 @@ with tab1:
 
             st.dataframe(_wacc_df,
                          use_container_width=True,)
+                
             
             # Part C — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
@@ -1933,7 +1935,7 @@ with tab1:
             _link = _dcf.get("model_link")
             if _link:
                 st.markdown(
-                    f"📥 **[Download the full 3-Statement Model & DCF — {_ticker}]({_link})**  \n"
+                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
                     "Includes income statement, balance sheet, cash flow statement, "
                     "WACC derivation, and DCF valuation with sensitivity tables."
                 )
