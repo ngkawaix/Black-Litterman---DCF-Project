@@ -1764,6 +1764,8 @@ with tab1:
             _t_col, _g_col = st.columns([1, 1])
             with _t_col:
                 st.markdown("**Core Theses**")
+                for _pt in _thesis["theses"]:
+                    
             with _g_col:
                 with st.container(border=True):
                     st.markdown("**Latest Management Guidance**")
