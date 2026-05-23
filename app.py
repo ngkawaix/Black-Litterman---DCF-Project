@@ -1927,7 +1927,7 @@ with tab1:
                     st.markdown("**Cost of Capital**")
                     st.caption("Weighted Average Cost of Capital is the discount rate used in the DCF")
                     st.divider()
-                    st.markdown(f"**Final WACC**: **{_wacc_data.get('WACC', '-')**")
+                    st.markdown(f"**Final WACC**: **{_wacc_data.get('WACC', '-')}**")
 
             
             # Part C — DCF & Terminal Value Assumptions
