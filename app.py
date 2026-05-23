@@ -2250,7 +2250,7 @@ with tab5:
         Tests tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
         a tail-risk estimate.
         """
-    )
+        )
     st.divider()
 
     # ── Session state defaults for CPPI parameters ────────────────────────────
