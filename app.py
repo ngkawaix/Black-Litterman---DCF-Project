@@ -1527,6 +1527,8 @@ with tab1:
         Ideally, a full DCF analysis of all stock tickers in this universe is ideal, but given the
         scope of this project, I limited my analysis to five of my highest conviction stocks, breaking
         down the theses, company financials and DCF valuations as per their latest earnings report.
+        """
+    )
     
     # ── Section 1: Stock Universe & Selection Criteria ───────────────────────────────────
     
