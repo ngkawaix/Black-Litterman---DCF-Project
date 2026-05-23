@@ -222,14 +222,15 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 220,
+        "DCF Fair Value": 22
         "wacc":                    0.1159,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 18,
         "model_link": "https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing",
 
         "football_field": [
-            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71}, #Taken from sensitivity tables
-            {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 255.40, "high": 298.08, "base": 277.04},
+            {"label": "DCF: Perpetuity (2.5-4.5% g, 11.59% WACC)",    "low": 204.53, "high": 237.33, "base": 218.90}, #Taken from sensitivity tables
+            {"label": "DCF: Exit EBITDA Multiple (16-20x at 11.59% WACC)", "low": 292.68, "high": 341.42, "base": 317.07},
             {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00}, #Taken from TipRanks, dont chanage
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
         ],
@@ -243,7 +244,7 @@ DCF_OUTPUTS = {
                 "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.", 
             },
             {
-                "name":   "Revenue Growth (FY2028–30E avg)",
+                "name":   "Revenue Growth (FY2027-31 avg)",
                 "actual": "—",
                 "bear":   "~17%",
                 "base":   "~18%",
@@ -251,7 +252,7 @@ DCF_OUTPUTS = {
                 "note":   "Straight-line deceleration post-Blackwell ramp as comps tighten.",
             },
             {
-                "name":   "Revenue Growth (FY2031–36E avg)",
+                "name":   "Revenue Growth (FY2032–36E avg)",
                 "actual": "—",
                 "bear":   "~5%",
                 "base":   "~8%",
@@ -261,10 +262,10 @@ DCF_OUTPUTS = {
             {
                 "name":   "Gross Margin",
                 "actual": "71.1%",
-                "bear":   "68–70%",
-                "base":   "72–73%",
-                "bull":   "74–75%",
-                "note":   "FY2026 saw CoGS pressure from data-centre mix. Base assumes CUDA software attach rates recover margins toward FY2025 levels.",
+                "bear":   "73.5%",
+                "base":   "74.5%",
+                "bull":   "75–77%",
+                "note":   "Based Case assumes 74.5% Gross magin, midpoint of management's Q1 FY2027 guidance for Q2.",
             },
             {
                 "name":   "R&D % of Revenue",
@@ -272,7 +273,7 @@ DCF_OUTPUTS = {
                 "bear":   "12.0%",
                 "base":   "8.5%",
                 "bull":   "7.0%",
-                "note":   "Bear assumes a moat-defence R&D spike to counter AMD/custom silicon. Bull reflects software leverage at scale.",
+                "note":   "Base case assumes 8.5% for R&D % of Revenue straight lines.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -288,7 +289,7 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at 17.0%, the midpoint of management's FY2027 guidance range. FY2026 actual tax rate was at 15.1% .",
+                "note":   "Straight-lined at 17.0%, the midpoint of management's Q1 FY2027 guidance range for full year FY2026.",
             },
         ],
         # DCF and terminal value assumptions: no FY2026 Actual column for these rows.
@@ -302,30 +303,30 @@ DCF_OUTPUTS = {
             },
             {
                 "name": "Terminal Growth Rate (g)",
-                "bear": "2.0%",
-                "base": "3.0%",
-                "bull": "4.0%",
-                "note": "Base = long-run nominal GDP growth. Bull reflects a durable AI platform incumbency premium.",
+                "bear": "2.5%",
+                "base": "3.5%",
+                "bull": "4.5%",
+                "note": "Base case assumes growth rate slightly above long-run nominal GDP growth of 3% given NVIDIA's durable moat",
             },
             {
                 "name": "Terminal EBITDA Multiple",
                 "bear": "16x",
                 "base": "18x",
                 "bull": "20x",
-                "note": "vs. current NTM EV/EBITDA ~27x. Terminal multiple assumes significant mean reversion as growth decelerates.",
+                "note": "Base case Terminal multiple assumes significant mean reversion as growth decelerates, relative to NTM EV/EBITDA ~27x today. Appropriate multiple against Exit Multiples for comparable companies like ASML",
             },
             {
                 "name": "Implied Price: Perpetuity",
-                "bear": "~$185",
-                "base": "$184",
-                "bull": "~$309",
-                "note": "Base at actual WACC of 11.59%, g=3%. Range (bear/bull) from model football field: 11.59% WACC, g=2-4%.",
+                "bear": "~$204.53",
+                "base": "$218.90",
+                "bull": "~$237.33",
+                "note": "Base case at actual WACC of 11.59%, g=3%. Range (bear/bull) from model football field: 11.59% WACC, g=2.5-4.5%.",
             },
             {
                 "name": "Implied Price: Exit Multiple",
-                "bear": "~$241",
-                "base": "$277",
-                "bull": "~$294",
+                "bear": "~$292.68",
+                "base": "$317.07",
+                "bull": "~$341.42",
                 "note": "Base at actual WACC of 11.59%, 18x terminal EBITDA. Range from model football field: 11.59% WACC, 16-20x.",
             },
         ],
