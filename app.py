@@ -1355,9 +1355,15 @@ with st.sidebar:
                 else:
                     st.caption("Consensus: N/A")
 
-                # Default target: pre-set value for core tickers; consensus (or placeholder) for custom
-                _cons_default = float(mean_t) if mean_t else 100.0
-                _target_default = float(BASE_TARGETS.get(ticker, _cons_default))
+                # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,
+                # then a generic placeholder. Ensures the sidebar always reflects the latest
+                # analyst consensus on first load rather than hardcoded estimates.
+                _cons_default = float(mean_t) if mean_t else None
+                _target_default = (
+                    _cons_default
+                    if _cons_default is not None
+                    else float(BASE_TARGETS.get(ticker, 100.0))
+                )
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
@@ -1395,7 +1401,7 @@ with st.sidebar:
             label_visibility="collapsed",
         )
     with _btn_col:
-        _add_clicked = st.button("Add", width="stretch", key="add_ticker_btn")
+        _add_clicked = st.button("Add", use_container_width=True, key="add_ticker_btn")
 
     if _add_clicked and _new_ticker_raw.strip():
         _t = _new_ticker_raw.strip().upper()
