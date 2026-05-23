@@ -93,7 +93,7 @@ EARNINGS_HIGHLIGHTS = {
     "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
     "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% - AI infrastructure spend absorbed without material dilution.",
     "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised - content investment funded internally without balance sheet strain.",
-    "NVDA": "Q4 FY2026 revenue +73% YoY on Blackwell GPU shipments to hyperscalers. Q1 FY2027 guided ~$78B - US H20 export restrictions to China are a multi-billion dollar annualised headwind.",
+    "NVDA": "Q1 FY2027 10-Q reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth for the Blackwell and Vera Rubin platforms. Q2 FY2027 guided at $91.0B, more than $4B above consensus, with the $4.5B H20 export charge now fully absorbed.",
     "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
     "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
 }
@@ -187,15 +187,17 @@ INVESTMENT_THESES = {
     "NVDA": {
         "tagline": "The GPU monopoly powering the global AI infrastructure cycle",
         "theses": [
-            "Blackwell GPU ramp sustains hyperscaler demand through FY2027, with TSMC CoWoS packaging capacity — not end demand — as the binding constraint",
+            "Blackwell GPU ramp sustains hyperscaler demand through FY2027, with TSMC CoWoS packaging capacity, not end demand, as the binding constraint",
             "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem, defending ~85% gross margins at scale",
             "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable customer base and reducing concentration risk",
         ],
         "mgmt_guidance": (
-            "Q1 FY2027 revenue guided at ~$78B (+73% YoY). Management flagged US H20 export restrictions to China "
-            "as a $4–5B annualised headwind but maintained full-year growth confidence anchored on Blackwell demand "
-            "from non-restricted markets. A 25× dividend increase was announced in May 2026, signalling management's "
-            "confidence in the durability of the cash flow profile."
+            "Q1 FY2027 reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) "
+            "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
+            "consecutive quarter of year-over-year acceleration. Q2 FY2027 guided at $91.0B (+2%), more than $4B above consensus. "
+            "The $4.5B H20 export charge incurred in Q1 FY2026 is now fully absorbed, and non-restricted market demand has more "
+            "than replaced the gap. A 25x dividend increase to $0.25 per share and an $80B buyback authorisation signal "
+            "management's confidence in the durability of the cash flow profile."
         ),
         "growth_drivers": [
             (
@@ -225,13 +227,14 @@ DCF_OUTPUTS = {
         "terminal_ebitda_multiple": 18,
         # Replace None with a Google Drive or GitHub raw-download URL once the model is hosted.
         "model_link": None,
-        # Football field: each entry spans [low, high] with an optional base-case point estimate.
-        # Ranges derived from the WACC × terminal-g sensitivity table in the Integrated DCF sheet.
+        # Football field: ranges sourced directly from the model's built-in football field table.
+        # Perpetuity and exit multiple ranges use 9% WACC (bull-case assumption) per the model output.
+        # Base-case diamonds use the actual model WACC of 11.59%.
         "football_field": [
-            {"label": "DCF — Perpetuity",   "low":  189, "high": 316, "base": 188},
-            {"label": "DCF — Exit Multiple", "low":  233, "high": 341, "base": 279},
-            {"label": "Analyst Consensus",   "low":  240, "high": 310, "base": 270},
-            {"label": "52-Week Range",       "low":   86, "high": 274, "base": None},
+            {"label": "DCF: Perpetuity (2-4% g, 9% WACC)",    "low": 245, "high": 309, "base": 184},
+            {"label": "DCF: Exit Multiple (11-15x, 9% WACC)", "low": 241, "high": 294, "base": 277},
+            {"label": "Analyst Consensus",                     "low": 240, "high": 310, "base": 270},
+            {"label": "52-Week Range",                         "low": 170, "high": 328, "base": None},
         ],
         # Income-statement drivers: FY2026 actuals plus bear / base / bull scenario forecasts.
         "is_assumptions": [
@@ -286,13 +289,13 @@ DCF_OUTPUTS = {
             {
                 "name":   "Tax Rate",
                 "actual": "15.1%",
-                "bear":   "15.1%",
-                "base":   "15.1%",
-                "bull":   "15.1%",
-                "note":   "Straight-lined from FY2026 statutory rate; no scenario variance applied.",
+                "bear":   "17.0%",
+                "base":   "17.0%",
+                "bull":   "17.0%",
+                "note":   "Straight-lined at 17.0%, the midpoint of management's FY2027 guidance range. FY2026 actual of 15.1% was below the guided range.",
             },
         ],
-        # DCF and terminal value assumptions — no FY2026 Actual column for these rows.
+        # DCF and terminal value assumptions: no FY2026 Actual column for these rows.
         "dcf_assumptions": [
             {
                 "name": "WACC",
@@ -310,24 +313,24 @@ DCF_OUTPUTS = {
             },
             {
                 "name": "Terminal EBITDA Multiple",
-                "bear": "15×",
-                "base": "18×",
-                "bull": "22×",
-                "note": "vs. current NTM EV/EBITDA ~27×. Terminal multiple assumes significant mean reversion as growth decelerates.",
+                "bear": "15x",
+                "base": "18x",
+                "bull": "22x",
+                "note": "vs. current NTM EV/EBITDA ~27x. Terminal multiple assumes significant mean reversion as growth decelerates.",
             },
             {
-                "name": "Implied Price — Perpetuity",
-                "bear": "~$190",
-                "base": "$188",
-                "bull": "~$316",
-                "note": "Derived from WACC × terminal-g sensitivity table in the DCF model.",
+                "name": "Implied Price: Perpetuity",
+                "bear": "~$185",
+                "base": "$184",
+                "bull": "~$309",
+                "note": "Base at actual WACC of 11.6%, g=3%. Range (bear/bull) from model football field: 9% WACC, g=2-4%.",
             },
             {
-                "name": "Implied Price — Exit Multiple",
-                "bear": "~$233",
-                "base": "$279",
-                "bull": "~$341",
-                "note": "Bear/bull scaled from 15× / 22× terminal EBITDA applied to FY2036 forecast.",
+                "name": "Implied Price: Exit Multiple",
+                "bear": "~$241",
+                "base": "$277",
+                "bull": "~$294",
+                "note": "Base at actual WACC of 11.6%, 18x terminal EBITDA. Range from model football field: 9% WACC, 11-15x.",
             },
         ],
     },
