@@ -187,33 +187,32 @@ INVESTMENT_THESES = {
     "NVDA": {
         "tagline": "The GPU monopoly powering the global AI infrastructure cycle",
         "theses": [
-            "Blackwell GPU ramp sustains hyperscaler demand through FY2027, with TSMC CoWoS packaging capacity, not end demand, as the binding constraint",
-            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem, defending ~85% gross margins at scale",
-            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable customer base and reducing concentration risk",
+            "Blackwell GPU ramp sustains hyperscaler demand through FY2027, with TSMC CoWoS packaging capacity, not end demand, as the binding constraint: Q1 FY2027's third consecutive quarter of YoY re-acceleration to +85% confirms the structural demand signal",
+            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem: Q1 gross margin recovery to 74.9% from a Blackwell-transition trough of 61% validates durable premium pricing power",
+            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers: non-restricted market demand has already more than replaced the $4.5B H20 export gap, reducing hyperscaler concentration risk",
         ],
         "mgmt_guidance": (
-            "Q1 FY2027 reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) "
-            "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
-            "consecutive quarter of year-over-year acceleration. Q2 FY2027 guided at $91.0B (+2%), more than $4B above consensus. "
-            "The $4.5B H20 export charge incurred in Q1 FY2026 is now fully absorbed, and non-restricted market demand has more "
-            "than replaced the gap. A 25x dividend increase to $0.25 per share and an $80B buyback authorisation signal "
-            "management's confidence in the durability of the cash flow profile."
+            "Q1 FY2027: Revenue $81.6B (+85% YoY, +20% QoQ), GAAP gross margin 74.9%, diluted EPS $2.39. "
+            "Q2 FY2027 guide: $91.0B (+/-2%), more than $4B above street estimates. "
+            "Capital returns: 25x dividend increase to $0.25/share and $80B incremental buyback authorisation announced. "
+            "Non-GAAP operating expenses guided at ~$8.3B for Q2 (+12% QoQ), primarily driven by compute infrastructure and compensation."
         ),
-        "growth_drivers": [
+        "watch_items": [
             (
-                "Hyperscaler Capex Cycle",
-                "Microsoft, Google, Meta, and Amazon are guiding $280B+ in combined 2026 capex, the majority directed "
-                "at GPU cluster buildouts. NVIDIA captures an estimated 70–80% of this spend through its H100/Blackwell platforms.",
+                "Blackwell Supply Ramp",
+                "Can TSMC CoWoS packaging output scale fast enough to hit the $91B Q2 guide? Supply, not demand, remains the binding constraint for the near-term revenue trajectory.",
             ),
             (
-                "Inference Inflection",
-                "Inference workloads are growing faster than training as deployed models scale to production. Higher GPU "
-                "utilisation per chip improves per-unit economics and brings a new class of enterprise buyers online.",
+                "Gross Margin Trajectory",
+                "Q1 landed at 74.9% and Q2 non-GAAP GM is guided roughly flat. Watch whether early Vera Rubin mix dilutes margins or CUDA software attach rates sustain current pricing.",
             ),
             (
-                "Sovereign AI",
-                "35+ national governments have commissioned dedicated GPU infrastructure. This spend is largely insulated "
-                "from US–China export restrictions and represents a durable multi-year demand runway outside the hyperscaler cycle.",
+                "Export Restriction Escalation",
+                "Any incremental restrictions beyond H20 for China or other restricted geographies. Management expects sovereign AI spend to continue offsetting the gap, but the tail risk is non-trivial.",
+            ),
+            (
+                "Operating Leverage",
+                "Q2 non-GAAP OpEx guided at ~$8.3B (+12% QoQ). Revenue needs to scale faster than costs to maintain the ~66% operating margin delivered in Q1.",
             ),
         ],
     },
@@ -222,19 +221,18 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 220,
-        "wacc":                    0.1159,
-        "terminal_growth":         0.03,
+        "wacc":                     0.1159,
+        "terminal_growth":          0.03,
         "terminal_ebitda_multiple": 18,
         # Replace None with a Google Drive or GitHub raw-download URL once the model is hosted.
         "model_link": None,
-        # Football field: ranges sourced directly from the model's built-in football field table.
-        # Perpetuity and exit multiple ranges use 9% WACC (bull-case assumption) per the model output.
-        # Base-case diamonds use the actual model WACC of 11.59%.
+        # Football field: ranges sourced from the model's sensitivity tables at the actual WACC of 11.6%,
+        # so base-case diamonds fall within the displayed bars.
+        # Analyst Consensus is injected dynamically from live yfinance data at render time.
         "football_field": [
-            {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 119.82, "base": 183.71},
-            {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 266.07, "high": 287.41, "base": 276.74},
-            {"label": "Analyst Consensus",                     "low": 240, "high": 310, "base": 270},
-            {"label": "52-Week Range",                         "low": 133, "high": 236, "base": None},
+            {"label": "DCF: Perpetuity (2-4% g, 11.6% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71},
+            {"label": "DCF: Exit Multiple (16-20x, 11.6% WACC)", "low": 255.40, "high": 298.08, "base": 276.74},
+            {"label": "52-Week Range",                            "low": 169.50, "high": 327.85, "base": None},
         ],
         # Income-statement drivers: FY2026 actuals plus bear / base / bull scenario forecasts.
         "is_assumptions": [
@@ -247,7 +245,7 @@ DCF_OUTPUTS = {
                 "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.",
             },
             {
-                "name":   "Revenue Growth (FY2028–30E avg)",
+                "name":   "Revenue Growth (FY2028-30E avg)",
                 "actual": "—",
                 "bear":   "~17%",
                 "base":   "~18%",
@@ -255,7 +253,7 @@ DCF_OUTPUTS = {
                 "note":   "Straight-line deceleration post-Blackwell ramp as comps tighten.",
             },
             {
-                "name":   "Revenue Growth (FY2031–36E avg)",
+                "name":   "Revenue Growth (FY2031-36E avg)",
                 "actual": "—",
                 "bear":   "~5%",
                 "base":   "~8%",
@@ -265,9 +263,9 @@ DCF_OUTPUTS = {
             {
                 "name":   "Gross Margin",
                 "actual": "71.1%",
-                "bear":   "68–70%",
-                "base":   "72–73%",
-                "bull":   "74–75%",
+                "bear":   "68-70%",
+                "base":   "72-73%",
+                "bull":   "74-75%",
                 "note":   "FY2026 saw CoGS pressure from data-centre mix. Base assumes CUDA software attach rates recover margins toward FY2025 levels.",
             },
             {
@@ -313,24 +311,24 @@ DCF_OUTPUTS = {
             },
             {
                 "name": "Terminal EBITDA Multiple",
-                "bear": "15x",
+                "bear": "16x",
                 "base": "18x",
-                "bull": "22x",
+                "bull": "20x",
                 "note": "vs. current NTM EV/EBITDA ~27x. Terminal multiple assumes significant mean reversion as growth decelerates.",
             },
             {
                 "name": "Implied Price: Perpetuity",
-                "bear": "~$185",
+                "bear": "~$173",
                 "base": "$184",
-                "bull": "~$309",
-                "note": "Base at actual WACC of 11.6%, g=3%. Range (bear/bull) from model football field: 9% WACC, g=2-4%.",
+                "bull": "~$198",
+                "note": "All at actual WACC of 11.6%. Bear=g 2%, base=g 3%, bull=g 4%. From model sensitivity table.",
             },
             {
                 "name": "Implied Price: Exit Multiple",
-                "bear": "~$241",
+                "bear": "~$255",
                 "base": "$277",
-                "bull": "~$294",
-                "note": "Base at actual WACC of 11.6%, 18x terminal EBITDA. Range from model football field: 9% WACC, 11-15x.",
+                "bull": "~$298",
+                "note": "All at actual WACC of 11.6%. Bear=16x, base=18x, bull=20x terminal EBITDA. From model sensitivity table.",
             },
         ],
     },
@@ -414,17 +412,45 @@ def load_ticker_metadata(tickers):
         except Exception:
             pass
 
-        mean_t = None
+        mean_t     = None
+        low_t      = None
+        high_t     = None
         n_analysts = info.get("numberOfAnalystOpinions", None)
         try:
             apt = t.analyst_price_targets
-            mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
+            if isinstance(apt, dict):
+                mean_t = apt.get("mean",  None)
+                low_t  = apt.get("low",   None)
+                high_t = apt.get("high",  None)
+                if n_analysts is None:
+                    n_analysts = apt.get("numberOfAnalysts", None)
         except Exception:
             pass
-        if mean_t is None:
-            mean_t = info.get("targetMeanPrice", None)
+        # Fallback: pull from info dict if apt didn't return values
+        if mean_t  is None: mean_t  = info.get("targetMeanPrice",  None)
+        if low_t   is None: low_t   = info.get("targetLowPrice",   None)
+        if high_t  is None: high_t  = info.get("targetHighPrice",  None)
 
-        consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
+        # Sanity check: discard implausible values before storing.
+        # Current price used as anchor; if unavailable, skip the bounds check.
+        try:
+            _cur = t.fast_info.last_price or t.info.get("previousClose") or 0
+        except Exception:
+            _cur = 0
+        if _cur and _cur > 0:
+            _lo_bound, _hi_bound = _cur * 0.1, _cur * 10.0
+            if low_t  is not None and not (_lo_bound < low_t  < _hi_bound): low_t  = None
+            if high_t is not None and not (_lo_bound < high_t < _hi_bound): high_t = None
+            if mean_t is not None and not (_lo_bound < mean_t < _hi_bound): mean_t = None
+        # Require internal consistency: low < mean < high; nullify the row if violated
+        if low_t is not None and high_t is not None and low_t >= high_t:
+            low_t = high_t = None
+        if mean_t is not None and low_t is not None and mean_t < low_t:
+            mean_t = None
+        if mean_t is not None and high_t is not None and mean_t > high_t:
+            mean_t = None
+
+        consensus[ticker] = {"mean": mean_t, "low": low_t, "high": high_t, "n_analysts": n_analysts}
 
         flagged = False
         try:
@@ -1757,25 +1783,51 @@ with tab1:
                     st.markdown("**Latest Management Guidance**")
                     st.markdown(_thesis["mgmt_guidance"])
 
-            st.markdown("**Key Growth Drivers**")
-            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
-            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
-                with _gdc:
+            st.markdown("**What to Watch: Q2 FY2027**")
+            _wi_cols = st.columns(len(_thesis["watch_items"]))
+            for _wic, (_wi_name, _wi_desc) in zip(_wi_cols, _thesis["watch_items"]):
+                with _wic:
                     with st.container(border=True):
-                        st.markdown(f"**{_driver_name}**")
-                        st.caption(_driver_desc)
+                        st.markdown(f"**{_wi_name}**")
+                        st.caption(_wi_desc)
 
             st.divider()
 
             # ── 2. Football Field Valuation ────────────────────────────────────
             st.markdown("##### 2. DCF Valuation Football Field")
+
+            # Inject live analyst consensus row (min/max from yfinance, sanity-checked at load time)
+            _cons     = consensus_data.get(_ticker, {})
+            _cons_low = _cons.get("low",  None)
+            _cons_hi  = _cons.get("high", None)
+            _cons_mid = _cons.get("mean", None)
+            _cons_n   = _cons.get("n_analysts", None)
+            _cons_valid = (
+                _cons_low is not None and _cons_hi is not None and
+                _cons_low > 0 and _cons_hi > _cons_low and
+                (_cons_n is None or _cons_n >= 3)
+            )
+            _ff = list(_dcf["football_field"])   # copy so we don't mutate the constant
+            if _cons_valid:
+                _n_str = f" ({int(_cons_n)} analysts)" if _cons_n else ""
+                _ff.insert(0, {
+                    "label": f"Analyst Consensus{_n_str}",
+                    "low":   round(_cons_low),
+                    "high":  round(_cons_hi),
+                    "base":  round(_cons_mid) if _cons_mid else None,
+                })
+
+            _cons_note = (
+                "Analyst Consensus range and median are sourced live from Yahoo Finance. "
+                if _cons_valid else
+                "Analyst Consensus could not be loaded from Yahoo Finance for this ticker. "
+            )
             st.caption(
-                f"Bars show the valuation range for each methodology. "
-                f"◆ marks the base-case point estimate. "
+                _cons_note +
+                "DCF bars show the model's sensitivity range at the actual WACC of 11.6%. "
+                "◆ marks the base-case point estimate. "
                 f"The dashed line is the current share price (${_cp:,})."
             )
-
-            _ff = _dcf["football_field"]
 
             _fig_ff = go.Figure()
 
