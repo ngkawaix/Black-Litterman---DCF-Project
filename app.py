@@ -231,6 +231,7 @@ DCF_OUTPUTS = {
         "football_field": [
             {"label": "DCF: Perpetuity (2.5-4.5% g, 11.59% WACC)",    "low": 204.53, "high": 237.33, "base": 218.90}, #Taken from sensitivity tables
             {"label": "DCF: Exit EBITDA Multiple (16-20x at 11.59% WACC)", "low": 292.68, "high": 341.42, "base": 317.07},
+            {"label": "Aggregated DCF: Fair Value", "base": 268.06},
             {"label": "Analyst Consensus",                     "low": 220.00, "high": 500.00, "base": 301.29}, #Taken from TipRanks, dont chanage
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
         ],
