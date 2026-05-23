@@ -2032,7 +2032,7 @@ with tab4:
         fundamentally assumes a Gaussian distribution and constant volatility. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
-        diversification benefits often vanish — a tail-risk reality that standard GBM 
+        diversification benefits often vanish, a tail-risk reality that standard GBM 
         systematically understates. The Monte Carlo simulation therefore represents 
         a baseline for normal market regimes, while the historical stress test provides 
         the necessary reality check for tail risk.
