@@ -1907,18 +1907,17 @@ with tab1:
             with _wcol1:
                 with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Equity ($R_e$)**")
-                    st.caption(f">Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
-                    st.caption(f">Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
-                    st.caption(f">Observed Beta: **{_wacc_data.get('Observed Beta', '-')}**")
-                    st.caption(f">Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
+                    st.caption(f">>Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
+                    st.caption(f">>Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
+                    st.caption(f">>Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
                     st.divider()
-                    st.markdown(f"Implied $R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
+                    st.markdown(f"$R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
 
             with _wcol2:
                 with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Debt ($R_d$)**")
-                    st.caption(f">Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
-                    st.caption(f">Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
+                    st.caption(f">>Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
+                    st.caption(f">>Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
                     st.divider()
                     st.markdown(f"**After-Tax $R_d$**: **{_wacc_data.get('Cost of Debt (After Tax)', '-')}**")
 
