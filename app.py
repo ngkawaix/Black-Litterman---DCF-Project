@@ -225,7 +225,7 @@ DCF_OUTPUTS = {
         "wacc":                    0.1159,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 18,
-        "model_link": https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing,
+        "model_link": "https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing",
 
         "football_field": [
             {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71},
