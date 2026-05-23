@@ -1901,8 +1901,11 @@ with tab1:
             # 3. Create a clean 3-column "card" layout
             _wcol1, _wcol2, _wcol3 = st.columns(3)
 
+            # Uniform height for all containers
+            container_height = 300 
+
             with _wcol1:
-                with st.container(border=True):
+                with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Equity ($R_e$)**")
                     st.caption(f"Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
                     st.caption(f"Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
@@ -1912,21 +1915,22 @@ with tab1:
                     st.markdown(f"Implied $R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
 
             with _wcol2:
-                with st.container(border=True):
+                with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Debt ($R_d$)**")
                     st.caption(f"Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
                     st.caption(f"Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
-                    st.html("<div style='height: 52px;'></div>") # Spacer to keep card heights visually aligned
                     st.divider()
                     st.markdown(f"After-Tax $R_d$: **{_wacc_data.get('Cost of Debt (After Tax)', '-')}**")
 
             with _wcol3:
-                with st.container(border=True):
+                with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Capital**")
                     st.caption("Blended discount rate applied to projected Unlevered Free Cash Flows.")
-                    st.html("<div style='height: 31px;'></div>") # Spacer
                     st.divider()
+                    # Center the metric vertically
+                    st.html("<div style='text-align: center; margin-top: 40px;'>")
                     st.metric(label="Final WACC", value=_wacc_data.get('WACC', '-'))
+                    st.html("</div>")
                 
             
             # Part C — DCF & Terminal Value Assumptions
