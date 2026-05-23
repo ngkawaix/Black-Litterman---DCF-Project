@@ -1916,8 +1916,8 @@ with tab1:
             with _wcol2:
                 with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Debt ($R_d$)**")
-                    st.caption(f">>Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
-                    st.caption(f">>Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
+                    st.caption(f"Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
+                    st.caption(f"Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
                     st.divider()
                     st.markdown(f"**After-Tax $R_d$**: **{_wacc_data.get('Cost of Debt (After Tax)', '-')}**")
 
@@ -1925,8 +1925,7 @@ with tab1:
                 with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Capital**")
                     st.caption("Weighted Average Cost of Capital is the discount rate used in the DCF")
-                    st.divider()
-                    st.markdown(f"**Final WACC**: **{_wacc_data.get('WACC', '-')}**")
+                    st.markdown(f"**WACC**: **{_wacc_data.get('WACC', '-')}**")
 
             
             # Part C — DCF & Terminal Value Assumptions
