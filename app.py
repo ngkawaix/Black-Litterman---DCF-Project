@@ -1765,6 +1765,7 @@ with tab1:
             with _t_col:
                 st.markdown("**Core Theses**")
                 for _pt in _thesis["theses"]:
+                    st.markdown(f"- {_pt}")
                     
             with _g_col:
                 with st.container(border=True):
