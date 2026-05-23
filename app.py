@@ -185,7 +185,6 @@ HIGH_CONVICTION = ["NVDA", "META", "MSFT", "AMZN", "MA"]
 
 INVESTMENT_THESES = {
     "NVDA": {
-        "tagline": "The GPU monopoly powering the global AI infrastructure cycle",
         "theses": [
             "Q1 FY2027 reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) "
             "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
@@ -1705,7 +1704,7 @@ with tab1:
     )
 
     # ── Section 1: Stock Universe & Selection Criteria ────────────────────────
-    st.markdown("#### 1. Stock Universe & Selection Criteria")
+    st.markdown("#### Stock Universe & Selection Criteria")
     st.markdown(
         """
         The 17 stocks in this portfolio were selected through a systematic fundamental screen
@@ -1729,7 +1728,7 @@ with tab1:
     st.divider()
 
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
-    st.markdown("#### 2. Individual DCF Models")
+    st.markdown("#### Individual DCF Models")
     st.caption(
         "Five highest-conviction positions with bottom-up DCF analysis. "
         "Select a company to see the thesis, football field valuation, and modelling assumptions. "
@@ -1758,9 +1757,8 @@ with tab1:
             _cp     = _dcf["current_price"]
 
             # ── Company header ─────────────────────────────────────────────────
-            st.markdown(f"### {_ticker} : {_thesis['tagline']}")
 
-            # ── 1. Thesis & Management Guidance ───────────────────────────────
+            # ── Thesis & Management Guidance ───────────────────────────────
             st.markdown("##### 1. Investment Thesis & Management Guidance")
 
             _t_col, _g_col = st.columns([1, 1])
