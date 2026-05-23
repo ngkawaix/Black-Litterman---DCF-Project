@@ -1902,14 +1902,14 @@ with tab1:
             _wcol1, _wcol2, _wcol3 = st.columns(3)
 
             # Uniform height for all containers
-            container_height = 300 
+            container_height = 330 
 
             with _wcol1:
                 with st.container(border=True, height=container_height):
                     st.markdown("**Cost of Equity ($R_e$)**")
-                    st.caption(f">>Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
-                    st.caption(f">>Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
-                    st.caption(f">>Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
+                    st.caption(f"Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
+                    st.caption(f"Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
+                    st.caption(f"Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
                     st.divider()
                     st.markdown(f"$R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
 
