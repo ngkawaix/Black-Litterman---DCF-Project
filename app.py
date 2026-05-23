@@ -236,15 +236,15 @@ DCF_OUTPUTS = {
         ],
 
         "wacc_assumptions": [
-            {"Cost of Debt": 3.20%,
-             "Tax Rate": 17.00%,
-             "Cost of Debt (After Tax)": 2.66%,
-             "Risk Free Rate": 4.00%,
-             "Observed Beta": 2.250,
-             "Industry Beta (Adjusted)": 1.666,
-             "Market Risk Premium": 4.50%,
-             "Cost of Equity": 11.5%,
-             "WACC": 11.59%},
+            {"Cost of Debt": 3.20% ,
+             "Tax Rate": 17.00% ,
+             "Cost of Debt (After Tax)": 2.66% ,
+             "Risk Free Rate": 4.00% ,
+             "Observed Beta": 2.250 ,
+             "Industry Beta (Adjusted)": 1.666 ,
+             "Market Risk Premium": 4.50% ,
+             "Cost of Equity": 11.5% ,
+             "WACC": 11.59%} ,
         ],
                 
         "is_assumptions": [
