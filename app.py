@@ -3089,10 +3089,6 @@ with tab5:
     _n_amber  = int(((_quarterly_alloc >= 30) & (_quarterly_alloc < 80)).sum())
     _n_red    = int((_quarterly_alloc < 30).sum())
     _n_total  = len(_quarterly_alloc)
-    _sc1, _sc2, _sc3 = st.columns(3)
-    _sc1.metric("🟢 Fully invested quarters",   f"{_n_green} / {_n_total}",  f"{_n_green/_n_total:.0%} of backtest")
-    _sc2.metric("🟡 Partially de-risked",        f"{_n_amber} / {_n_total}",  f"{_n_amber/_n_total:.0%} of backtest")
-    _sc3.metric("🔴 Near / at cash lock-in",     f"{_n_red}   / {_n_total}",  f"{_n_red/_n_total:.0%} of backtest")
 
     # ── CPPI Performance During Stress Periods ────────────────────────────────
     st.markdown("###### CPPI Protection During Historical Stress Periods")
