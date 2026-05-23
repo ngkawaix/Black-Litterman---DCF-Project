@@ -177,6 +177,162 @@ STRESS_PERIODS = {
     "Trump Tariffs (Full Year 2025)": ("2025-02-01", "2025-12-31"),
 }
 
+# ── High-Conviction DCF Universe ─────────────────────────────────────────────
+# The five companies with completed or in-progress DCF models.
+# Only tickers present in both INVESTMENT_THESES and DCF_OUTPUTS are rendered
+# with full content; all others show a "coming soon" placeholder.
+HIGH_CONVICTION = ["NVDA", "META", "MSFT", "AMZN", "MA"]
+
+INVESTMENT_THESES = {
+    "NVDA": {
+        "tagline": "The GPU monopoly powering the global AI infrastructure cycle",
+        "theses": [
+            "Blackwell GPU ramp sustains hyperscaler demand through FY2027, with TSMC CoWoS packaging capacity — not end demand — as the binding constraint",
+            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem, defending ~85% gross margins at scale",
+            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable customer base and reducing concentration risk",
+        ],
+        "mgmt_guidance": (
+            "Q1 FY2027 revenue guided at ~$78B (+73% YoY). Management flagged US H20 export restrictions to China "
+            "as a $4–5B annualised headwind but maintained full-year growth confidence anchored on Blackwell demand "
+            "from non-restricted markets. A 25× dividend increase was announced in May 2026, signalling management's "
+            "confidence in the durability of the cash flow profile."
+        ),
+        "growth_drivers": [
+            (
+                "Hyperscaler Capex Cycle",
+                "Microsoft, Google, Meta, and Amazon are guiding $280B+ in combined 2026 capex, the majority directed "
+                "at GPU cluster buildouts. NVIDIA captures an estimated 70–80% of this spend through its H100/Blackwell platforms.",
+            ),
+            (
+                "Inference Inflection",
+                "Inference workloads are growing faster than training as deployed models scale to production. Higher GPU "
+                "utilisation per chip improves per-unit economics and brings a new class of enterprise buyers online.",
+            ),
+            (
+                "Sovereign AI",
+                "35+ national governments have commissioned dedicated GPU infrastructure. This spend is largely insulated "
+                "from US–China export restrictions and represents a durable multi-year demand runway outside the hyperscaler cycle.",
+            ),
+        ],
+    },
+}
+
+DCF_OUTPUTS = {
+    "NVDA": {
+        "current_price": 220,
+        "wacc":                    0.1159,
+        "terminal_growth":         0.03,
+        "terminal_ebitda_multiple": 18,
+        # Replace None with a Google Drive or GitHub raw-download URL once the model is hosted.
+        "model_link": None,
+        # Football field: each entry spans [low, high] with an optional base-case point estimate.
+        # Ranges derived from the WACC × terminal-g sensitivity table in the Integrated DCF sheet.
+        "football_field": [
+            {"label": "DCF — Perpetuity",   "low":  189, "high": 316, "base": 188},
+            {"label": "DCF — Exit Multiple", "low":  233, "high": 341, "base": 279},
+            {"label": "Analyst Consensus",   "low":  240, "high": 310, "base": 270},
+            {"label": "52-Week Range",       "low":   86, "high": 274, "base": None},
+        ],
+        # Income-statement drivers: FY2026 actuals plus bear / base / bull scenario forecasts.
+        "is_assumptions": [
+            {
+                "name":   "Revenue Growth (FY2027E)",
+                "actual": "+65.5%",
+                "bear":   "+70.0%",
+                "base":   "+75.6%",
+                "bull":   "+81.3%",
+                "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.",
+            },
+            {
+                "name":   "Revenue Growth (FY2028–30E avg)",
+                "actual": "—",
+                "bear":   "~17%",
+                "base":   "~18%",
+                "bull":   "~20%",
+                "note":   "Straight-line deceleration post-Blackwell ramp as comps tighten.",
+            },
+            {
+                "name":   "Revenue Growth (FY2031–36E avg)",
+                "actual": "—",
+                "bear":   "~5%",
+                "base":   "~8%",
+                "bull":   "~10%",
+                "note":   "Terminal growth convergence period; bull reflects AI platform incumbency premium.",
+            },
+            {
+                "name":   "Gross Margin",
+                "actual": "71.1%",
+                "bear":   "68–70%",
+                "base":   "72–73%",
+                "bull":   "74–75%",
+                "note":   "FY2026 saw CoGS pressure from data-centre mix. Base assumes CUDA software attach rates recover margins toward FY2025 levels.",
+            },
+            {
+                "name":   "R&D % of Revenue",
+                "actual": "8.6%",
+                "bear":   "12.0%",
+                "base":   "8.5%",
+                "bull":   "7.0%",
+                "note":   "Bear assumes a moat-defence R&D spike to counter AMD/custom silicon. Bull reflects software leverage at scale.",
+            },
+            {
+                "name":   "SG&A % of Revenue",
+                "actual": "2.1%",
+                "bear":   "2.2%",
+                "base":   "1.9%",
+                "bull":   "1.7%",
+                "note":   "Low-friction distribution model (hyperscalers buy directly) keeps SG&A structurally low relative to revenue.",
+            },
+            {
+                "name":   "Tax Rate",
+                "actual": "15.1%",
+                "bear":   "15.1%",
+                "base":   "15.1%",
+                "bull":   "15.1%",
+                "note":   "Straight-lined from FY2026 statutory rate; no scenario variance applied.",
+            },
+        ],
+        # DCF and terminal value assumptions — no FY2026 Actual column for these rows.
+        "dcf_assumptions": [
+            {
+                "name": "WACC",
+                "bear": "11.6%",
+                "base": "11.6%",
+                "bull": "11.6%",
+                "note": "Held constant across scenarios; bear/bull sensitivity is expressed via terminal g and exit multiple instead.",
+            },
+            {
+                "name": "Terminal Growth Rate (g)",
+                "bear": "2.0%",
+                "base": "3.0%",
+                "bull": "4.0%",
+                "note": "Base = long-run nominal GDP growth. Bull reflects a durable AI platform incumbency premium.",
+            },
+            {
+                "name": "Terminal EBITDA Multiple",
+                "bear": "15×",
+                "base": "18×",
+                "bull": "22×",
+                "note": "vs. current NTM EV/EBITDA ~27×. Terminal multiple assumes significant mean reversion as growth decelerates.",
+            },
+            {
+                "name": "Implied Price — Perpetuity",
+                "bear": "~$190",
+                "base": "$188",
+                "bull": "~$316",
+                "note": "Derived from WACC × terminal-g sensitivity table in the DCF model.",
+            },
+            {
+                "name": "Implied Price — Exit Multiple",
+                "bear": "~$233",
+                "base": "$279",
+                "bull": "~$341",
+                "note": "Bear/bull scaled from 15× / 22× terminal EBITDA applied to FY2036 forecast.",
+            },
+        ],
+    },
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DATA LOADING  (cached so Streamlit doesn't re-download on every interaction)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1520,48 +1676,246 @@ with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        This tab introduces the stock universe and explains how the initial price targets
-        were set, setting the stage for the calibration of confidences in the next tab which 
-        will be important for the derivation of the BL portfolio weight allocations.
-
-        Ideally, a full DCF analysis of all stock tickers in this universe is ideal, but given the
-        scope of this project, I limited my analysis to five of my highest conviction stocks, breaking
-        down the theses, company financials and DCF valuations as per their latest earnings report.
+        This tab introduces the stock universe, explains how the initial price targets
+        were set, and walks through the bottom-up valuation work for my five highest-conviction
+        positions. Each company section covers the investment thesis and latest management
+        guidance, a football field valuation chart, and a full breakdown of the key modelling
+        assumptions underpinning the DCF. These price targets then feed directly into the
+        Black-Litterman views in the Confidence and Views & Weights tabs.
         """
     )
-    
-    # ── Section 1: Stock Universe & Selection Criteria ───────────────────────────────────
-    
+
+    # ── Section 1: Stock Universe & Selection Criteria ────────────────────────
     st.markdown("#### 1. Stock Universe & Selection Criteria")
     st.markdown(
         """
-        The 17 stocks in this portfolio were selected through a systematic
-        fundamental screen using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity
-        below 1**, **(3) consecutive revenue growth over 5 years**, and **(4) a minimum
-        market cap of $10 billion**. ROIC was chosen as the primary quality
-        filter because it measures how efficiently a company converts capital
-        into profit - sustained high ROIC over multiple years is one of the
-        most reliable indicators of a durable competitive advantage. Though FCF margin is also a robust way
-        to screen for profitable generating companies, this method would screen out high quality companies like
-        AMZN, MSFT and GOOG which are undergoing unprecedented Capex spending-cycles for data-centre build-outs.
+        The 17 stocks in this portfolio were selected through a systematic fundamental screen
+        using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity below 1**,
+        **(3) consecutive revenue growth over 5 years**, and **(4) a minimum market cap of $10 billion**.
+        ROIC was chosen as the primary quality filter because it measures how efficiently a company
+        converts capital into profit — sustained high ROIC over multiple years is one of the most
+        reliable indicators of a durable competitive advantage. FCF margin was deliberately not used
+        as the primary screen as it would exclude high-quality compounders like AMZN, MSFT, and GOOGL
+        which are in an unprecedented capex cycle for data-centre buildouts.
 
-        The resulting universe is concentrated in technology, semiconductors,
-        payments infrastructure, and financial data - sectors where
-        capital-light business models and high switching costs tend to produce
-        the kind of high quality businesses with durable moats. Two names
-        warrant a note: FICO carries negative book equity due to sustained
-        buybacks rather than distress, which causes standard debt screens to
-        misread it; ASML is the sole supplier of extreme ultraviolet
-        lithography equipment to the global semiconductor industry, making it
+        The resulting universe is concentrated in technology, semiconductors, payments infrastructure,
+        and financial data — sectors where capital-light business models and high switching costs tend
+        to produce durable moats. Two names warrant a note: FICO carries negative book equity due to
+        sustained buybacks rather than distress, which causes standard debt screens to misread it;
+        ASML is the sole supplier of extreme ultraviolet lithography equipment globally, making it
         structurally irreplaceable within the AI infrastructure stack.
         """
     )
 
     st.divider()
 
-    # ── Section 2: DCF Models (placeholder) ───────────────────────────────────
+    # ── Section 2: Individual DCF Models ──────────────────────────────────────
     st.markdown("#### 2. Individual DCF Models")
-    st.markdown("##### NVIDIA")
+    st.caption(
+        "Five highest-conviction positions with bottom-up DCF analysis. "
+        "Select a company to see the thesis, football field valuation, and modelling assumptions. "
+        "Remaining companies are in progress — analyst consensus targets are used in the BL model until each DCF is finalised."
+    )
+
+    _dcf_tabs = st.tabs(
+        [f"{'✅ ' if t in DCF_OUTPUTS else '🔜 '}{t}" for t in HIGH_CONVICTION]
+    )
+
+    for _ctab, _ticker in zip(_dcf_tabs, HIGH_CONVICTION):
+        with _ctab:
+
+            # ── Placeholder for companies without a completed model ────────────
+            if _ticker not in INVESTMENT_THESES or _ticker not in DCF_OUTPUTS:
+                st.info(
+                    f"**{_ticker}** — DCF model in progress. This tab will show the full "
+                    "investment thesis, football field valuation, and assumptions table once "
+                    "the Wall Street Prep model is finalised.",
+                    icon="🔜",
+                )
+                continue
+
+            _thesis = INVESTMENT_THESES[_ticker]
+            _dcf    = DCF_OUTPUTS[_ticker]
+            _cp     = _dcf["current_price"]
+
+            # ── Company header ─────────────────────────────────────────────────
+            st.markdown(f"### {_ticker} — {_thesis['tagline']}")
+
+            # ── 1. Thesis & Management Guidance ───────────────────────────────
+            st.markdown("##### 1. Investment Thesis & Management Guidance")
+
+            _t_col, _g_col = st.columns([1, 1])
+            with _t_col:
+                st.markdown("**Core Theses**")
+                for _pt in _thesis["theses"]:
+                    st.markdown(f"- {_pt}")
+            with _g_col:
+                with st.container(border=True):
+                    st.markdown("**Latest Management Guidance**")
+                    st.markdown(_thesis["mgmt_guidance"])
+
+            st.markdown("**Key Growth Drivers**")
+            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
+            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
+                with _gdc:
+                    with st.container(border=True):
+                        st.markdown(f"**{_driver_name}**")
+                        st.caption(_driver_desc)
+
+            st.divider()
+
+            # ── 2. Football Field Valuation ────────────────────────────────────
+            st.markdown("##### 2. DCF Valuation Football Field")
+            st.caption(
+                f"Bars show the valuation range for each methodology. "
+                f"◆ marks the base-case point estimate. "
+                f"The dashed line is the current share price (${_cp:,})."
+            )
+
+            _ff = _dcf["football_field"]
+
+            _fig_ff = go.Figure()
+
+            # Range bars (one per methodology)
+            for _row in _ff:
+                _fig_ff.add_trace(go.Bar(
+                    x=[_row["high"] - _row["low"]],
+                    y=[_row["label"]],
+                    base=[_row["low"]],
+                    orientation="h",
+                    marker=dict(
+                        color="rgba(29, 158, 117, 0.18)",
+                        line=dict(color="rgba(29, 158, 117, 0.65)", width=1.5),
+                    ),
+                    showlegend=False,
+                    hovertemplate=(
+                        f"<b>{_row['label']}</b><br>"
+                        f"Range: ${_row['low']:,} – ${_row['high']:,}<extra></extra>"
+                    ),
+                ))
+
+            # Base-case diamond markers
+            _base_x = [r["base"] for r in _ff if r["base"] is not None]
+            _base_y = [r["label"] for r in _ff if r["base"] is not None]
+            if _base_x:
+                _fig_ff.add_trace(go.Scatter(
+                    x=_base_x, y=_base_y,
+                    mode="markers",
+                    marker=dict(size=12, color="#1D9E75", symbol="diamond"),
+                    name="Base Case",
+                    hovertemplate="<b>%{y}</b><br>Base Case: $%{x:,}<extra></extra>",
+                ))
+
+            # Current price line
+            _fig_ff.add_vline(
+                x=_cp,
+                line_dash="dash", line_color="#D85A30", line_width=2,
+                annotation_text=f"Current  ${_cp:,}",
+                annotation_position="top right",
+                annotation_font=dict(color="#D85A30", size=11),
+            )
+
+            _all_vals = [r["low"] for r in _ff] + [r["high"] for r in _ff] + [_cp]
+            _fig_ff.update_layout(
+                height=260,
+                xaxis=dict(
+                    title="Equity Value per Share ($)",
+                    range=[min(_all_vals) * 0.88, max(_all_vals) * 1.08],
+                    tickprefix="$",
+                    zeroline=False,
+                ),
+                yaxis=dict(autorange="reversed"),
+                barmode="overlay",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                margin=dict(t=20, b=40, l=10, r=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02),
+            )
+            st.plotly_chart(_fig_ff, use_container_width=True)
+
+            st.divider()
+
+            # ── 3. Key Modelling Assumptions ───────────────────────────────────
+            st.markdown("##### 3. Key Modelling Assumptions")
+
+            # Part A — Income Statement Drivers
+            st.markdown("###### Income Statement Drivers")
+            st.caption(
+                "**FY2026 Actual** is the last reported fiscal year, providing an anchor for "
+                "whether each scenario assumption is a continuation of, or a deliberate departure "
+                "from, recent trends. Bear / Base / Bull map directly to the three operating "
+                "scenarios in the DCF model."
+            )
+
+            _is_df = (
+                pd.DataFrame(_dcf["is_assumptions"])
+                .set_index("name")
+                .rename(columns={
+                    "actual": "FY2026 Actual",
+                    "bear":   "Bear Case",
+                    "base":   "Base Case",
+                    "bull":   "Bull Case",
+                    "note":   "Note",
+                })
+            )
+            st.dataframe(
+                _is_df[["FY2026 Actual", "Bear Case", "Base Case", "Bull Case", "Note"]],
+                use_container_width=True,
+                column_config={
+                    "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
+                    "Bear Case":     st.column_config.TextColumn("Bear Case",     width="small"),
+                    "Base Case":     st.column_config.TextColumn("Base Case",     width="small"),
+                    "Bull Case":     st.column_config.TextColumn("Bull Case",     width="small"),
+                    "Note":          st.column_config.TextColumn("Note",          width="large"),
+                },
+            )
+
+            # Part B — DCF & Terminal Value Assumptions
+            st.markdown("###### DCF & Terminal Value Assumptions")
+            st.caption(
+                "WACC is held constant across all three scenarios; bear and bull sensitivity is "
+                "expressed through the terminal growth rate and exit multiple instead. The implied "
+                "price rows translate these assumptions directly into an equity value per share."
+            )
+
+            _dcf_df = (
+                pd.DataFrame(_dcf["dcf_assumptions"])
+                .set_index("name")
+                .rename(columns={
+                    "bear": "Bear Case",
+                    "base": "Base Case",
+                    "bull": "Bull Case",
+                    "note": "Note",
+                })
+            )
+            st.dataframe(
+                _dcf_df[["Bear Case", "Base Case", "Bull Case", "Note"]],
+                use_container_width=True,
+                column_config={
+                    "Bear Case": st.column_config.TextColumn("Bear Case", width="small"),
+                    "Base Case": st.column_config.TextColumn("Base Case", width="small"),
+                    "Bull Case": st.column_config.TextColumn("Bull Case", width="small"),
+                    "Note":      st.column_config.TextColumn("Note",      width="large"),
+                },
+            )
+
+            st.divider()
+
+            # ── 4. Full Model Download ─────────────────────────────────────────
+            st.markdown("##### 4. Full Integrated Model")
+            _link = _dcf.get("model_link")
+            if _link:
+                st.markdown(
+                    f"📥 **[Download the full 3-Statement Model & DCF — {_ticker}]({_link})**  \n"
+                    "Includes income statement, balance sheet, cash flow statement, "
+                    "WACC derivation, and DCF valuation with sensitivity tables."
+                )
+            else:
+                st.info(
+                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
+                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
+                    icon="📎",
+                )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB2 - Confidence
@@ -2729,6 +3083,10 @@ with tab5:
     _n_amber  = int(((_quarterly_alloc >= 30) & (_quarterly_alloc < 80)).sum())
     _n_red    = int((_quarterly_alloc < 30).sum())
     _n_total  = len(_quarterly_alloc)
+    _sc1, _sc2, _sc3 = st.columns(3)
+    _sc1.metric("🟢 Fully invested quarters",   f"{_n_green} / {_n_total}",  f"{_n_green/_n_total:.0%} of backtest")
+    _sc2.metric("🟡 Partially de-risked",        f"{_n_amber} / {_n_total}",  f"{_n_amber/_n_total:.0%} of backtest")
+    _sc3.metric("🔴 Near / at cash lock-in",     f"{_n_red}   / {_n_total}",  f"{_n_red/_n_total:.0%} of backtest")
 
     # ── CPPI Performance During Stress Periods ────────────────────────────────
     st.markdown("###### CPPI Protection During Historical Stress Periods")
