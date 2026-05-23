@@ -231,7 +231,7 @@ DCF_OUTPUTS = {
         "football_field": [
             {"label": "DCF: Perpetuity (2.5-4.5% g, 11.59% WACC)",    "low": 204.53, "high": 237.33, "base": 218.90}, #Taken from sensitivity tables
             {"label": "DCF: Exit EBITDA Multiple (16-20x at 11.59% WACC)", "low": 292.68, "high": 341.42, "base": 317.07},
-            {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00}, #Taken from TipRanks, dont chanage
+            {"label": "Analyst Consensus",                     "low": 220.00, "high": 500.00, "base": 301.29}, #Taken from TipRanks, dont chanage
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
         ],
 
@@ -1891,42 +1891,42 @@ with tab1:
 
             # Part B — WACC Assumptions
             st.markdown("###### Derivation of WACC")
-
-            # 1. Display the standard WACC Formula
+            
+            # WACC Formula with visual distinction
             st.latex(r"WACC = \left( \frac{E}{V} \times R_e \right) + \left( \frac{D}{V} \times R_d \times (1 - T_c) \right)")
 
-            # 2. Extract the WACC dictionary
             _wacc_data = _dcf["wacc_assumptions"][0]
+            _h = 320 # Standardized height for all cards
 
-            # 3. Create a clean 3-column "card" layout
-            _wcol1, _wcol2, _wcol3 = st.columns(3)
+            _c1, _c2, _c3 = st.columns(3)
 
-            # Uniform height for all containers
-            container_height = 330 
+            with _c1:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 💎 Equity")
+                    st.metric("Cost of Equity ($R_e$)", _wacc_data.get('Cost of Equity', '-'))
+                    st.caption("Inputs:")
+                    st.write(f"• Risk-Free: {_wacc_data.get('Risk Free Rate', '-')}")
+                    st.write(f"• Beta (Adj): {_wacc_data.get('Industry Beta (Adjusted)', '-')}")
+                    st.write(f"• MRP: {_wacc_data.get('Market Risk Premium', '-')}")
 
-            with _wcol1:
-                with st.container(border=True, height=container_height):
-                    st.markdown("**Cost of Equity ($R_e$)**")
-                    st.caption(f"Risk-Free Rate: **{_wacc_data.get('Risk Free Rate', '-')}**")
-                    st.caption(f"Market Risk Premium: **{_wacc_data.get('Market Risk Premium', '-')}**")
-                    st.caption(f"Adjusted Beta: **{_wacc_data.get('Industry Beta (Adjusted)', '-')}**")
-                    st.divider()
-                    st.markdown(f"$R_e$: **{_wacc_data.get('Cost of Equity', '-')}**")
+            with _c2:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 🏦 Debt")
+                    st.metric("After-Tax Cost ($R_d$)", _wacc_data.get('Cost of Debt (After Tax)', '-'))
+                    st.caption("Inputs:")
+                    st.write(f"• Cost of Debt: {_wacc_data.get('Cost of Debt', '-')}")
+                    st.write(f"• Tax Rate: {_wacc_data.get('Tax Rate', '-')}")
 
-            with _wcol2:
-                with st.container(border=True, height=container_height):
-                    st.markdown("**Cost of Debt ($R_d$)**")
-                    st.caption(f"Cost of Debt: **{_wacc_data.get('Cost of Debt', '-')}**")
-                    st.caption(f"Tax Rate ($T_c$): **{_wacc_data.get('Tax Rate', '-')}**")
-                    st.divider()
-                    st.markdown(f"**After-Tax $R_d$**: **{_wacc_data.get('Cost of Debt (After Tax)', '-')}**")
-
-            with _wcol3:
-                with st.container(border=True, height=container_height):
-                    st.markdown("**Cost of Capital**")
-                    st.caption("Weighted Average Cost of Capital is the discount rate used in the DCF")
-                    st.markdown(f"**WACC**: **{_wacc_data.get('WACC', '-')}**")
-
+            with _c3:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 🎯 Result")
+                    # Using a placeholder to center the final WACC
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.metric(label="Weighted Average Cost of Capital", 
+                              value=_wacc_data.get('WACC', '-'),
+                              help="The target discount rate for your DCF model.")
+                    st.info("The minimum return expected by all providers of capital.")
+            
             
             # Part C — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
