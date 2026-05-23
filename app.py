@@ -244,8 +244,8 @@ DCF_OUTPUTS = {
              "Industry Beta (Adjusted)": 1.666,
              "Market Risk Premium": 4.50%,
              "Cost of Equity": 11.5%,
-             "WACC": 11.59%}
-        ]
+             "WACC": 11.59%},
+        ],
                 
         "is_assumptions": [
             {    "name":   "Revenue Growth (FY2027E)",
