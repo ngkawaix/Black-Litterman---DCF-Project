@@ -243,7 +243,7 @@ DCF_OUTPUTS = {
              "Observed Beta": "2.250",
              "Industry Beta (Adjusted)": "1.666",
              "Market Risk Premium": "4.50%",
-             "Cost of Equity": "11.5%",
+             "Cost of Equity": "11.50%",
              "WACC": "11.59%"
             },
         ],
