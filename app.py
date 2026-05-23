@@ -1868,7 +1868,7 @@ with tab1:
 
             _is_df = (
                 pd.DataFrame(_dcf["is_assumptions"])
-                .set_index("I/S")
+                .set_index("name")
                 .rename(columns={
                     "actual": "FY2026 Actual",
                     "bear":   "Bear Case",
