@@ -225,18 +225,15 @@ DCF_OUTPUTS = {
         "wacc":                    0.1159,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 18,
-        # Replace None with a Google Drive or GitHub raw-download URL once the model is hosted.
-        "model_link": None,
-        # Football field: ranges sourced directly from the model's built-in football field table.
-        # Perpetuity and exit multiple ranges use 9% WACC (bull-case assumption) per the model output.
-        # Base-case diamonds use the actual model WACC of 11.59%.
+        "model_link": https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing,
+
         "football_field": [
             {"label": "DCF: Perpetuity (2-4% g, 11.59% WACC)",    "low": 172.53, "high": 197.82, "base": 183.71},
             {"label": "DCF: Exit EBITDA Multiple (17-19x at 11.59% WACC)", "low": 255.40, "high": 298.08, "base": 277.04},
             {"label": "Analyst Consensus",                     "low": 220.00, "high": 301.29, "base": 500.00},
             {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None},
         ],
-        # Income-statement drivers: FY2026 actuals plus bear / base / bull scenario forecasts.
+
         "is_assumptions": [
             {
                 "name":   "Revenue Growth (FY2027E)",
