@@ -1306,9 +1306,9 @@ with st.sidebar:
     
     max_w_pct = st.slider(
         "Max position size (%)",
-        min_value=5.0, max_value=100.0, value=25.0, step=0.5,
+        min_value=5.0, max_value=100.0, value=15.0, step=0.5,
         help=("Imposes a ceiling on the maximum weight the optimiser can allocate into a single stock. "
-              "Default: 25% to enable some concentration risks while forcing some diversification."
+              "Default: 15% to enable some concentration risks while forcing some diversification."
               )
     )
     min_w_pct = st.slider(
