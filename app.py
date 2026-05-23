@@ -2244,8 +2244,8 @@ with tab5:
 
         **Model Caveats**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
-        This comparison is best read as an illustration of the strategies' structural differences 
-        rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
+        This comparison is best read as an illustration of the structural differences between BL and
+        the other strategies rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
         provides a more comparable forward-looking view, though as noted in the Simulation & Stress 
         Tests tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
         a tail-risk estimate.
