@@ -222,7 +222,7 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 220,
-        "DCF Fair Value": 268
+        "DCF Fair Value": 268,
         "wacc":                    0.1159,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 18,
