@@ -1893,7 +1893,7 @@ with tab1:
             st.markdown("###### Derivation of WACC")
 
             _wacc_df = (
-                pd.DataFrame(_dcf["wacc_assumptions"]),
+                pd.DataFrame(_dcf["wacc_assumptions"])
             )
 
             st.dataframe(_wacc_df,
