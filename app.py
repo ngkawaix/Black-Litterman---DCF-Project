@@ -1759,7 +1759,7 @@ with tab1:
             # ── Company header ─────────────────────────────────────────────────
 
             # ── A. Football Field Valuation ────────────────────────────────────
-            st.markdown("##### A. DCF Valuation Football Field")
+            st.markdown("##### DCF Valuation Football Field")
             st.caption(
                 f"Bars show the valuation range for each methodology. "
                 f"◆ marks the base-case point estimate. "
@@ -1830,7 +1830,7 @@ with tab1:
             st.divider()
             
             # ── Thesis & Management Guidance ───────────────────────────────
-            st.markdown("##### B. Investment Thesis & Management Guidance")
+            st.markdown("##### Investment Thesis & Management Guidance")
 
             _t_col, _g_col = st.columns([1, 1])
             with _t_col:
