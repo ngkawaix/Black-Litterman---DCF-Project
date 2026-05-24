@@ -1758,7 +1758,23 @@ with tab1:
 
             # ── Company header ─────────────────────────────────────────────────
 
-            # ── A. Football Field Valuation ────────────────────────────────────
+            # ── Full Model Download ─────────────────────────────────────────
+            st.markdown("##### Full DCF Model Download")
+            _link = _dcf.get("model_link")
+            if _link:
+                st.markdown(
+                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
+                    "Includes income statement, balance sheet, cash flow statement, "
+                    "WACC derivation, and DCF valuation with sensitivity tables."
+                )
+            else:
+                st.info(
+                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
+                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
+                    icon="📎",
+                )
+
+            # ── Football Field Valuation ────────────────────────────────────
             st.markdown("##### DCF Valuation Football Field")
             st.caption(
                 f"Bars show the valuation range for each methodology. "
@@ -1853,8 +1869,8 @@ with tab1:
 
             st.divider()
 
-            # ── 3. Key Modelling Assumptions ───────────────────────────────────
-            st.markdown("##### 3. Key Modelling Assumptions")
+            # ── 3. Summary of DCF Assumptions ───────────────────────────────────
+            st.markdown("##### Summary of DCF Assumptions")
 
             # Part A — Income Statement Drivers
             st.markdown("###### Income Statement Drivers")
@@ -1957,22 +1973,6 @@ with tab1:
             )
 
             st.divider()
-
-            # ── 4. Full Model Download ─────────────────────────────────────────
-            st.markdown("##### 4. Full Integrated Model")
-            _link = _dcf.get("model_link")
-            if _link:
-                st.markdown(
-                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
-                    "Includes income statement, balance sheet, cash flow statement, "
-                    "WACC derivation, and DCF valuation with sensitivity tables."
-                )
-            else:
-                st.info(
-                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
-                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
-                    icon="📎",
-                )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB2 - Confidence
