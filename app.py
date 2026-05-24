@@ -1904,46 +1904,7 @@ with tab1:
                 },
             )
 
-            # Part B — WACC Assumptions
-            st.markdown("###### Derivation of WACC")
-            
-            # WACC Formula with visual distinction
-            st.latex(r"WACC = \left( \frac{E}{V} \times R_e \right) + \left( \frac{D}{V} \times R_d \times (1 - T_c) \right)")
-
-            _wacc_data = _dcf["wacc_assumptions"][0]
-            _h = 320 # Standardized height for all cards
-
-            _c1, _c2, _c3 = st.columns(3)
-
-            with _c1:
-                with st.container(border=True, height=_h):
-                    st.markdown("### 💎 Equity")
-                    st.metric("Cost of Equity ($R_e$)", _wacc_data.get('Cost of Equity', '-'))
-                    st.caption("Inputs:")
-                    st.write(f"• Risk-Free: {_wacc_data.get('Risk Free Rate', '-')}")
-                    st.write(f"• Beta (Adj): {_wacc_data.get('Industry Beta (Adjusted)', '-')}")
-                    st.write(f"• MRP: {_wacc_data.get('Market Risk Premium', '-')}")
-
-            with _c2:
-                with st.container(border=True, height=_h):
-                    st.markdown("### 🏦 Debt")
-                    st.metric("After-Tax Cost ($R_d$)", _wacc_data.get('Cost of Debt (After Tax)', '-'))
-                    st.caption("Inputs:")
-                    st.write(f"• Cost of Debt: {_wacc_data.get('Cost of Debt', '-')}")
-                    st.write(f"• Tax Rate: {_wacc_data.get('Tax Rate', '-')}")
-
-            with _c3:
-                with st.container(border=True, height=_h):
-                    st.markdown("### 🎯 Result")
-                    # Using a placeholder to center the final WACC
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.metric(label="Weighted Average Cost of Capital", 
-                              value=_wacc_data.get('WACC', '-'),
-                              help="The target discount rate for your DCF model.")
-                    st.info("The minimum return expected by all providers of capital.")
-
-            
-            # Part C — DCF & Terminal Value Assumptions
+            # Part B — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
             st.caption(
                 "WACC is held constant across all three scenarios; bear and bull sensitivity is "
@@ -1971,8 +1932,6 @@ with tab1:
                     "Note":      st.column_config.TextColumn("Note",      width="large"),
                 },
             )
-
-            st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB2 - Confidence
