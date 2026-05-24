@@ -1694,17 +1694,17 @@ with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        This tab introduces the stock universe, explains how the initial price targets
-        were set, and walks through the bottom-up valuation work for my five highest-conviction
-        positions. Each company section covers the investment thesis and latest management
-        guidance, a football field valuation chart, and a full breakdown of the key modelling
-        assumptions underpinning the DCF. These price targets then feed directly into the
-        Black-Litterman views in the Confidence and Views & Weights tabs.
+        **This tab explains the selection of the stock universe, and the derivation of the price
+        targets set for two stocks, NVDA and META via DCF analysis that will be used 
+        in derivation of a portfolio allocation.** The remainder of the stocks which do not have a
+        manual DCF analysis utilises an aggregate price targets pulled automatically from Yahoo Finance. 
+        You may calibrate the confidence levels under confidence, and see the resulting portfolio allocation
+        displayed in Views, Returns & Weights.
         """
     )
 
     # ── Section 1: Stock Universe & Selection Criteria ────────────────────────
-    st.markdown("#### Stock Universe & Selection Criteria")
+    st.markdown("#### 1. Stock Universe & Selection Criteria")
     st.markdown(
         """
         The 17 stocks in this portfolio were selected through a systematic fundamental screen
@@ -1728,7 +1728,7 @@ with tab1:
     st.divider()
 
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
-    st.markdown("#### Individual DCF Models")
+    st.markdown("#### 2. Individual DCF Models")
     st.caption(
         "Five highest-conviction positions with bottom-up DCF analysis. "
         "Select a company to see the thesis, football field valuation, and modelling assumptions. "
@@ -1758,32 +1758,8 @@ with tab1:
 
             # ── Company header ─────────────────────────────────────────────────
 
-            # ── Thesis & Management Guidance ───────────────────────────────
-            st.markdown("##### 1. Investment Thesis & Management Guidance")
-
-            _t_col, _g_col = st.columns([1, 1])
-            with _t_col:
-                st.markdown("**Core Theses**")
-                for _pt in _thesis["theses"]:
-                    st.markdown(f"- {_pt}")
-                    
-            with _g_col:
-                with st.container(border=True):
-                    st.markdown("**Latest Management Guidance**")
-                    st.markdown(_thesis["mgmt_guidance"])
-
-            st.markdown("**Key Growth Drivers**")
-            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
-            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
-                with _gdc:
-                    with st.container(border=True):
-                        st.markdown(f"**{_driver_name}**")
-                        st.caption(_driver_desc)
-
-            st.divider()
-
-            # ── 2. Football Field Valuation ────────────────────────────────────
-            st.markdown("##### 2. DCF Valuation Football Field")
+            # ── A. Football Field Valuation ────────────────────────────────────
+            st.markdown("##### A. DCF Valuation Football Field")
             st.caption(
                 f"Bars show the valuation range for each methodology. "
                 f"◆ marks the base-case point estimate. "
@@ -1850,6 +1826,30 @@ with tab1:
                 legend=dict(orientation="h", yanchor="bottom", y=1.02),
             )
             st.plotly_chart(_fig_ff, use_container_width=True)
+
+            st.divider()
+            
+            # ── Thesis & Management Guidance ───────────────────────────────
+            st.markdown("##### B. Investment Thesis & Management Guidance")
+
+            _t_col, _g_col = st.columns([1, 1])
+            with _t_col:
+                st.markdown("**Core Theses**")
+                for _pt in _thesis["theses"]:
+                    st.markdown(f"- {_pt}")
+                    
+            with _g_col:
+                with st.container(border=True):
+                    st.markdown("**Latest Management Guidance**")
+                    st.markdown(_thesis["mgmt_guidance"])
+
+            st.markdown("**Key Growth Drivers**")
+            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
+            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
+                with _gdc:
+                    with st.container(border=True):
+                        st.markdown(f"**{_driver_name}**")
+                        st.caption(_driver_desc)
 
             st.divider()
 
@@ -1925,7 +1925,7 @@ with tab1:
                               value=_wacc_data.get('WACC', '-'),
                               help="The target discount rate for your DCF model.")
                     st.info("The minimum return expected by all providers of capital.")
-            
+
             
             # Part C — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
