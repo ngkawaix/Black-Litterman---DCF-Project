@@ -1906,29 +1906,20 @@ with tab1:
 
             # Part B — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
-            st.caption(
-                "WACC is held constant across all three scenarios; bear and bull sensitivity is "
-                "expressed through the terminal growth rate and exit multiple instead. The implied "
-                "price rows translate these assumptions directly into an equity value per share."
-            )
-
+            
             _dcf_df = (
                 pd.DataFrame(_dcf["dcf_assumptions"])
                 .set_index("name")
                 .rename(columns={
-                    "bear": "Bear Case",
                     "base": "Base Case",
-                    "bull": "Bull Case",
                     "note": "Note",
                 })
             )
             st.dataframe(
-                _dcf_df[["Bear Case", "Base Case", "Bull Case", "Note"]],
+                _dcf_df["Base Case", "Note"]],
                 use_container_width=True,
                 column_config={
-                    "Bear Case": st.column_config.TextColumn("Bear Case", width="small"),
                     "Base Case": st.column_config.TextColumn("Base Case", width="small"),
-                    "Bull Case": st.column_config.TextColumn("Bull Case", width="small"),
                     "Note":      st.column_config.TextColumn("Note",      width="large"),
                 },
             )
