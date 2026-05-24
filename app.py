@@ -1916,7 +1916,7 @@ with tab1:
                 })
             )
             st.dataframe(
-                _dcf_df["Base Case", "Note"]],
+                _dcf_df["Base Case", "Note"],
                 use_container_width=True,
                 column_config={
                     "Base Case": st.column_config.TextColumn("Base Case", width="small"),
