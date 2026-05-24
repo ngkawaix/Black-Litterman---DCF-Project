@@ -181,7 +181,7 @@ STRESS_PERIODS = {
 # The five companies with completed or in-progress DCF models.
 # Only tickers present in both INVESTMENT_THESES and DCF_OUTPUTS are rendered
 # with full content; all others show a "coming soon" placeholder.
-HIGH_CONVICTION = ["NVDA", "META"]
+HIGH_CONVICTION = ["NVDA", "META", "MSFT", "AMZN", "MA"]
 
 INVESTMENT_THESES = {
     "NVDA": {
@@ -1694,71 +1694,107 @@ with tab1:
     st.html("<div style='height: 18px;'></div>")
     st.markdown(
         """
-        Bottom-up DCF models for the two highest-conviction positions. Each section links to the
-        full 3-statement model, summarises the key base-case assumptions, and shows a football
-        field valuation chart across methodologies. Price targets derived here feed directly into
-        the Black-Litterman views in the Confidence and Views & Weights tabs.
+        This tab introduces the stock universe, explains how the initial price targets
+        were set, and walks through the bottom-up valuation work for my five highest-conviction
+        positions. Each company section covers the investment thesis and latest management
+        guidance, a football field valuation chart, and a full breakdown of the key modelling
+        assumptions underpinning the DCF. These price targets then feed directly into the
+        Black-Litterman views in the Confidence and Views & Weights tabs.
         """
     )
 
+    # ── Section 1: Stock Universe & Selection Criteria ────────────────────────
+    st.markdown("#### Stock Universe & Selection Criteria")
+    st.markdown(
+        """
+        The 17 stocks in this portfolio were selected through a systematic fundamental screen
+        using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity below 1**,
+        **(3) consecutive revenue growth over 5 years**, and **(4) a minimum market cap of $10 billion**.
+        ROIC was chosen as the primary quality filter because it measures how efficiently a company
+        converts capital into profit — sustained high ROIC over multiple years is one of the most
+        reliable indicators of a durable competitive advantage. FCF margin was deliberately not used
+        as the primary screen as it would exclude high-quality compounders like AMZN, MSFT, and GOOGL
+        which are in an unprecedented capex cycle for data-centre buildouts.
+
+        The resulting universe is concentrated in technology, semiconductors, payments infrastructure,
+        and financial data — sectors where capital-light business models and high switching costs tend
+        to produce durable moats. Two names warrant a note: FICO carries negative book equity due to
+        sustained buybacks rather than distress, which causes standard debt screens to misread it;
+        ASML is the sole supplier of extreme ultraviolet lithography equipment globally, making it
+        structurally irreplaceable within the AI infrastructure stack.
+        """
+    )
+
+    st.divider()
+
+    # ── Section 2: Individual DCF Models ──────────────────────────────────────
+    st.markdown("#### Individual DCF Models")
+    st.caption(
+        "Five highest-conviction positions with bottom-up DCF analysis. "
+        "Select a company to see the thesis, football field valuation, and modelling assumptions. "
+        "Remaining companies are in progress — analyst consensus targets are used in the BL model until each DCF is finalised."
+    )
+
     _dcf_tabs = st.tabs(
-        [f"{'✅ ' if t in DCF_OUTPUTS else '🔄 '}{t}" for t in HIGH_CONVICTION]
+        [f"{'✅ ' if t in DCF_OUTPUTS else '❌ '}{t}" for t in HIGH_CONVICTION]
     )
 
     for _ctab, _ticker in zip(_dcf_tabs, HIGH_CONVICTION):
         with _ctab:
 
             # ── Placeholder for companies without a completed model ────────────
-            if _ticker not in DCF_OUTPUTS:
+            if _ticker not in INVESTMENT_THESES or _ticker not in DCF_OUTPUTS:
                 st.info(
-                    f"**{_ticker}** — DCF model in progress. The full model, base-case "
-                    "assumptions table, and football field valuation will appear here once complete.",
-                    icon="🔄",
+                    f"**{_ticker}** — DCF model in progress. This tab will show the full "
+                    "investment thesis, football field valuation, and assumptions table once "
+                    "the Wall Street Prep model is finalised.",
+                    icon="⚡",
                 )
-                _eh = EARNINGS_HIGHLIGHTS.get(_ticker)
-                if _eh:
-                    with st.container(border=True):
-                        st.caption(f"**Latest earnings context — {_ticker}**")
-                        st.markdown(_eh)
                 continue
 
-            _dcf = DCF_OUTPUTS[_ticker]
-            _cp  = _dcf["current_price"]
+            _thesis = INVESTMENT_THESES[_ticker]
+            _dcf    = DCF_OUTPUTS[_ticker]
+            _cp     = _dcf["current_price"]
 
-            # ── Model link (top, prominent) ────────────────────────────────────
-            _link = _dcf.get("model_link")
-            if _link:
-                st.link_button(
-                    f"📊 Open Full 3-Statement Model & DCF — {_ticker}",
-                    _link,
-                )
-            st.caption(
-                "Includes income statement, balance sheet, cash flow statement, "
-                "WACC derivation, and sensitivity tables."
-            )
+            # ── Company header ─────────────────────────────────────────────────
 
-            st.divider()
+            # ── Thesis & Management Guidance ───────────────────────────────
+            st.markdown("##### 1. Investment Thesis & Management Guidance")
 
-            # ── Latest earnings context ────────────────────────────────────────
-            _eh = EARNINGS_HIGHLIGHTS.get(_ticker)
-            if _eh:
+            _t_col, _g_col = st.columns([1, 1])
+            with _t_col:
+                st.markdown("**Core Theses**")
+                for _pt in _thesis["theses"]:
+                    st.markdown(f"- {_pt}")
+                    
+            with _g_col:
                 with st.container(border=True):
-                    st.caption(f"**Latest earnings context — {_ticker}**")
-                    st.markdown(_eh)
+                    st.markdown("**Latest Management Guidance**")
+                    st.markdown(_thesis["mgmt_guidance"])
+
+            st.markdown("**Key Growth Drivers**")
+            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
+            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
+                with _gdc:
+                    with st.container(border=True):
+                        st.markdown(f"**{_driver_name}**")
+                        st.caption(_driver_desc)
 
             st.divider()
 
-            # ── Football Field Valuation ───────────────────────────────────────
-            st.markdown("##### Valuation Football Field")
+            # ── 2. Football Field Valuation ────────────────────────────────────
+            st.markdown("##### 2. DCF Valuation Football Field")
             st.caption(
                 f"Bars show the valuation range for each methodology. "
                 f"◆ marks the base-case point estimate. "
                 f"The dashed line is the current share price (${_cp:,})."
             )
 
-            _ff     = _dcf["football_field"]
+            _ff = _dcf["football_field"]
+
             _fig_ff = go.Figure()
 
+            # Range bars (one per methodology)
             for _row in _ff:
                 _fig_ff.add_trace(go.Bar(
                     x=[_row["high"] - _row["low"]],
@@ -1776,6 +1812,7 @@ with tab1:
                     ),
                 ))
 
+            # Base-case diamond markers
             _base_x = [r["base"] for r in _ff if r["base"] is not None]
             _base_y = [r["label"] for r in _ff if r["base"] is not None]
             if _base_x:
@@ -1787,6 +1824,7 @@ with tab1:
                     hovertemplate="<b>%{y}</b><br>Base Case: $%{x:,}<extra></extra>",
                 ))
 
+            # Current price line
             _fig_ff.add_vline(
                 x=_cp,
                 line_dash="dash", line_color="#D85A30", line_width=2,
@@ -1815,99 +1853,126 @@ with tab1:
 
             st.divider()
 
-            # ── Base Case Assumptions Table ────────────────────────────────────
-            st.markdown("##### Key Base Case Assumptions")
+            # ── 3. Key Modelling Assumptions ───────────────────────────────────
+            st.markdown("##### 3. Key Modelling Assumptions")
+
+            # Part A — Income Statement Drivers
+            st.markdown("###### Income Statement Drivers")
             st.caption(
-                "Base case only. Income statement drivers use the last reported fiscal year "
-                "as an anchor; terminal value assumptions are held constant across scenarios — "
-                "bear / bull sensitivity is expressed through the terminal growth rate and exit "
-                "multiple in the full model."
+                "**FY2026 Actual** is the last reported fiscal year, providing an anchor for "
+                "whether each scenario assumption is a continuation of, or a deliberate departure "
+                "from, recent trends. Bear / Base / Bull map directly to the three operating "
+                "scenarios in the DCF model."
             )
 
-            # Build a single combined table: IS drivers + WACC row + DCF / TV assumptions
-            _wacc_data = _dcf["wacc_assumptions"][0]
-
-            _combined_rows = []
-
-            # IS assumptions — base case + actual + note
-            for _r in _dcf["is_assumptions"]:
-                _combined_rows.append({
-                    "Line Item":     _r["name"],
-                    "FY2026 Actual": _r.get("actual", "—"),
-                    "Base Case":     _r["base"],
-                    "Note":          _r.get("note", ""),
+            _is_df = (
+                pd.DataFrame(_dcf["is_assumptions"])
+                .set_index("name")
+                .rename(columns={
+                    "actual": "FY2026 Actual",
+                    "bear":   "Bear Case",
+                    "base":   "Base Case",
+                    "bull":   "Bull Case",
+                    "note":   "Note",
                 })
-
-            # WACC separator row
-            _combined_rows.append({
-                "Line Item":     "── WACC ──",
-                "FY2026 Actual": "",
-                "Base Case":     "",
-                "Note":          "",
-            })
-            _combined_rows.append({
-                "Line Item":     "Risk-Free Rate",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("Risk Free Rate", "—"),
-                "Note":          "10Y US Treasury yield",
-            })
-            _combined_rows.append({
-                "Line Item":     "Adjusted Beta",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("Industry Beta (Adjusted)", "—"),
-                "Note":          "Blended observed beta with industry median (Hamada adjustment)",
-            })
-            _combined_rows.append({
-                "Line Item":     "Market Risk Premium",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("Market Risk Premium", "—"),
-                "Note":          "Damodaran implied ERP",
-            })
-            _combined_rows.append({
-                "Line Item":     "Cost of Equity",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("Cost of Equity", "—"),
-                "Note":          "CAPM: Rf + β × MRP",
-            })
-            _combined_rows.append({
-                "Line Item":     "After-Tax Cost of Debt",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("Cost of Debt (After Tax)", "—"),
-                "Note":          f"Pre-tax cost {_wacc_data.get('Cost of Debt','—')} × (1 − {_wacc_data.get('Tax Rate','—')} tax rate)",
-            })
-            _combined_rows.append({
-                "Line Item":     "WACC",
-                "FY2026 Actual": "—",
-                "Base Case":     _wacc_data.get("WACC", "—"),
-                "Note":          "Held constant across bear / base / bull scenarios",
-            })
-
-            # DCF / terminal value assumptions — base case + note
-            _combined_rows.append({
-                "Line Item":     "── Terminal Value ──",
-                "FY2026 Actual": "",
-                "Base Case":     "",
-                "Note":          "",
-            })
-            for _r in _dcf["dcf_assumptions"]:
-                _combined_rows.append({
-                    "Line Item":     _r["name"],
-                    "FY2026 Actual": "—",
-                    "Base Case":     _r["base"],
-                    "Note":          _r.get("note", ""),
-                })
-
-            _combined_df = pd.DataFrame(_combined_rows).set_index("Line Item")
-
+            )
             st.dataframe(
-                _combined_df,
+                _is_df[["FY2026 Actual", "Bear Case", "Base Case", "Bull Case", "Note"]],
                 use_container_width=True,
                 column_config={
                     "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
+                    "Bear Case":     st.column_config.TextColumn("Bear Case",     width="small"),
                     "Base Case":     st.column_config.TextColumn("Base Case",     width="small"),
+                    "Bull Case":     st.column_config.TextColumn("Bull Case",     width="small"),
                     "Note":          st.column_config.TextColumn("Note",          width="large"),
                 },
             )
+
+            # Part B — WACC Assumptions
+            st.markdown("###### Derivation of WACC")
+            
+            # WACC Formula with visual distinction
+            st.latex(r"WACC = \left( \frac{E}{V} \times R_e \right) + \left( \frac{D}{V} \times R_d \times (1 - T_c) \right)")
+
+            _wacc_data = _dcf["wacc_assumptions"][0]
+            _h = 320 # Standardized height for all cards
+
+            _c1, _c2, _c3 = st.columns(3)
+
+            with _c1:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 💎 Equity")
+                    st.metric("Cost of Equity ($R_e$)", _wacc_data.get('Cost of Equity', '-'))
+                    st.caption("Inputs:")
+                    st.write(f"• Risk-Free: {_wacc_data.get('Risk Free Rate', '-')}")
+                    st.write(f"• Beta (Adj): {_wacc_data.get('Industry Beta (Adjusted)', '-')}")
+                    st.write(f"• MRP: {_wacc_data.get('Market Risk Premium', '-')}")
+
+            with _c2:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 🏦 Debt")
+                    st.metric("After-Tax Cost ($R_d$)", _wacc_data.get('Cost of Debt (After Tax)', '-'))
+                    st.caption("Inputs:")
+                    st.write(f"• Cost of Debt: {_wacc_data.get('Cost of Debt', '-')}")
+                    st.write(f"• Tax Rate: {_wacc_data.get('Tax Rate', '-')}")
+
+            with _c3:
+                with st.container(border=True, height=_h):
+                    st.markdown("### 🎯 Result")
+                    # Using a placeholder to center the final WACC
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.metric(label="Weighted Average Cost of Capital", 
+                              value=_wacc_data.get('WACC', '-'),
+                              help="The target discount rate for your DCF model.")
+                    st.info("The minimum return expected by all providers of capital.")
+            
+            
+            # Part C — DCF & Terminal Value Assumptions
+            st.markdown("###### DCF & Terminal Value Assumptions")
+            st.caption(
+                "WACC is held constant across all three scenarios; bear and bull sensitivity is "
+                "expressed through the terminal growth rate and exit multiple instead. The implied "
+                "price rows translate these assumptions directly into an equity value per share."
+            )
+
+            _dcf_df = (
+                pd.DataFrame(_dcf["dcf_assumptions"])
+                .set_index("name")
+                .rename(columns={
+                    "bear": "Bear Case",
+                    "base": "Base Case",
+                    "bull": "Bull Case",
+                    "note": "Note",
+                })
+            )
+            st.dataframe(
+                _dcf_df[["Bear Case", "Base Case", "Bull Case", "Note"]],
+                use_container_width=True,
+                column_config={
+                    "Bear Case": st.column_config.TextColumn("Bear Case", width="small"),
+                    "Base Case": st.column_config.TextColumn("Base Case", width="small"),
+                    "Bull Case": st.column_config.TextColumn("Bull Case", width="small"),
+                    "Note":      st.column_config.TextColumn("Note",      width="large"),
+                },
+            )
+
+            st.divider()
+
+            # ── 4. Full Model Download ─────────────────────────────────────────
+            st.markdown("##### 4. Full Integrated Model")
+            _link = _dcf.get("model_link")
+            if _link:
+                st.markdown(
+                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
+                    "Includes income statement, balance sheet, cash flow statement, "
+                    "WACC derivation, and DCF valuation with sensitivity tables."
+                )
+            else:
+                st.info(
+                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
+                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
+                    icon="📎",
+                )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB2 - Confidence
