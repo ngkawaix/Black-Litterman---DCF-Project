@@ -1838,10 +1838,6 @@ with tab1:
                 st.markdown(
                     f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
                 )
-                st.caption(
-                    "Includes income statement, balance sheet, cash flow statement, "
-                    "WACC derivation, and DCF valuation with sensitivity tables."
-                )
             else:
                 st.info(
                     f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
