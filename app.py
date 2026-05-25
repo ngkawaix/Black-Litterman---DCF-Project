@@ -54,7 +54,7 @@ BASE_TARGETS = {
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
-    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 223.00,
+    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 222.94,
     "TSM":  463.00, "V":    399.00,
 }
 
@@ -1379,9 +1379,16 @@ with st.sidebar:
         for col, ticker in zip([col_a, col_b], active_tickers[i:i + 2]):
             with col:
                 # Ticker label + earnings recency flag
-                flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
-                # Mark custom tickers with a ✦ so they're visually distinct
-                label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
+                earnings_flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
+                _is_dcf = ticker in DCF_OVERIDES
+                _dcf_tag = "⚡" if _is_dcf else ""
+                if ticker in TICKERS:
+                    label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
+                else:
+                    label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
+                if _is_dcf:
+                    st.caption("Price target pinned to DCF model output")
+                
                 st.markdown(label)
 
                 # Consensus reference line
@@ -1394,15 +1401,16 @@ with st.sidebar:
                 else:
                     st.caption("Consensus: N/A")
 
-                # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,
-                # then a generic placeholder. Ensures the sidebar always reflects the latest
-                # analyst consensus on first load rather than hardcoded estimates.
+                # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,then a generic placeholder.
                 _cons_default = float(mean_t) if mean_t else None
-                _target_default = (
-                    _cons_default
-                    if _cons_default is not None
-                    else float(BASE_TARGETS.get(ticker, 100.0))
-                )
+                if is_dcf: 
+                    _target_default =  float(BASE_TARGETS.get (ticker, 100.0))
+                else:
+                    _target_default = (
+                        _cons_default
+                        if _cons_default is not None
+                        else float(BASE_TARGETS.get(ticker, 100.0))
+                    )
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
