@@ -1919,38 +1919,43 @@ with tab1:
             st.divider()
 
             # ── Investment Thesis ──────────────────────────────────────────
+            # All containers use the same spacing rules:
+            #   - heading → bullets : 0.5rem (matches Streamlit h5 default margin-bottom)
+            #   - bullet item gap   : 0.4rem
+            #   - between containers: 8px spacer
 
-            # Row 1: Investment Thesis (sits above earnings/guidance)
+            # Row 1: Investment Thesis
             with st.container(border=True):
                 st.markdown("##### Investment Thesis")
                 _thesis_items = "".join(
-                    f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                    f"<li style='margin-bottom:0.4rem;'>{p}</li>"
                     for p in _thesis["theses"]
                 )
                 st.markdown(
-                    f"<ul style='margin:4px 0 0 0;padding-left:1.2rem;'>{_thesis_items}</ul>",
+                    f"<ul style='margin:0;padding-left:1.2rem;'>{_thesis_items}</ul>",
                     unsafe_allow_html=True,
                 )
 
             st.html("<div style='height: 8px;'></div>")
 
-            # Row 2: Latest Earnings | Forward Guidance (equal-height HTML cards)
+            # Row 2: Latest Earnings | Forward Guidance (equal-height HTML flexbox)
+            # Titles use <h5> so they inherit Streamlit's h5 styling and match ##### above
             _earn_items = "".join(
-                f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                f"<li style='margin-bottom:0.4rem;'>{p}</li>"
                 for p in _thesis.get("latest_earnings", [])
             )
             _guid_items = "".join(
-                f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                f"<li style='margin-bottom:0.4rem;'>{p}</li>"
                 for p in _thesis.get("guidance", [])
             )
             st.markdown(
                 f"""<div style='display:flex;gap:1rem;align-items:stretch;'>
   <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
-    <p style='margin:0 0 8px 0;font-weight:600'>Latest Earnings</p>
+    <h5 style='margin:0 0 0.5rem 0;'>Latest Earnings</h5>
     <ul style='margin:0;padding-left:1.2rem;'>{_earn_items}</ul>
   </div>
   <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
-    <p style='margin:0 0 8px 0;font-weight:600'>Forward Guidance</p>
+    <h5 style='margin:0 0 0.5rem 0;'>Forward Guidance</h5>
     <ul style='margin:0;padding-left:1.2rem;'>{_guid_items}</ul>
   </div>
 </div>""",
@@ -1959,15 +1964,15 @@ with tab1:
 
             st.html("<div style='height: 8px;'></div>")
 
-            # Row 3: Key Growth Drivers — single container matching Investment Thesis style
+            # Row 3: Key Growth Drivers
             with st.container(border=True):
                 st.markdown("##### Key Growth Drivers")
                 _gd_items = "".join(
-                    f"<li style='margin-bottom:6px;font-size:14px'><strong>{name}</strong> — {desc}</li>"
+                    f"<li style='margin-bottom:0.4rem;'><strong>{name}</strong> — {desc}</li>"
                     for name, desc in _thesis["growth_drivers"]
                 )
                 st.markdown(
-                    f"<ul style='margin:4px 0 0 0;padding-left:1.2rem;'>{_gd_items}</ul>",
+                    f"<ul style='margin:0;padding-left:1.2rem;'>{_gd_items}</ul>",
                     unsafe_allow_html=True,
                 )
 
