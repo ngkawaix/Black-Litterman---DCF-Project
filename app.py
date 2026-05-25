@@ -1916,8 +1916,6 @@ with tab1:
             )
             st.plotly_chart(_fig_ff, use_container_width=True)
 
-            st.divider()
-
             # ── Investment Thesis ──────────────────────────────────────────
             # All containers use the same spacing rules:
             #   - heading → bullets : 0.5rem (matches Streamlit h5 default margin-bottom)
