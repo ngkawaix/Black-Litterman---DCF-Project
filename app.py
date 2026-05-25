@@ -261,7 +261,7 @@ DCF_OUTPUTS = {
 
         "is_assumptions": [
             {
-                "name":   "Revenue Growth – FY2027",
+                "name":   "Revenue Growth – Stage 1 (FY2027)",
                 "actual": "+65.5%",
                 "bear":   "+71.1%",
                 "base":   "+81.3%",
@@ -334,7 +334,6 @@ DCF_OUTPUTS = {
                 "note": "12.44% via CAPM: Rf = 4.56% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
                         "industry-adjusted β = 1.670 (de-levered peer group: AMD, AVGO, TSM), Damodaran ERP = 4.66%. "
                         "NVIDIA's large net cash position makes equity the near-total weight in the capital structure. "
-                        "Held constant across scenarios; bear/bull expressed via terminal g and exit multiple instead.",
             },
             {
                 "name": "Terminal Growth Rate (g)",
@@ -342,9 +341,8 @@ DCF_OUTPUTS = {
                 "base": "3.0%",
                 "bull": "4.0%",
                 "note": "Base 3.0% set marginally above long-run nominal GDP growth (~2.5%). "
-                        "Reflects NVIDIA's CUDA ecosystem durability: ~4M developers, 10+ years of tooling investment. "
-                        "Conservative relative to consensus-implied growth; terminal value discipline is essential "
-                        "for high-multiple compounders where TV can dominate enterprise value.",
+                        "Reflects NVIDIA's CUDA ecosystem durability. "
+                        "Conservative relative to consensus-implied growth of 8.1% in the exit-multiple model. "
             },
             {
                 "name": "Terminal EBITDA Multiple",
@@ -362,21 +360,18 @@ DCF_OUTPUTS = {
                 "bear": "~$167",
                 "base": "$170.90",
                 "bull": "~$182",
-                "note": "From sensitivity table at exact WACC 12.44%: g = 2.5% → $167, g = 3.0% → $170.90, g = 4.0% → $182. "
-                        "The perpetuity approach implies ~21% downside to current price (~$215), driven primarily by the "
-                        "higher WACC (12.44% vs. the prior 11.59%) and the structural limitation of DCF perpetuity for "
-                        "high-growth compounders: it anchors to long-run normalised cash flows, not near-term hypergrowth.",
+                "note": "The perpetuity approach implies ~21% downside to current price, driven by (1) "
+                        "a high WACC (12.44%) partly due to the unusually high 10Y Treasury Yield in May 2026" "
+                        "and (2) a relatively conservative 3% terminal growth rate.
             },
             {
                 "name": "Implied Price: Exit Multiple",
                 "bear": "~$246",
                 "base": "$274.98",
                 "bull": "~$304",
-                "note": "From model at exact WACC 12.44%: 16x → $246, 19x → $274.98, 22x → $304. "
-                        "Exit multiple approach implies ~28% upside at base. The $104 spread between perpetuity ($170.90) "
-                        "and exit multiple ($274.98) reflects the tension between DCF methods for high-growth names: "
-                        "perpetuity penalises them via the discount rate; market multiples capture near-term earnings momentum. "
-                        "The merged fair value of $222.94 is the simple average of both approaches.",
+                "note": "Exit multiple approach implies ~28% upside to the current price driven by a 19x exit EV/EBITDA "
+                        "multiple which implies a 8.1% terminal growth rate. A merged fair value of $222.94 is the simple "
+                        "avergae of both the exit multiple and perpetuity approaches."
             },
         ],
     },
