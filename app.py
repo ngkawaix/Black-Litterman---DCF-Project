@@ -74,28 +74,6 @@ DCF_OVERRIDES: dict[str, float] = {
     "NVDA": 0.45,
 }
 
-# ── Earnings Highlights ───────────────────────────────────────────────────────
-# Two-sentence summary of the most recent earnings report for each stock.
-EARNINGS_HIGHLIGHTS = {
-    "AAPL": "Services hit a record high on App Store and subscription strength, partly offsetting softer iPhone units. India manufacturing ramp progressing; tariff-driven supply chain risk remains a near-term overhang.",
-    "ADBE": "Net new ARR missed for a second consecutive quarter - Firefly AI yet to move the growth needle. Stock down ~42% from highs on fears generative AI is commoditising the creative suite.",
-    "AMAT": "Revenue declined YoY; NAND and trailing-edge weakness outweighed advanced packaging gains. China export restrictions cap access to one of the largest semiconductor equipment markets.",
-    "AMZN": "AWS re-accelerated to +28% YoY ($37.6B) on AI inference and model-training demand - fastest growth in 15 quarters. Operating margin hit a record 13.1% - clear inflection from investment phase to profitable scale.",
-    "ASML": "Raised 2026 sales guidance in April on robust EUV backlog from TSMC and Samsung. Sole global EUV supplier; demand visibility extends into 2027 with no credible competitive threat.",
-    "CPRT": "Revenue grew steadily on resilient salvage volumes and international expansion. Debt-free balance sheet; margins held despite elevated SG&A - rare quality among mid-cap industrials.",
-    "FICO": "Scores revenue outpaced platform, driven by usage-based pricing gains in mortgage and auto. Monetisation ceiling expanding as lenders accept higher per-score royalty rates.",
-    "GOOGL": "Search (+19% YoY) and YouTube outperformed; Google Cloud surged +63% YoY to $20B on AI infrastructure demand. Gemini monetisation showing early signals - GenAI cost-per-query is the key margin watch item.",
-    "LRCX": "Revenue surged on NAND recovery and advanced logic spend from TSMC and Samsung. Customer Support Business Group (~35% of revenue) provides structural insulation from equipment cycles.",
-    "MA":   "Revenue grew on cross-border volume recovery and a higher-margin value-added services mix. No material consumer credit deterioration visible in transaction data - payments outlook resilient.",
-    "META": "Revenue beat consensus; AI ad-relevance improvements lifted CPMs across Facebook and Instagram. Family of Apps DAUs grew - Llama-driven Reels ranking cited as the key engagement driver.",
-    "MSCI": "Recurring subscription revenue grew; index and analytics retention above 95% reflects high switching costs. ESG & Real Assets showing early recovery after several quarters of soft institutional demand.",
-    "MSFT": "Azure accelerated to +40% YoY, beating consensus; AI business hit a $37B annualised run rate (+123% YoY). Operating margin held at 46% - AI infrastructure spend absorbed without material dilution.",
-    "NFLX": "Subscriber additions beat; ad-supported tier now ~40% of new sign-ups in available markets. Full-year FCF guidance raised - content investment funded internally without balance sheet strain.",
-    "NVDA": "Q1 FY2027 10-Q reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth for the Blackwell and Vera Rubin platforms. Q2 FY2027 guided at $91.0B, more than $4B above consensus, with the $4.5B H20 export charge now fully absorbed.",
-    "TSM":  "Advanced node (3nm/5nm) mix expanded on Apple, NVIDIA, and AMD demand. Arizona fab capex on track; Taiwan geopolitical risk remains the primary discount embedded in the stock.",
-    "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
-}
-
 # ── Research Tiers ────────────────────────────────────────────────────────────
 # Confidence levels are grouped into three tiers based on depth of research.
 # This avoids fabricating strong views where none exist and keeps rationales
@@ -129,13 +107,12 @@ RESEARCH_TIERS: dict = {
             "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
             "operating margin represent a genuine inflection from investment phase to "
             "profitable scale. Bullish thesis, but confidence is kept at 0.25 because the "
-            "target is near market-implied, and this is not a strong disagreement with the "
-            "market, just agreement with continued execution."
+            "target is near market-implied."
         ),
         "GOOGL": (
             "Personal holding. Search +19% YoY and Cloud +63% YoY demonstrate durable "
-            "compounding across both core and AI-driven revenue. I hold a bullish view on "
-            "the long-run thesis. Confidence at 0.15 is modest, as the target sits close to "
+            "compounding across both core and AI-driven revenue as per Q1 FY2026 earnings announced on 29 April 2026. "
+            "I hold a bullish view on the long-run thesis. Confidence at 0.15 is modest, as the target sits close to "
             "market-implied, reflecting that I largely agree with the market rather than "
             "trying to override it."
         ),
@@ -195,17 +172,21 @@ HIGH_CONVICTION = ["NVDA", "META"]
 
 INVESTMENT_THESES = {
     "NVDA": {
+        "lastest_earnings": [
+            "NVDA reported GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion from 71.1% (FY2026) to 74.9% (Q1 FY2027), "
+            "signaling a re-acceleration of growth for the third consecutive quarter and indicating strong adoption of NVIDIA's Grace-Blackwell platforms."
         "theses": [
-            "Q1 FY2027 reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) "
-            "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
-            "consecutive quarter of year-over-year acceleration and indicating strong adoption of NVIDIA's Grace-Blackwell and new Vera-Rubin platforms.",
-            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem. "
-            "Q2 FY2027 guided at 91.0B (+2%), more than 4B above consensus, with an 80B buyback authorisation and a 25× "
-            "dividend increase signalling management's confidence in the durability of the cash flow profile.",
-            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable "
-            "customer base and reducing concentration risk. 35+ national governments have commissioned dedicated GPU infrastructure, "
-            "largely insulated from US–China export restrictions.",
-        ],
+            "NVDA remains at the forefront of innovation for software and hardware for AI factory build outs, with the release of its Vera-Rubin architecture at "
+            "GTC in March 2026 further cementing its lead ahead of AMD despite growing threats from custom silicon chips by hyperscalers. (i.e. Google's Iron Wood TPU, Amazon's Tritium)" 
+            "CUDA remains a durable software moat makes switching costs structurally prohibitive for the roughly 4M developers trained on the ecosystem. ",
+            "NVDA's negative net debt position (53.88B) and strong FCF growth generation lends NVDA signifcant reserves to innovate and defend its moat."
+        "guidance":[
+            "NVIDIA guided Q2 FY2027 revenue of 91.0B, more than 4B (+2%) above consensus. While NVIDIA does not provide full-year revenue guidance, this puts NVIDIA on track to roughly "
+            "390 billion for the full year, implying roughly a 81.3% YoY Revenue growth rate, up from 65.5% in FY2026. ",
+            "NVIDIA guided for full year tax rate to be between 16% to 18%. ",
+            "NVDA announced a 80B buyback authorisation and a 25× dividend increase for payout on 26 June 2026 (ex-dividend: 4 June 2026) signalling management's confidence in sustained "
+            "cash flow generation in the near-future."
+            ],
         "growth_drivers": [
             (
                 "Hyperscaler Capex Cycle",
@@ -1771,7 +1752,6 @@ with tab1:
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
     st.markdown("#### 2. Individual DCF Models")
     st.caption(
-        "Two companies with completed or in-progress bottom-up DCF analysis. "
         "✅ NVDA model is complete; ❌ META is in progress. "
         "All other stocks use analyst consensus targets from Yahoo Finance in the BL model."
     )
@@ -1844,6 +1824,9 @@ with tab1:
                 f"{_dcf['wacc']:.2%}",
                 help="Weighted Average Cost of Capital used to discount cash flows.",
             )
+
+            st.caption(
+                "DCF as per latest earning Q1 FY2027 Report: 20 May 2026"
             
             st.divider()
 
