@@ -96,76 +96,88 @@ EARNINGS_HIGHLIGHTS = {
     "V":    "Payments volume and transactions grew in line with estimates on cross-border recovery. Value-added services growing faster than core volume - gradually shifting mix to higher margins.",
 }
 
-CONFIDENCE_RATIONALE = {
-    "AAPL": (
-        "Target sits 14% below the market-implied price, a deliberate mild bearish tilt on tariff overhang and supply chain transition risk. "
-        "Confidence at 0.20 preserves the discount signal without aggressively underweighting the second-largest position in the universe."
-    ),
-    "ADBE": (
-        "Target is 12% above the market-implied price, a bullish view against a structurally challenged backdrop. "
-        "Confidence at 0.15 is the lowest among bullish names | Reflects two consecutive ARR misses and unproven Firefly AI monetisation. Increased compeition from AI Generative Tools and Figma."
-    ),
-    "AMAT": (
-        "Target is 9% below the market-implied price on continued NAND and trailing-edge weakness. "
-        "Confidence at 0.15 keeps the bearish tilt soft | Deutsche Bank's $550 PT raise and solid Q2 execution prevent a stronger discount."
-    ),
-    "AMZN": (
-        "Target falls 1.5% below the market-implied price, a near-accidental bearish gap that does not reflect a genuine bearish view. "
-        "Confidence at 0.25 reflects confidence | AWS +28% YoY and record 13.1% operating margin do not warrant a discount."
-    ),
-    "ASML": (
-        "Target is 9% below the market-implied price because any consensus-anchored estimate will sit below a market already pricing in ASML's EUV monopoly and 2027 demand visibility. "
-        "Confidence at 0.10 preserves equilibrium weight | Reflects a data limitation, not a bearish thesis."
-    ),
-    "CPRT": (
-        "Target is 16% above the market-implied price, but the stock has declined ~50% from its 52-week high. "
-        "Confidence at 0.20 reflects uncertainty following the sharp de-rating, despite a debt-free balance sheet and resilient margins."
-    ),
-    "FICO": (
-        "Target is 20% above the market-implied price, supported by strong Q2 results and accelerating Scores revenue. "
-        "Confidence at 0.45 reflects uncertainty following Fannie Mae's April 2026 approval of VantageScore 4.0 as a FICO alternative | Structural competitive risk warrants caution."
-    ),
-    "GOOGL": (
-        "Target is 9% below the market-implied price, but this does not reflect a genuine bearish view - Q1 2026 revenue +19% and Cloud +63% YoY contradict underweighting. "
-        "Confidence at 0.15 defers largely to the market given continued execution and a significant run-up over the past year."
-    ),
-    "LRCX": (
-        "Target is 12% below the market-implied price. "
-        "Confidence at 0.10 reflects confidence in LRCX (Revenue +28% YoY or ~35% recurring service revenue providing some cycle insulation)."
-    ),
-    "MA": (
-        "Target is 14% above the market-implied price, with the stock near its 52-week low despite Q1 revenue +12% YoY and a 14th consecutive dividend increase. "
-        "Confidence at 0.55 reflects strong earnings clarity and a below-historical valuation entry point."
-    ),
-    "META": (
-        "Target is 11% above the market-implied price, the strongest bullish signal in the portfolio. "
-        "Confidence capped at 0.65 rather than higher given 2026 capex guidance raised to $125–145B and buybacks paused."
-    ),
-    "MSCI": (
-        "Target is 5% above the market-implied price on 95%+ subscription retention and early ESG segment recovery. "
-        "Confidence at 0.55; the zero BL allocation is a max-Sharpe correlation artefact, not a reflection of low conviction."
-    ),
-    "MSFT": (
-        "Target is 13% above the market-implied price; the pullback from $555 to $420 has widened the gap despite Azure +40% YoY and AI revenue at a $37B annualised run rate. "
-        "Confidence at 0.60 reflects conviction that the selloff overweights short-term macro noise relative to the underlying business trajectory."
-    ),
-    "NFLX": (
-        "Target is 10% above the market, implied price on ad-supported tier momentum (~40% of new sign-ups) and raised FCF guidance. "
-        "Confidence at 0.30 rather than higher; this remains a street estimate with no completed DCF model."
-    ),
-    "NVDA": (
-        "DCF model completed (May 2026). Merged fair value of $222.94 (average of $170.90 perpetuity and $274.98 exit EBITDA). "
-        "Confidence set at 0.45 to reflect the wide range reflecting genuine uncertainty around the terminal multiple. "
+# ── Research Tiers ────────────────────────────────────────────────────────────
+# Confidence levels are grouped into three tiers based on depth of research.
+# This avoids fabricating strong views where none exist and keeps rationales
+# genuinely defensible.
+#
+#   FULL_DCF   – Completed bottom-up DCF model. Confidence is model-derived.
+#   TACTICAL   – Personal holding or high-level thesis. Single-point rationale.
+#   SYSTEMATIC – No active thesis. Confidence defers to market-prior signal.
+#
+RESEARCH_TIERS: dict = {
+
+    # ── Tier 1: Research-Led (DCF-backed) ─────────────────────────────────────
+    "FULL_DCF": {
+        "NVDA": {
+            "rationale": (
+                "Completed DCF (May 2026) yields a merged fair value of $222.94 — the simple "
+                "average of the perpetuity approach ($170.90) and the exit-EBITDA approach "
+                "($274.98). The $104 spread between the two methods is the honest answer to "
+                "terminal value uncertainty for a high-growth compounder: the perpetuity "
+                "penalises via the discount rate; the exit multiple captures near-term earnings "
+                "momentum. Confidence of 0.45 reflects that spread — it is a genuine "
+                "acknowledgment of uncertainty, not a weak view on the business."
             ),
-    "TSM": (
-        "Target is 4% below the market-implied price, a deliberate discount for persistent Taiwan geopolitical risk. "
-        "Confidence at 0.25, halved from its previous level, preserves the signal without making TSM a dominant underweight."
-    ),
-    "V": (
-        "Target is 7% above the market-implied price, a genuine bullish view on cross-border recovery and a value-added services mix shift toward higher margins. "
-        "The zero BL allocation reflects optimiser concentration in the higher-posterior MA rather than low conviction; tightening the max position size to 12–15% would reinstate both."
-    ),
+            "date": "May 2026",
+        },
+    },
+
+    # ── Tier 2: Tactical / Thematic (personal thesis, no full model) ──────────
+    "TACTICAL": {
+        "AMZN": (
+            "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
+            "operating margin represent a genuine inflection from investment phase to "
+            "profitable scale. Bullish thesis, but confidence is kept at 0.25 because the "
+            "target is near market-implied — this is not a strong disagreement with the "
+            "market, just agreement with continued execution."
+        ),
+        "GOOGL": (
+            "Personal holding. Search +19% YoY and Cloud +63% YoY demonstrate durable "
+            "compounding across both core and AI-driven revenue. I hold a bullish view on "
+            "the long-run thesis. Confidence at 0.15 is modest — the target sits close to "
+            "market-implied, reflecting that I largely agree with the market rather than "
+            "trying to override it."
+        ),
+        "TSM": (
+            "Personal holding. Dominant advanced-node manufacturer underpinning the global "
+            "AI infrastructure stack. The target is set 4% below market-implied as a "
+            "deliberate discount for Taiwan geopolitical risk, which is real and unresolvable "
+            "within a 1-year horizon. Confidence at 0.25 preserves the discount signal "
+            "without making TSM a dominant underweight."
+        ),
+        "ASML": (
+            "Not currently holding. ASML is the sole global EUV supplier with no credible "
+            "competitive threat and demand visibility into 2027 — the business quality is "
+            "not in question. The caution is valuation: the recent price run-up has moved "
+            "the stock above what I think is justified on a near-term basis, limiting "
+            "margin of safety. Confidence at 0.10 reflects this: I have no new information "
+            "advantage over a market that already prices the EUV monopoly premium."
+        ),
+    },
 }
+
+
+def render_rationale(ticker: str) -> str:
+    """
+    Returns a tier-labelled rationale string for a given ticker.
+
+    Tier 1 (Full DCF)  – model-calibrated, with last-calibrated date.
+    Tier 2 (Tactical)  – personal thesis, single bullet.
+    Tier 3 (Systematic)– no active thesis; exposure driven by market prior.
+    """
+    if ticker in RESEARCH_TIERS["FULL_DCF"]:
+        data = RESEARCH_TIERS["FULL_DCF"][ticker]
+        return (
+            f"[Full DCF] {data['rationale']}  "
+            f"(Last calibrated: {data['date']})"
+        )
+    if ticker in RESEARCH_TIERS["TACTICAL"]:
+        return f"[Tactical] {RESEARCH_TIERS['TACTICAL'][ticker]}"
+    return (
+        "[Systematic] No active thesis — "
+        "confidence calibrated to defer to market-prior equilibrium signal."
+    )
 
 STRESS_PERIODS = {
     "COVID Crash (Feb--Mar 2020)":        ("2020-02-19", "2020-03-23"),
@@ -2202,7 +2214,31 @@ with tab2:
         "and is the figure the BL formula actually uses."
         )
  
-    # Build the per-ticker rows using live BL outputs
+    # ── Tier legend ───────────────────────────────────────────────────────────
+    _t1, _t2, _t3 = st.columns(3)
+    with _t1:
+        with st.container(border=True):
+            st.markdown("**⚡ Full DCF**")
+            st.caption(
+                "Completed bottom-up model. Confidence is derived directly "
+                "from DCF output and terminal value uncertainty."
+            )
+    with _t2:
+        with st.container(border=True):
+            st.markdown("**🎯 Tactical**")
+            st.caption(
+                "Personal holding or high-level thesis. Single-sentence "
+                "rationale; no full model. Direction is genuine, depth is limited."
+            )
+    with _t3:
+        with st.container(border=True):
+            st.markdown("**📊 Systematic**")
+            st.caption(
+                "No active thesis. Confidence is calibrated to stay close to "
+                "market equilibrium — the model chooses the weight, not a view."
+            )
+
+    st.html("<div style='height: 6px;'></div>")
     _conf_rows = {}
     for _tkr in tick_rets.columns:
         _pi_val  = float(pi.get(_tkr, 0)) if _tkr in pi.index else 0.0
@@ -2214,14 +2250,22 @@ with tab2:
         _q_pi    = _q_val - _pi_val
         _cv      = DCF_OVERRIDES.get(_tkr, BASE_CONFIDENCE.get(_tkr, 0.0))
 
+        if _tkr in RESEARCH_TIERS["FULL_DCF"]:
+            _tier = "⚡ Full DCF"
+        elif _tkr in RESEARCH_TIERS["TACTICAL"]:
+            _tier = "🎯 Tactical"
+        else:
+            _tier = "📊 Systematic"
+
         _conf_rows[_tkr] = {
+            "Tier":                  _tier,
             "Target ($)":            _tgt,
             "Break-even ($)":        _be,
             "BL Direction":          "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
             "Gap to B/E":            _gap_pct,
             "Q − π":                 _q_pi,
             "Confidence":            _cv,
-            "Confidence Rationale":  CONFIDENCE_RATIONALE.get(_tkr, "—"),
+            "Confidence Rationale":  render_rationale(_tkr),
         }
 
     _conf_df = (
@@ -2252,6 +2296,15 @@ with tab2:
         width="stretch",
         height=700,
         column_config={
+            "Tier": st.column_config.TextColumn(
+                "Tier",
+                width="small",
+                help=(
+                    "⚡ Full DCF — confidence derived from a completed bottom-up model. "
+                    "🎯 Tactical — personal holding or monitored thesis, single-bullet rationale. "
+                    "📊 Systematic — no active thesis; confidence defers to market equilibrium."
+                ),
+            ),
             "BL Direction": st.column_config.TextColumn(
                 "Direction",
                 width="small",
