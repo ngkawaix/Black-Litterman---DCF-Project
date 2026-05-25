@@ -1837,6 +1837,8 @@ with tab1:
             if _link:
                 st.markdown(
                     f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
+                )
+                st.caption(
                     "Includes income statement, balance sheet, cash flow statement, "
                     "WACC derivation, and DCF valuation with sensitivity tables."
                 )
