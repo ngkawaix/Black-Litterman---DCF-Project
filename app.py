@@ -1937,12 +1937,12 @@ with tab1:
             st.html("<div style='height: 4px;'></div>")
 
             # Row 2: Core thesis
-            st.markdown("**Thesis**")
-            for _pt in _thesis["theses"]:
-                st.markdown(f"- {_pt}")
+            with st.container(border=True):
+                for _pt in _thesis["theses"]:
+                    st.markdown(f"- {_pt}")
 
             # Row 3: Growth drivers
-            st.markdown("**Key Growth Drivers**")
+            st.markdown("###### Key Growth Drivers")
             _gd_cols = st.columns(len(_thesis["growth_drivers"]))
             for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
                 with _gdc:
