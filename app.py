@@ -1365,11 +1365,11 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "**How these are set:** 1-Year price targets are rough estimates in-line with the Street View. "
-        "Consensus figures are sourced from Yahoo Finance analyst aggregates and "
-        "may lag recent revisions. Please read the Confidence tab to see how the confidences were set "
+        "1-Year price targets are rough estimates in-line with the Street View "
+        "sourced from Yahoo Finance analyst aggregates and are automatically ported in."
+        "Calibrate the Confidence levels with the Confidence tab."
     )
-    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days - consensus may have been revised.")
+    st.caption("🟡 Ticker flagged = earnings reported in the last 30 days")
     st.caption("**Last Updated: 15 May 2026**")
     user_targets    = {}
     user_confidence = {}
