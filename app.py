@@ -1932,7 +1932,7 @@ with tab1:
                     for p in _thesis["theses"]
                 )
                 st.markdown(
-                    f"<ul style='margin:0 0 -1rem 0;padding-left:1.2rem;'>{_thesis_items}</ul>",
+                    f"<ul style='margin:0;padding-left:1.2rem;'>{_thesis_items}</ul>",
                     unsafe_allow_html=True,
                 )
 
@@ -1972,7 +1972,7 @@ with tab1:
                     for name, desc in _thesis["growth_drivers"]
                 )
                 st.markdown(
-                    f"<ul style='margin:0 0 -1rem 0;padding-left:1.2rem;'>{_gd_items}</ul>",
+                    f"<ul style='margin:0;padding-left:1.2rem;'>{_gd_items}</ul>",
                     unsafe_allow_html=True,
                 )
 
