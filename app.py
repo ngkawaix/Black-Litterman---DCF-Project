@@ -1953,45 +1953,51 @@ with tab1:
                 "**Base Case** values map directly to the active scenario in the 3-Statement Model."
             )
 
-            _is_df = (
-                pd.DataFrame(_dcf["is_assumptions"])
-                .set_index("name")
-                .rename_axis("Metric")
-                .rename(columns={
-                    "actual": "FY2026 Actual",
-                    "base":   "Base Case",
-                    "note":   "Note",
-                })
+            _is_rows = _dcf["is_assumptions"]
+            _is_html_rows = "".join(
+                "<tr>"
+                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['name']}</td>"
+                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['actual']}</td>"
+                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['base']}</td>"
+                f"<td style='padding:6px 10px;vertical-align:top;font-size:13px;color:#888'>{r['note']}</td>"
+                "</tr>"
+                for r in _is_rows
             )
-            st.dataframe(
-                _is_df[["FY2026 Actual", "Base Case", "Note"]],
-                use_container_width=True,
-                column_config={
-                    "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual"),
-                    "Base Case":     st.column_config.TextColumn("Base Case"),
-                    "Note":          st.column_config.TextColumn("Note"),
-                },
+            st.markdown(
+                "<table style='width:100%;border-collapse:collapse;'>"
+                "<thead><tr style='border-bottom:2px solid #e0e0e0;text-align:left;'>"
+                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Metric</th>"
+                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>FY2026 Actual</th>"
+                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Base Case</th>"
+                "<th style='padding:6px 10px;font-size:13px;'>Note</th>"
+                "</tr></thead>"
+                f"<tbody>{_is_html_rows}</tbody>"
+                "</table>",
+                unsafe_allow_html=True,
             )
 
             # Part B — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
 
-            _dcf_df = (
-                pd.DataFrame(_dcf["dcf_assumptions"])
-                .set_index("name")
-                .rename_axis("Assumption")
-                .rename(columns={
-                    "base": "Base Case",
-                    "note": "Note",
-                })
+            _dcf_rows = _dcf["dcf_assumptions"]
+            _dcf_html_rows = "".join(
+                "<tr>"
+                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['name']}</td>"
+                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['base']}</td>"
+                f"<td style='padding:6px 10px;vertical-align:top;font-size:13px;color:#888'>{r['note']}</td>"
+                "</tr>"
+                for r in _dcf_rows
             )
-            st.dataframe(
-                _dcf_df[["Base Case", "Note"]],
-                use_container_width=True,
-                column_config={
-                    "Base Case": st.column_config.TextColumn("Base Case"),
-                    "Note":      st.column_config.TextColumn("Note"),
-                },
+            st.markdown(
+                "<table style='width:100%;border-collapse:collapse;'>"
+                "<thead><tr style='border-bottom:2px solid #e0e0e0;text-align:left;'>"
+                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Assumption</th>"
+                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Base Case</th>"
+                "<th style='padding:6px 10px;font-size:13px;'>Note</th>"
+                "</tr></thead>"
+                f"<tbody>{_dcf_html_rows}</tbody>"
+                "</table>",
+                unsafe_allow_html=True,
             )
 
 # ══════════════════════════════════════════════════════════════════════════════
