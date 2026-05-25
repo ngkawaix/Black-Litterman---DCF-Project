@@ -154,11 +154,9 @@ CONFIDENCE_RATIONALE = {
         "Confidence at 0.30 rather than higher; this remains a street estimate with no completed DCF model."
     ),
     "NVDA": (
-        "DCF model completed (May 2026). Merged fair value of $222.94 (average of $170.90 perpetuity and $274.98 exit EBITDA) implies ~3.5% upside to the current price of $215. "
-        "The perpetuity approach alone shows downside, while the EBITDA multiple approach shows ~28% upside — a wide range reflecting genuine uncertainty around the terminal multiple. "
-        "Confidence at 0.45: the completed model warrants a meaningful increase from the prior 0.10, but the mild bullish signal and divergence between valuation methods caps it below 0.50. "
-        "WACC has risen to 12.44% (from 11.59%) driven by the 10Y UST at 4.56% post Moody's US downgrade, which is the primary driver of the lower fair value relative to earlier estimates."
-    ),
+        "DCF model completed (May 2026). Merged fair value of $222.94 (average of $170.90 perpetuity and $274.98 exit EBITDA). "
+        "Confidence set at 0.45 to reflect the wide range reflecting genuine uncertainty around the terminal multiple. "
+            ),
     "TSM": (
         "Target is 4% below the market-implied price, a deliberate discount for persistent Taiwan geopolitical risk. "
         "Confidence at 0.25, halved from its previous level, preserves the signal without making TSM a dominant underweight."
@@ -1645,7 +1643,7 @@ with tab0:
     st.markdown("#### How to navigate this app")
     _nav_cols = st.columns(5)
     _nav_cards = [
-        ("🧮", "DCF Models",          "Where the price targets come from -- coming soon"),
+        ("🧮", "DCF Models",          "Where the price targets come from"),
         ("💡", "Confidence",          "How strongly each view is held relative to the market"),
         ("📋", "Views & Weights",     "How BL blends those views into a portfolio allocation"),
         ("📈", "Simulation & Stress", "Tail risk and historical drawdowns on the allocation"),
@@ -1659,7 +1657,7 @@ with tab0:
     
     with st.container(border=True):
         st.caption(
-            "⚙️ **Sidebar (global)** -- price targets, confidence levels, position size constraints, "
+            "⚙️ **Sidebar (global)** Price targets, confidence levels, position size constraints, "
             "BL parameters, and backtest estimation window are all adjustable from the sidebar and "
             "flow through every tab in real time."
         )
@@ -1717,7 +1715,7 @@ with tab0:
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
         its inverse shrinks, and the posterior barely moves from equilibrium. The
         covariance Σ ensures that stocks with shared risk exposures influence each
-        other - a high-conviction view on NVDA nudges the posterior for TSM too,
+        other such that a high-conviction view on NVDA nudges the posterior for TSM too,
         because they co-move. The table in the next tab shows this blending in action.
         """
     )
@@ -1730,11 +1728,12 @@ with tab1:
     st.markdown(
         """
         **This tab explains the selection of the stock universe, and the derivation of the price
-        targets set for two stocks, NVDA and META via DCF analysis that will be used 
-        in derivation of a portfolio allocation.** The remainder of the stocks which do not have a
-        manual DCF analysis utilises an aggregate price targets pulled automatically from Yahoo Finance. 
-        You may calibrate the confidence levels under confidence, and see the resulting portfolio allocation
-        displayed in Views, Returns & Weights.
+        targets used for Max Sharpe Ratio portfolio allocator.** For most stocks which do not have a
+        manual DCF analysis, the app utilises aggregate price targets pulled automatically from Yahoo Finance.
+        Stock tickers with DCF analysis that I have conducted override the price targets by analysts and reflect
+        my personal view on the valuation of those companies (NVDA available, META coming soon).
+        You may override the price targets in the bar, adjust the confidence levels under the Confidence tab, 
+        and see the resulting portfolio allocation displayed in the Views, Returns & Weights tab.
         """
     )
 
