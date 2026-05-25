@@ -1967,9 +1967,9 @@ with tab1:
                 _is_df[["FY2026 Actual", "Base Case", "Note"]],
                 use_container_width=True,
                 column_config={
-                    "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
-                    "Base Case":     st.column_config.TextColumn("Base Case",     width="small"),
-                    "Note":          st.column_config.TextColumn("Note",          width="large"),
+                    "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual"),
+                    "Base Case":     st.column_config.TextColumn("Base Case"),
+                    "Note":          st.column_config.TextColumn("Note"),
                 },
             )
 
@@ -1989,8 +1989,8 @@ with tab1:
                 _dcf_df[["Base Case", "Note"]],
                 use_container_width=True,
                 column_config={
-                    "Base Case": st.column_config.TextColumn("Base Case", width="small"),
-                    "Note":      st.column_config.TextColumn("Note",      width="large"),
+                    "Base Case": st.column_config.TextColumn("Base Case"),
+                    "Note":      st.column_config.TextColumn("Note"),
                 },
             )
 
