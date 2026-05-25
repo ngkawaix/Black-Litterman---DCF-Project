@@ -172,21 +172,28 @@ HIGH_CONVICTION = ["NVDA", "META"]
 
 INVESTMENT_THESES = {
     "NVDA": {
-        "lastest_earnings": [
-            "NVDA reported GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion from 71.1% (FY2026) to 74.9% (Q1 FY2027), "
-            "signaling a re-acceleration of growth for the third consecutive quarter and indicating strong adoption of NVIDIA's Grace-Blackwell platforms."
+        "latest_earnings": [
+            "NVDA reported GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion from 71.1% (FY2026) "
+            "to 74.9% (Q1 FY2027), signalling a re-acceleration of growth for the third consecutive quarter and "
+            "indicating strong adoption of NVIDIA's Grace-Blackwell platforms.",
+        ],
         "theses": [
-            "NVDA remains at the forefront of innovation for software and hardware for AI factory build outs, with the release of its Vera-Rubin architecture at "
-            "GTC in March 2026 further cementing its lead ahead of AMD despite growing threats from custom silicon chips by hyperscalers. (i.e. Google's Iron Wood TPU, Amazon's Tritium)" 
-            "CUDA remains a durable software moat makes switching costs structurally prohibitive for the roughly 4M developers trained on the ecosystem. ",
-            "NVDA's negative net debt position (53.88B) and strong FCF growth generation lends NVDA signifcant reserves to innovate and defend its moat."
-        "guidance":[
-            "NVIDIA guided Q2 FY2027 revenue of 91.0B, more than 4B (+2%) above consensus. While NVIDIA does not provide full-year revenue guidance, this puts NVIDIA on track to roughly "
-            "390 billion for the full year, implying roughly a 81.3% YoY Revenue growth rate, up from 65.5% in FY2026. ",
-            "NVIDIA guided for full year tax rate to be between 16% to 18%. ",
-            "NVDA announced a 80B buyback authorisation and a 25× dividend increase for payout on 26 June 2026 (ex-dividend: 4 June 2026) signalling management's confidence in sustained "
-            "cash flow generation in the near-future."
-            ],
+            "NVDA remains at the forefront of AI hardware and software innovation. The release of its Vera-Rubin "
+            "architecture at GTC in March 2026 further cements its lead ahead of AMD, despite growing threats from "
+            "custom silicon by hyperscalers (e.g. Google's Ironwood TPU, Amazon's Trainium).",
+            "CUDA remains a durable software moat, making switching costs structurally prohibitive for the roughly "
+            "4M developers trained on the ecosystem.",
+            "NVDA's net cash position of $53.88B and strong FCF generation provide significant reserves to innovate "
+            "and defend its moat.",
+        ],
+        "guidance": [
+            "NVIDIA guided Q2 FY2027 revenue of $91.0B, more than $4B (+2%) above consensus. While NVIDIA does not "
+            "provide full-year revenue guidance, this implies a full-year trajectory of roughly $390B, equivalent to "
+            "approximately 81.3% YoY revenue growth, up from 65.5% in FY2026.",
+            "NVIDIA guided a full-year effective tax rate of 16% to 18%.",
+            "NVDA announced an $80B buyback authorisation and a 25x dividend increase, with payout on 26 June 2026 "
+            "(ex-dividend: 4 June 2026), signalling management's confidence in sustained near-term cash flow generation.",
+        ],
         "growth_drivers": [
             (
                 "Hyperscaler Capex Cycle",
@@ -1827,7 +1834,7 @@ with tab1:
 
             st.caption(
                 "DCF as per latest earning Q1 FY2027 Report: 20 May 2026"
-            
+            )
             st.divider()
 
             # ── Football Field Valuation ────────────────────────────────────
@@ -1913,9 +1920,28 @@ with tab1:
 
             # ── Investment Thesis ──────────────────────────────────────────
             st.markdown("##### Investment Thesis")
+
+            # Row 1: Latest Earnings | Forward Guidance
+            _earn_col, _guid_col = st.columns(2)
+            with _earn_col:
+                with st.container(border=True):
+                    st.markdown("**Latest Earnings**")
+                    for _pt in _thesis.get("latest_earnings", []):
+                        st.markdown(f"- {_pt}")
+            with _guid_col:
+                with st.container(border=True):
+                    st.markdown("**Forward Guidance**")
+                    for _pt in _thesis.get("guidance", []):
+                        st.markdown(f"- {_pt}")
+
+            st.html("<div style='height: 4px;'></div>")
+
+            # Row 2: Core thesis
+            st.markdown("**Thesis**")
             for _pt in _thesis["theses"]:
                 st.markdown(f"- {_pt}")
 
+            # Row 3: Growth drivers
             st.markdown("**Key Growth Drivers**")
             _gd_cols = st.columns(len(_thesis["growth_drivers"]))
             for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
