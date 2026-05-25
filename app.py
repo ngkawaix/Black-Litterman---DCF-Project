@@ -223,7 +223,7 @@ DCF_OUTPUTS = {
         "wacc":                    0.1244,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 19,
-        "model_link": "https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing",
+        "model_link": "https://docs.google.com/spreadsheets/d/19oXEuxVTQGbzZCCk0CrFZKSfFDtIPB2uYhfoYx7k4cs/edit?usp=sharing",
 
         "football_field": [
             # Perpetuity range from sensitivity table: WACC ~12.44%, g = 2.5–4.0%
