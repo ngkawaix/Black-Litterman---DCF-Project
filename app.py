@@ -2194,10 +2194,10 @@ with tab2:
     st.markdown("#### 2. Confidence Levels & Rationale")
     st.caption(
         "Sorted by gap to break-even (most bullish first). "
-        "The break-even price is the market-implied equilibrium price; "
-        "a target above it is a bullish signal and below it is bearish. "
+        "The break-even price is the market-implied equilibrium price: "
+        "a target above it is a bullish signal and below it is bearish relative to the market."
         "The confidence setting then determines how strongly that signal shifts the BL allocation."
-        "Gap to B/E expresses this signal as a percentage difference between your price target "
+        "Gap to B/E expresses this signal as a percentage difference between price targets "
         "and the market-implied price. Q − π is the same signal translated into **return space**, "
         "and is the figure the BL formula actually uses."
         )
