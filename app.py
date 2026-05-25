@@ -190,7 +190,7 @@ INVESTMENT_THESES = {
             "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
             "consecutive quarter of year-over-year acceleration and indicating strong adoption of NVIDIA's Grace-Blackwell and new Vera-Rubin platforms.",
             "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem. "
-            "Q2 FY2027 guided at $91.0B (+2%), more than $4B above consensus, with an $80B buyback authorisation and a 25x "
+            "Q2 FY2027 guided at 91.0B (+2%), more than 4B above consensus, with an 80B buyback authorisation and a 25× "
             "dividend increase signalling management's confidence in the durability of the cash flow profile.",
             "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable "
             "customer base and reducing concentration risk. 35+ national governments have commissioned dedicated GPU infrastructure, "
@@ -251,29 +251,31 @@ DCF_OUTPUTS = {
 
         "is_assumptions": [
             {
-                "name":   "Revenue Growth (FY2027E)",
+                "name":   "Revenue Growth – FY2027",
                 "actual": "+65.5%",
                 "bear":   "+71.1%",
                 "base":   "+81.3%",
                 "bull":   "+81.3%",
-                "note":   "Bear reflects tariff/export risk compressing near-term demand. Bull/Base are nearly identical for FY2027; "
-                          "the scenario differentiation occurs in Stage 2 growth rates (FY2028+).",
+                "note":   "+81.3% in line with management's Q1 FY2027 revenue trajectory. "
+                          "Driven by continued Blackwell architecture ramp and accelerating hyperscaler AI capex commitments.",
             },
             {
-                "name":   "Revenue Growth (FY2028–31 avg)",
+                "name":   "Revenue Growth – Stage 1 (FY2028–31)",
                 "actual": "—",
                 "bear":   "~14%",
                 "base":   "~20%",
                 "bull":   "~26%",
-                "note":   "Deceleration from the Blackwell ramp. Bull reflects accelerated hyperscaler/sovereign AI capex (+5–10pp above base).",
+                "note":   "Decelerating from the FY2027 peak as hyperscaler capex comps tighten. "
+                          "Sustained by inference infrastructure build-out and sovereign AI demand from 35+ national programmes.",
             },
             {
-                "name":   "Revenue Growth (FY2032–36E avg)",
+                "name":   "Revenue Growth – Stage 2 (FY2032–36)",
                 "actual": "—",
                 "bear":   "~5%",
                 "base":   "~9%",
                 "bull":   "~11%",
-                "note":   "Terminal convergence period. Bull reflects AI platform incumbency; bear reflects AMD/custom silicon pressure.",
+                "note":   "Gradual convergence toward long-run growth. Assumes NVIDIA retains platform leadership "
+                          "but faces rising custom silicon competition (Google TPUs, AMD MI-series) on inference costs.",
             },
             {
                 "name":   "Gross Margin",
@@ -281,8 +283,8 @@ DCF_OUTPUTS = {
                 "bear":   "73.5%",
                 "base":   "74.5%",
                 "bull":   "75–77%",
-                "note":   "Base case is 74.5%, the midpoint of management's Q2 FY2027 gross margin guidance. "
-                          "Bear reflects higher custom silicon competition on inference costs; bull reflects full Blackwell mix shift.",
+                "note":   "74.5% is the midpoint of management's Q2 FY2027 gross margin guidance. "
+                          "Stage 2 modest compression assumes inference pricing pressure as customers gain more architectural choice.",
             },
             {
                 "name":   "R&D % of Revenue",
@@ -290,8 +292,8 @@ DCF_OUTPUTS = {
                 "bear":   "12.0%",
                 "base":   "8.6%",
                 "bull":   "7.0%",
-                "note":   "Base case straight-lines at 8.6% through Stage 1. Bear reflects elevated R&D to defend the moat; "
-                          "bull assumes BAU as CUDA ecosystem reduces the need for incremental spend.",
+                "note":   "Straight-lined at 8.6% through Stage 1, consistent with recent actuals. "
+                          "Stage 2 stepped up modestly as NVIDIA invests to defend the CUDA moat against accelerating competition.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -299,8 +301,8 @@ DCF_OUTPUTS = {
                 "bear":   "2.2%",
                 "base":   "1.9%",
                 "bull":   "1.7%",
-                "note":   "Low-friction distribution model (hyperscalers buy directly) keeps SG&A structurally low. "
-                          "Stage 2 modest compression assumed in base/bear as NVIDIA expands into enterprise.",
+                "note":   "Structurally low due to NVIDIA's direct hyperscaler sales model (no channel markup). "
+                          "Stage 2 gradually increases to 3.0% as NVIDIA expands its enterprise and edge go-to-market footprint.",
             },
             {
                 "name":   "Tax Rate",
@@ -308,8 +310,8 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at 17.0% per full-year FY2027 management guidance. "
-                          "FY2026 actual of 15.1% included non-recurring items.",
+                "note":   "Straight-lined at full-year FY2027 guidance of 17.0%. "
+                          "FY2026 actual of 15.1% was depressed by non-recurring tax benefits and should not be extrapolated.",
             },
         ],
         # DCF and terminal value assumptions: no FY2026 Actual column for these rows.
@@ -319,41 +321,52 @@ DCF_OUTPUTS = {
                 "bear": "12.4%",
                 "base": "12.4%",
                 "bull": "12.4%",
-                "note": "Held constant across scenarios. Derived from industry-adjusted beta (1.670), 10Y UST risk-free rate of 4.56% "
-                        "(elevated on Moody's US downgrade and fiscal deficit concerns), and Damodaran ERP of 4.66%.",
+                "note": "12.44% via CAPM: Rf = 4.56% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
+                        "industry-adjusted β = 1.670 (de-levered peer group: AMD, AVGO, TSM), Damodaran ERP = 4.66%. "
+                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure. "
+                        "Held constant across scenarios; bear/bull expressed via terminal g and exit multiple instead.",
             },
             {
                 "name": "Terminal Growth Rate (g)",
                 "bear": "2.5%",
                 "base": "3.0%",
                 "bull": "4.0%",
-                "note": "Base case at 3.0%, slightly above long-run nominal GDP growth, reflecting NVIDIA's durable software moat. "
-                        "Bear/bull sensitivity expressed in the perpetuity football field row.",
+                "note": "Base 3.0% set marginally above long-run nominal GDP growth (~2.5%). "
+                        "Reflects NVIDIA's CUDA ecosystem durability: ~4M developers, 10+ years of tooling investment. "
+                        "Conservative relative to consensus-implied growth; terminal value discipline is essential "
+                        "for high-multiple compounders where TV can dominate enterprise value.",
             },
             {
                 "name": "Terminal EBITDA Multiple",
                 "bear": "16x",
                 "base": "19x",
                 "bull": "22x",
-                "note": "Base case of 19x assumes significant mean reversion from the current NTM EV/EBITDA of ~27x as growth decelerates. "
-                        "Comparable peers: AVGO 20x, ASML 22.5x, AMD 25x; 12.5% discount applied to derive 19x base.",
+                "note": "19x represents meaningful mean reversion from the current NTM EV/EBITDA of ~27x, "
+                        "as top-line growth decelerates from ~80% toward single digits by FY2036. "
+                        "Peer benchmarks: AVGO 20x, ASML 22.5x, AMD 25x, QCOM 22.5x (sector median ~21.5x). "
+                        "A 12.5% discount applied to the peer median reflects anticipated growth deceleration "
+                        "and rising custom silicon competition by the terminal year.",
             },
             {
                 "name": "Implied Price: Perpetuity",
                 "bear": "~$167",
                 "base": "$170.90",
                 "bull": "~$182",
-                "note": "From sensitivity table: WACC 12.44%, g = 2.5% / 3.0% / 4.0%. "
-                        "Perpetuity approach alone implies modest downside to current price ($215).",
+                "note": "From sensitivity table at exact WACC 12.44%: g = 2.5% → $167, g = 3.0% → $170.90, g = 4.0% → $182. "
+                        "The perpetuity approach implies ~21% downside to current price (~$215), driven primarily by the "
+                        "higher WACC (12.44% vs. the prior 11.59%) and the structural limitation of DCF perpetuity for "
+                        "high-growth compounders: it anchors to long-run normalised cash flows, not near-term hypergrowth.",
             },
             {
                 "name": "Implied Price: Exit Multiple",
                 "bear": "~$246",
                 "base": "$274.98",
                 "bull": "~$304",
-                "note": "From model: WACC 12.44%, 16x / 19x / 22x terminal EBITDA. "
-                        "Exit multiple approach implies ~28% upside at base. "
-                        "Merged (averaged) DCF fair value: $222.94.",
+                "note": "From model at exact WACC 12.44%: 16x → $246, 19x → $274.98, 22x → $304. "
+                        "Exit multiple approach implies ~28% upside at base. The $104 spread between perpetuity ($170.90) "
+                        "and exit multiple ($274.98) reflects the tension between DCF methods for high-growth names: "
+                        "perpetuity penalises them via the discount rate; market multiples capture near-term earnings momentum. "
+                        "The merged fair value of $222.94 is the simple average of both approaches.",
             },
         ],
     },
@@ -1768,9 +1781,55 @@ with tab1:
 
             _thesis = INVESTMENT_THESES[_ticker]
             _dcf    = DCF_OUTPUTS[_ticker]
-            _cp     = _dcf["current_price"]
 
-            # ── Company header ─────────────────────────────────────────────────
+            # Live current price — uses latest close from the already-loaded price data
+            _cp = (
+                float(price_data[_ticker].iloc[-1])
+                if _ticker in price_data.columns
+                else float(_dcf["current_price"])
+            )
+            _fair_value = float(_dcf["DCF Fair Value"])
+            _upside     = (_fair_value / _cp) - 1
+
+            # ── Key Valuation Summary ──────────────────────────────────────
+            _ff = _dcf["football_field"]
+            _perp_base  = next((r["base"] for r in _ff if "Perpetuity"    in r["label"] and r["base"] is not None), None)
+            _ebitda_base= next((r["base"] for r in _ff if "EBITDA"        in r["label"] and r["base"] is not None), None)
+
+            _vm1, _vm2, _vm3, _vm4, _vm5 = st.columns(5)
+            _vm1.metric(
+                "Current Price",
+                f"${_cp:,.2f}",
+                help="Latest closing price — live from Yahoo Finance",
+            )
+            _vm2.metric(
+                "DCF Fair Value",
+                f"${_fair_value:,.2f}",
+                f"{_upside:+.1%}",
+                delta_color="normal",
+                help="Simple average of the perpetuity and exit-EBITDA approaches.",
+            )
+            if _perp_base:
+                _vm3.metric(
+                    "Perpetuity Approach",
+                    f"${_perp_base:,.2f}",
+                    f"{(_perp_base / _cp) - 1:+.1%}",
+                    delta_color="normal",
+                    help="Gordon Growth Model perpetuity value at base WACC and terminal g.",
+                )
+            if _ebitda_base:
+                _vm4.metric(
+                    "Exit Multiple",
+                    f"${_ebitda_base:,.2f}",
+                    f"{(_ebitda_base / _cp) - 1:+.1%}",
+                    delta_color="normal",
+                    help="Terminal-year EBITDA × exit multiple, discounted at WACC.",
+                )
+            _vm5.metric(
+                "WACC",
+                f"{_dcf['wacc']:.2%}",
+                help="Weighted Average Cost of Capital used to discount cash flows.",
+            )
 
             # ── Full Model Download ─────────────────────────────────────────
             st.markdown("##### Full DCF Model Download")
@@ -1791,16 +1850,14 @@ with tab1:
             # ── Football Field Valuation ────────────────────────────────────
             st.markdown("##### DCF Valuation Football Field")
             st.caption(
-                f"Bars show the valuation range for each methodology. "
-                f"◆ marks the base-case point estimate. "
-                f"The dashed line is the current share price (${_cp:,})."
+                "Bars show the valuation range for each methodology. "
+                "◆ marks the base-case point estimate with % upside / downside to the current price. "
+                f"The dashed line is the current share price (${_cp:,.2f}, live from Yahoo Finance)."
             )
-
-            _ff = _dcf["football_field"]
 
             _fig_ff = go.Figure()
 
-            # Range bars (one per methodology)
+            # Range bars
             for _row in _ff:
                 _fig_ff.add_trace(go.Bar(
                     x=[_row["high"] - _row["low"]],
@@ -1818,7 +1875,7 @@ with tab1:
                     ),
                 ))
 
-            # Base-case diamond markers
+            # Base-case diamond markers + % upside annotations
             _base_x = [r["base"] for r in _ff if r["base"] is not None]
             _base_y = [r["label"] for r in _ff if r["base"] is not None]
             if _base_x:
@@ -1827,24 +1884,36 @@ with tab1:
                     mode="markers",
                     marker=dict(size=12, color="#1D9E75", symbol="diamond"),
                     name="Base Case",
-                    hovertemplate="<b>%{y}</b><br>Base Case: $%{x:,}<extra></extra>",
+                    hovertemplate="<b>%{y}</b><br>Base Case: $%{x:,.2f}<extra></extra>",
                 ))
+                # Percentage labels next to each diamond
+                for _bx, _by in zip(_base_x, _base_y):
+                    _pct = (_bx / _cp) - 1
+                    _pct_txt = f" {_pct:+.1%}"
+                    _fig_ff.add_annotation(
+                        x=_bx, y=_by,
+                        text=_pct_txt,
+                        showarrow=False,
+                        xanchor="left",
+                        yanchor="middle",
+                        font=dict(size=10, color="#1D9E75" if _pct >= 0 else "#D85A30"),
+                    )
 
             # Current price line
             _fig_ff.add_vline(
                 x=_cp,
                 line_dash="dash", line_color="#D85A30", line_width=2,
-                annotation_text=f"Current  ${_cp:,}",
+                annotation_text=f"Current ${_cp:,.2f}",
                 annotation_position="top right",
                 annotation_font=dict(color="#D85A30", size=11),
             )
 
             _all_vals = [r["low"] for r in _ff] + [r["high"] for r in _ff] + [_cp]
             _fig_ff.update_layout(
-                height=260,
+                height=280,
                 xaxis=dict(
                     title="Equity Value per Share ($)",
-                    range=[min(_all_vals) * 0.88, max(_all_vals) * 1.08],
+                    range=[min(_all_vals) * 0.85, max(_all_vals) * 1.12],
                     tickprefix="$",
                     zeroline=False,
                 ),
@@ -1852,7 +1921,7 @@ with tab1:
                 barmode="overlay",
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
-                margin=dict(t=20, b=40, l=10, r=20),
+                margin=dict(t=20, b=40, l=10, r=40),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02),
             )
             st.plotly_chart(_fig_ff, use_container_width=True)
@@ -1874,47 +1943,43 @@ with tab1:
 
             st.divider()
 
-            # ── 3. Summary of DCF Assumptions ───────────────────────────────────
+            # ── Summary of DCF Assumptions ──────────────────────────────────
             st.markdown("##### Summary of DCF Assumptions")
 
-            # Part A — Income Statement Drivers
+            # Part A — Income Statement Drivers (base case only)
             st.markdown("###### Income Statement Drivers")
             st.caption(
-                "**FY2026 Actual** is the last reported fiscal year, providing an anchor for "
-                "whether each scenario assumption is a continuation of, or a deliberate departure "
-                "from, recent trends. Bear / Base / Bull map directly to the three operating "
-                "scenarios in the DCF model."
+                "**FY2026 Actual** anchors each assumption to the last reported fiscal year. "
+                "**Base Case** values map directly to the active scenario in the 3-Statement Model."
             )
 
             _is_df = (
                 pd.DataFrame(_dcf["is_assumptions"])
                 .set_index("name")
+                .rename_axis("Metric")
                 .rename(columns={
                     "actual": "FY2026 Actual",
-                    "bear":   "Bear Case",
                     "base":   "Base Case",
-                    "bull":   "Bull Case",
                     "note":   "Note",
                 })
             )
             st.dataframe(
-                _is_df[["FY2026 Actual", "Bear Case", "Base Case", "Bull Case", "Note"]],
+                _is_df[["FY2026 Actual", "Base Case", "Note"]],
                 use_container_width=True,
                 column_config={
                     "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
-                    "Bear Case":     st.column_config.TextColumn("Bear Case",     width="small"),
                     "Base Case":     st.column_config.TextColumn("Base Case",     width="small"),
-                    "Bull Case":     st.column_config.TextColumn("Bull Case",     width="small"),
                     "Note":          st.column_config.TextColumn("Note",          width="large"),
                 },
             )
 
             # Part B — DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
-            
+
             _dcf_df = (
                 pd.DataFrame(_dcf["dcf_assumptions"])
                 .set_index("name")
+                .rename_axis("Assumption")
                 .rename(columns={
                     "base": "Base Case",
                     "note": "Note",
