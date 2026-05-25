@@ -1413,7 +1413,7 @@ with st.sidebar:
 
                 # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,then a generic placeholder.
                 _cons_default = float(mean_t) if mean_t else None
-                if is_dcf: 
+                if _is_dcf: 
                     _target_default =  float(BASE_TARGETS.get (ticker, 100.0))
                 else:
                     _target_default = (
