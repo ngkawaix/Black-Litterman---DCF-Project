@@ -1919,25 +1919,36 @@ with tab1:
             st.divider()
 
             # ── Investment Thesis ──────────────────────────────────────────
-            st.markdown("##### Investment Thesis")
 
             # Row 1: Latest Earnings | Forward Guidance
-            _earn_col, _guid_col = st.columns(2)
-            with _earn_col:
-                with st.container(border=True):
-                    st.markdown("**Latest Earnings**")
-                    for _pt in _thesis.get("latest_earnings", []):
-                        st.markdown(f"- {_pt}")
-            with _guid_col:
-                with st.container(border=True):
-                    st.markdown("**Forward Guidance**")
-                    for _pt in _thesis.get("guidance", []):
-                        st.markdown(f"- {_pt}")
+            # Rendered as a single HTML block so both cards stretch to equal height
+            _earn_items = "".join(
+                f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                for p in _thesis.get("latest_earnings", [])
+            )
+            _guid_items = "".join(
+                f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                for p in _thesis.get("guidance", [])
+            )
+            st.markdown(
+                f"""<div style='display:flex;gap:1rem;align-items:stretch;'>
+  <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
+    <p style='margin:0 0 8px 0;font-weight:600'>Latest Earnings</p>
+    <ul style='margin:0;padding-left:1.2rem;'>{_earn_items}</ul>
+  </div>
+  <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
+    <p style='margin:0 0 8px 0;font-weight:600'>Forward Guidance</p>
+    <ul style='margin:0;padding-left:1.2rem;'>{_guid_items}</ul>
+  </div>
+</div>""",
+                unsafe_allow_html=True,
+            )
 
-            st.html("<div style='height: 4px;'></div>")
+            st.html("<div style='height: 8px;'></div>")
 
-            # Row 2: Core thesis
+            # Row 2: Core thesis — Investment Thesis header lives inside the container
             with st.container(border=True):
+                st.markdown("##### Investment Thesis")
                 for _pt in _thesis["theses"]:
                     st.markdown(f"- {_pt}")
 
