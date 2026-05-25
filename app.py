@@ -1844,6 +1844,8 @@ with tab1:
                     "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
                     icon="📎",
                 )
+                
+            st.divider()
 
             # ── Football Field Valuation ────────────────────────────────────
             st.markdown("##### DCF Valuation Football Field")
