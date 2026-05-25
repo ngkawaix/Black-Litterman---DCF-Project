@@ -54,7 +54,7 @@ BASE_TARGETS = {
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
-    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 270.00,
+    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 223.00,
     "TSM":  463.00, "V":    399.00,
 }
 
@@ -63,18 +63,16 @@ BASE_CONFIDENCE = {
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
     "FICO": 0.45, "GOOGL":0.15, "LRCX": 0.10,
     "MA":   0.55, "META": 0.65, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.30, "NVDA": 0.10,
+    "MSFT": 0.60, "NFLX": 0.30, "NVDA": 0.45,
     "TSM":  0.25, "V":    0.50,
 }
 
 # ── DCF Override Dict ─────────────────────────────────────────────────────────
-# Once individual DCF models are complete, populate this dict to override
-# the analyst-narrative confidence levels above with model-derived values.
-# Any ticker present here will display a ⚡ DCF Model badge in the Investment
-# Theses tab, visually distinguishing it from the pre-filled analyst estimates.
-# Example (do not uncomment until DCF work is finalised):
-#   "NVDA": 0.80, "META": 0.72, "AMZN": 0.68,
-DCF_OVERRIDES: dict[str, float] = {}
+# Tickers with a completed DCF model. Displays ⚡ DCF Model badge in the
+# Confidence tab, distinguishing model-derived confidence from analyst estimates.
+DCF_OVERRIDES: dict[str, float] = {
+    "NVDA": 0.45,
+}
 
 # ── Earnings Highlights ───────────────────────────────────────────────────────
 # Two-sentence summary of the most recent earnings report for each stock.
@@ -156,8 +154,10 @@ CONFIDENCE_RATIONALE = {
         "Confidence at 0.30 rather than higher; this remains a street estimate with no completed DCF model."
     ),
     "NVDA": (
-        "Target is 8.5% below the market-implied price, an intentional neutralisation given NVDA carries the highest π in the universe (largest cap weight, beta 1.7) and the current target implies meaningful underperformance. "
-        "Confidence at 0.10 to let equilibrium dominate; a DCF-derived target above the break-even of $295 is needed before meaningful bullish confidence is warranted."
+        "DCF model completed (May 2026). Merged fair value of $222.94 (average of $170.90 perpetuity and $274.98 exit EBITDA) implies ~3.5% upside to the current price of $215. "
+        "The perpetuity approach alone shows downside, while the EBITDA multiple approach shows ~28% upside — a wide range reflecting genuine uncertainty around the terminal multiple. "
+        "Confidence at 0.45: the completed model warrants a meaningful increase from the prior 0.10, but the mild bullish signal and divergence between valuation methods caps it below 0.50. "
+        "WACC has risen to 12.44% (from 11.59%) driven by the 10Y UST at 4.56% post Moody's US downgrade, which is the primary driver of the lower fair value relative to earlier estimates."
     ),
     "TSM": (
         "Target is 4% below the market-implied price, a deliberate discount for persistent Taiwan geopolitical risk. "
@@ -181,7 +181,7 @@ STRESS_PERIODS = {
 # The five companies with completed or in-progress DCF models.
 # Only tickers present in both INVESTMENT_THESES and DCF_OUTPUTS are rendered
 # with full content; all others show a "coming soon" placeholder.
-HIGH_CONVICTION = ["NVDA", "META", "MSFT", "AMZN", "MA"]
+HIGH_CONVICTION = ["NVDA", "META"]
 
 INVESTMENT_THESES = {
     "NVDA": {
@@ -189,15 +189,13 @@ INVESTMENT_THESES = {
             "Q1 FY2027 reaffirms NVIDIA's central thesis of AI factory buildout: GAAP revenue of $81.6B (+85% YoY, +20% QoQ) "
             "and gross margin expansion to 74.9% from 71.1% for FY2026 signal a re-acceleration of growth, marking the third "
             "consecutive quarter of year-over-year acceleration and indicating strong adoption of NVIDIA's Grace-Blackwell and new Vera-Rubin platforms.",
-            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem, defending ~85% gross margins at scale",
-            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable customer base and reducing concentration risk",
+            "CUDA software moat makes switching costs structurally prohibitive for the ~4M developers trained on the ecosystem. "
+            "Q2 FY2027 guided at $91.0B (+2%), more than $4B above consensus, with an $80B buyback authorisation and a 25x "
+            "dividend increase signalling management's confidence in the durability of the cash flow profile.",
+            "Sovereign AI and enterprise inference open a second demand wave beyond hyperscalers, broadening the addressable "
+            "customer base and reducing concentration risk. 35+ national governments have commissioned dedicated GPU infrastructure, "
+            "largely insulated from US–China export restrictions.",
         ],
-        "mgmt_guidance": (
-            "Q2 FY2027 guided at $91.0B (+2%), more than $4B above consensus. "
-            "The $4.5B H20 export charge incurred in Q1 FY2026 is now fully absorbed, and non-restricted market demand has more "
-            "than replaced the gap. A 25x dividend increase to $0.25 per share and an $80B buyback authorisation signal "
-            "management's confidence in the durability of the cash flow profile."
-        ),
         "growth_drivers": [
             (
                 "Hyperscaler Capex Cycle",
@@ -220,56 +218,62 @@ INVESTMENT_THESES = {
 
 DCF_OUTPUTS = {
     "NVDA": {
-        "current_price": 220,
-        "DCF Fair Value": 268,
-        "wacc":                    0.1159,
+        "current_price": 215.33,         # Latest closing price, 22 May 2026
+        "DCF Fair Value": 222.94,         # Merged perpetuity / EBITDA average
+        "wacc":                    0.1244,
         "terminal_growth":         0.03,
-        "terminal_ebitda_multiple": 18,
+        "terminal_ebitda_multiple": 19,
         "model_link": "https://docs.google.com/spreadsheets/d/1jFENTMPadfbK6BE2VdOkf5m1CHMDo_BmONJTXtEzIlQ/edit?usp=sharing",
 
         "football_field": [
-            {"label": "DCF: Perpetuity (2.5-4.5% g, 11.59% WACC)",    "low": 204.53, "high": 237.33, "base": 218.90}, #Taken from sensitivity tables
-            {"label": "DCF: Exit EBITDA Multiple (16-20x at 11.59% WACC)", "low": 292.68, "high": 341.42, "base": 317.07},
-            {"label": "Analyst Consensus",                     "low": 220.00, "high": 500.00, "base": 301.29}, #Taken from TipRanks, dont chanage
-            {"label": "52-Week Range",                         "low": 132.90, "high": 236.54, "base": None}, #Taken from Moomoo, dont change
+            # Perpetuity range from sensitivity table: WACC ~12.44%, g = 2.5–4.0%
+            {"label": "DCF: Perpetuity (2.5–4.0% g, 12.44% WACC)",       "low": 167.24, "high": 182.35, "base": 170.90},
+            # EBITDA multiple range: 16x–22x at 12.44% WACC (linear scaling off base 19x → $274.98)
+            {"label": "DCF: Exit EBITDA Multiple (16–22x at 12.44% WACC)", "low": 246.00, "high": 304.00, "base": 274.98},
+            # Analyst consensus from S&P Global / Investing.com, May 2026
+            {"label": "Analyst Consensus",                                  "low": 180.00, "high": 500.00, "base": 294.00},
+            # 52-week range as of 22 May 2026 (source: Investing.com)
+            {"label": "52-Week Range",                                      "low": 132.92, "high": 236.54, "base": None},
         ],
 
         "wacc_assumptions": [
             {"Cost of Debt": "3.20%",
              "Tax Rate": "17.00%",
              "Cost of Debt (After Tax)": "2.66%",
-             "Risk Free Rate": "4.00%",
+             "Risk Free Rate": "4.56%",
              "Observed Beta": "2.250",
-             "Industry Beta (Adjusted)": "1.666",
-             "Market Risk Premium": "4.50%",
-             "Cost of Equity": "11.50%",
-             "WACC": "11.59%"
+             "Industry Beta (Adjusted)": "1.670",
+             "Market Risk Premium": "4.66%",
+             "Cost of Equity": "12.34%",
+             "WACC": "12.44%"
             },
         ],
-                
+
         "is_assumptions": [
-            {    "name":   "Revenue Growth (FY2027E)",
+            {
+                "name":   "Revenue Growth (FY2027E)",
                 "actual": "+65.5%",
-                "bear":   "+70.0%",
-                "base":   "+75.6%",
+                "bear":   "+71.1%",
+                "base":   "+81.3%",
                 "bull":   "+81.3%",
-                "note":   "Bear/base/bull from scenario sheet. Base implies re-acceleration driven by Blackwell ramp.", 
+                "note":   "Bear reflects tariff/export risk compressing near-term demand. Bull/Base are nearly identical for FY2027; "
+                          "the scenario differentiation occurs in Stage 2 growth rates (FY2028+).",
             },
             {
-                "name":   "Revenue Growth (FY2027-31 avg)",
+                "name":   "Revenue Growth (FY2028–31 avg)",
                 "actual": "—",
-                "bear":   "~17%",
-                "base":   "~18%",
-                "bull":   "~20%",
-                "note":   "Straight-line deceleration post-Blackwell ramp as comps tighten.",
+                "bear":   "~14%",
+                "base":   "~20%",
+                "bull":   "~26%",
+                "note":   "Deceleration from the Blackwell ramp. Bull reflects accelerated hyperscaler/sovereign AI capex (+5–10pp above base).",
             },
             {
                 "name":   "Revenue Growth (FY2032–36E avg)",
                 "actual": "—",
                 "bear":   "~5%",
-                "base":   "~8%",
-                "bull":   "~10%",
-                "note":   "Terminal growth convergence period; bull reflects AI platform incumbency premium.",
+                "base":   "~9%",
+                "bull":   "~11%",
+                "note":   "Terminal convergence period. Bull reflects AI platform incumbency; bear reflects AMD/custom silicon pressure.",
             },
             {
                 "name":   "Gross Margin",
@@ -277,15 +281,17 @@ DCF_OUTPUTS = {
                 "bear":   "73.5%",
                 "base":   "74.5%",
                 "bull":   "75–77%",
-                "note":   "Based Case assumes 74.5% Gross magin, midpoint of management's Q1 FY2027 guidance for Q2.",
+                "note":   "Base case is 74.5%, the midpoint of management's Q2 FY2027 gross margin guidance. "
+                          "Bear reflects higher custom silicon competition on inference costs; bull reflects full Blackwell mix shift.",
             },
             {
                 "name":   "R&D % of Revenue",
                 "actual": "8.6%",
                 "bear":   "12.0%",
-                "base":   "8.5%",
+                "base":   "8.6%",
                 "bull":   "7.0%",
-                "note":   "Base case assumes 8.5% for R&D % of Revenue straight lines.",
+                "note":   "Base case straight-lines at 8.6% through Stage 1. Bear reflects elevated R&D to defend the moat; "
+                          "bull assumes BAU as CUDA ecosystem reduces the need for incremental spend.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -293,7 +299,8 @@ DCF_OUTPUTS = {
                 "bear":   "2.2%",
                 "base":   "1.9%",
                 "bull":   "1.7%",
-                "note":   "Low-friction distribution model (hyperscalers buy directly) keeps SG&A structurally low relative to revenue.",
+                "note":   "Low-friction distribution model (hyperscalers buy directly) keeps SG&A structurally low. "
+                          "Stage 2 modest compression assumed in base/bear as NVIDIA expands into enterprise.",
             },
             {
                 "name":   "Tax Rate",
@@ -301,45 +308,52 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at 17.0%, the midpoint of management's Q1 FY2027 guidance range for full year FY2026.",
+                "note":   "Straight-lined at 17.0% per full-year FY2027 management guidance. "
+                          "FY2026 actual of 15.1% included non-recurring items.",
             },
         ],
         # DCF and terminal value assumptions: no FY2026 Actual column for these rows.
         "dcf_assumptions": [
             {
                 "name": "WACC",
-                "bear": "11.6%",
-                "base": "11.6%",
-                "bull": "11.6%",
-                "note": "Held constant across scenarios; bear/bull sensitivity is expressed via terminal g and exit multiple instead.",
+                "bear": "12.4%",
+                "base": "12.4%",
+                "bull": "12.4%",
+                "note": "Held constant across scenarios. Derived from industry-adjusted beta (1.670), 10Y UST risk-free rate of 4.56% "
+                        "(elevated on Moody's US downgrade and fiscal deficit concerns), and Damodaran ERP of 4.66%.",
             },
             {
                 "name": "Terminal Growth Rate (g)",
                 "bear": "2.5%",
-                "base": "3.5%",
-                "bull": "4.5%",
-                "note": "Base case assumes growth rate slightly above long-run nominal GDP growth of 3% given NVIDIA's durable moat",
+                "base": "3.0%",
+                "bull": "4.0%",
+                "note": "Base case at 3.0%, slightly above long-run nominal GDP growth, reflecting NVIDIA's durable software moat. "
+                        "Bear/bull sensitivity expressed in the perpetuity football field row.",
             },
             {
                 "name": "Terminal EBITDA Multiple",
                 "bear": "16x",
-                "base": "18x",
-                "bull": "20x",
-                "note": "Base case Terminal multiple assumes significant mean reversion as growth decelerates, relative to NTM EV/EBITDA ~27x today. Appropriate multiple against Exit Multiples for comparable companies like ASML",
+                "base": "19x",
+                "bull": "22x",
+                "note": "Base case of 19x assumes significant mean reversion from the current NTM EV/EBITDA of ~27x as growth decelerates. "
+                        "Comparable peers: AVGO 20x, ASML 22.5x, AMD 25x; 12.5% discount applied to derive 19x base.",
             },
             {
                 "name": "Implied Price: Perpetuity",
-                "bear": "~$204.53",
-                "base": "$218.90",
-                "bull": "~$237.33",
-                "note": "Base case at actual WACC of 11.59%, g=3%. Range (bear/bull) from model football field: 11.59% WACC, g=2.5-4.5%.",
+                "bear": "~$167",
+                "base": "$170.90",
+                "bull": "~$182",
+                "note": "From sensitivity table: WACC 12.44%, g = 2.5% / 3.0% / 4.0%. "
+                        "Perpetuity approach alone implies modest downside to current price ($215).",
             },
             {
                 "name": "Implied Price: Exit Multiple",
-                "bear": "~$292.68",
-                "base": "$317.07",
-                "bull": "~$341.42",
-                "note": "Base at actual WACC of 11.59%, 18x terminal EBITDA. Range from model football field: 11.59% WACC, 16-20x.",
+                "bear": "~$246",
+                "base": "$274.98",
+                "bull": "~$304",
+                "note": "From model: WACC 12.44%, 16x / 19x / 22x terminal EBITDA. "
+                        "Exit multiple approach implies ~28% upside at base. "
+                        "Merged (averaged) DCF fair value: $222.94.",
             },
         ],
     },
@@ -1730,9 +1744,9 @@ with tab1:
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
     st.markdown("#### 2. Individual DCF Models")
     st.caption(
-        "Five highest-conviction positions with bottom-up DCF analysis. "
-        "Select a company to see the thesis, football field valuation, and modelling assumptions. "
-        "Remaining companies are in progress — analyst consensus targets are used in the BL model until each DCF is finalised."
+        "Two companies with completed or in-progress bottom-up DCF analysis. "
+        "✅ NVDA model is complete; ❌ META is in progress. "
+        "All other stocks use analyst consensus targets from Yahoo Finance in the BL model."
     )
 
     _dcf_tabs = st.tabs(
@@ -1844,20 +1858,11 @@ with tab1:
             st.plotly_chart(_fig_ff, use_container_width=True)
 
             st.divider()
-            
-            # ── Thesis & Management Guidance ───────────────────────────────
-            st.markdown("##### Investment Thesis & Management Guidance")
 
-            _t_col, _g_col = st.columns([1, 1])
-            with _t_col:
-                st.markdown("**Core Theses**")
-                for _pt in _thesis["theses"]:
-                    st.markdown(f"- {_pt}")
-                    
-            with _g_col:
-                with st.container(border=True):
-                    st.markdown("**Latest Management Guidance**")
-                    st.markdown(_thesis["mgmt_guidance"])
+            # ── Investment Thesis ──────────────────────────────────────────
+            st.markdown("##### Investment Thesis")
+            for _pt in _thesis["theses"]:
+                st.markdown(f"- {_pt}")
 
             st.markdown("**Key Growth Drivers**")
             _gd_cols = st.columns(len(_thesis["growth_drivers"]))
