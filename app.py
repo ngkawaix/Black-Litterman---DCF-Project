@@ -361,8 +361,8 @@ DCF_OUTPUTS = {
                 "base": "$170.90",
                 "bull": "~$182",
                 "note": "The perpetuity approach implies ~21% downside to current price, driven by (1) "
-                        "a high WACC (12.44%) partly due to the unusually high 10Y Treasury Yield in May 2026" "
-                        "and (2) a relatively conservative 3% terminal growth rate.
+                        "a high WACC (12.44%) partly due to the unusually high 10Y Treasury Yield in May 2026 "
+                        "and (2) a relatively conservative 3% terminal growth rate. "
             },
             {
                 "name": "Implied Price: Exit Multiple",
