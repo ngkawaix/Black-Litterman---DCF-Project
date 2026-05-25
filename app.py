@@ -126,12 +126,12 @@ CONFIDENCE_RATIONALE = {
         "Confidence at 0.45 reflects uncertainty following Fannie Mae's April 2026 approval of VantageScore 4.0 as a FICO alternative | Structural competitive risk warrants caution."
     ),
     "GOOGL": (
-        "Target is 9% below the market-implied price, but this does not reflect a genuine bearish view — Q1 2026 revenue +19% and Cloud +63% YoY contradict underweighting. "
+        "Target is 9% below the market-implied price, but this does not reflect a genuine bearish view - Q1 2026 revenue +19% and Cloud +63% YoY contradict underweighting. "
         "Confidence at 0.15 defers largely to the market given continued execution and a significant run-up over the past year."
     ),
     "LRCX": (
-        "Target is 12% below the market-implied price, a stale estimate that does not reflect revenue +28% YoY or ~35% recurring service revenue providing cycle insulation. "
-        "Confidence at 0.10 reflects confidence in LRCX (but need more research)."
+        "Target is 12% below the market-implied price. "
+        "Confidence at 0.10 reflects confidence in LRCX (Revenue +28% YoY or ~35% recurring service revenue providing some cycle insulation)."
     ),
     "MA": (
         "Target is 14% above the market-implied price, with the stock near its 52-week low despite Q1 revenue +12% YoY and a 14th consecutive dividend increase. "
