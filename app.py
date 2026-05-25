@@ -187,8 +187,8 @@ INVESTMENT_THESES = {
             "and defend its moat.",
         ],
         "guidance": [
-            "NVIDIA guided Q2 FY2027 revenue of $91.0B, more than $4B (+2%) above consensus. While NVIDIA does not "
-            "provide full-year revenue guidance, this implies a full-year trajectory of roughly $390B, equivalent to "
+            "NVIDIA guided Q2 FY2027 revenue of 91.0B, more than $4B (+2%) above consensus. While NVIDIA does not "
+            "provide full-year revenue guidance, this implies a full-year trajectory of roughly 390B, equivalent to "
             "approximately 81.3% YoY revenue growth, up from 65.5% in FY2026.",
             "NVIDIA guided a full-year effective tax rate of 16% to 18%.",
             "NVDA announced an $80B buyback authorisation and a 25x dividend increase, with payout on 26 June 2026 "
