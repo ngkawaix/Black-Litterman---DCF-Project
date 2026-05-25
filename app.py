@@ -1920,8 +1920,21 @@ with tab1:
 
             # ── Investment Thesis ──────────────────────────────────────────
 
-            # Row 1: Latest Earnings | Forward Guidance
-            # Rendered as a single HTML block so both cards stretch to equal height
+            # Row 1: Investment Thesis (sits above earnings/guidance)
+            with st.container(border=True):
+                st.markdown("##### Investment Thesis")
+                _thesis_items = "".join(
+                    f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
+                    for p in _thesis["theses"]
+                )
+                st.markdown(
+                    f"<ul style='margin:4px 0 0 0;padding-left:1.2rem;'>{_thesis_items}</ul>",
+                    unsafe_allow_html=True,
+                )
+
+            st.html("<div style='height: 8px;'></div>")
+
+            # Row 2: Latest Earnings | Forward Guidance (equal-height HTML cards)
             _earn_items = "".join(
                 f"<li style='margin-bottom:6px;font-size:14px'>{p}</li>"
                 for p in _thesis.get("latest_earnings", [])
@@ -1946,20 +1959,17 @@ with tab1:
 
             st.html("<div style='height: 8px;'></div>")
 
-            # Row 2: Core thesis — Investment Thesis header lives inside the container
+            # Row 3: Key Growth Drivers — single container matching Investment Thesis style
             with st.container(border=True):
-                st.markdown("##### Investment Thesis")
-                for _pt in _thesis["theses"]:
-                    st.markdown(f"- {_pt}")
-
-            # Row 3: Growth drivers
-            st.markdown("###### Key Growth Drivers")
-            _gd_cols = st.columns(len(_thesis["growth_drivers"]))
-            for _gdc, (_driver_name, _driver_desc) in zip(_gd_cols, _thesis["growth_drivers"]):
-                with _gdc:
-                    with st.container(border=True):
-                        st.markdown(f"**{_driver_name}**")
-                        st.caption(_driver_desc)
+                st.markdown("##### Key Growth Drivers")
+                _gd_items = "".join(
+                    f"<li style='margin-bottom:6px;font-size:14px'><strong>{name}</strong> — {desc}</li>"
+                    for name, desc in _thesis["growth_drivers"]
+                )
+                st.markdown(
+                    f"<ul style='margin:4px 0 0 0;padding-left:1.2rem;'>{_gd_items}</ul>",
+                    unsafe_allow_html=True,
+                )
 
             st.divider()
 
