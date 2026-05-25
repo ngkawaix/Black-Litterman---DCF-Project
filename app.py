@@ -111,12 +111,12 @@ RESEARCH_TIERS: dict = {
     "FULL_DCF": {
         "NVDA": {
             "rationale": (
-                "Completed DCF (May 2026) yields a merged fair value of $222.94 — the simple "
+                "Completed DCF (May 2026) yields a merged fair value of $222.94, the simple "
                 "average of the perpetuity approach ($170.90) and the exit-EBITDA approach "
                 "($274.98). The $104 spread between the two methods is the honest answer to "
                 "terminal value uncertainty for a high-growth compounder: the perpetuity "
                 "penalises via the discount rate; the exit multiple captures near-term earnings "
-                "momentum. Confidence of 0.45 reflects that spread — it is a genuine "
+                "momentum. Confidence of 0.45 reflects that spread, and it is a genuine "
                 "acknowledgment of uncertainty, not a weak view on the business."
             ),
             "date": "May 2026",
@@ -129,13 +129,13 @@ RESEARCH_TIERS: dict = {
             "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
             "operating margin represent a genuine inflection from investment phase to "
             "profitable scale. Bullish thesis, but confidence is kept at 0.25 because the "
-            "target is near market-implied — this is not a strong disagreement with the "
+            "target is near market-implied, and this is not a strong disagreement with the "
             "market, just agreement with continued execution."
         ),
         "GOOGL": (
             "Personal holding. Search +19% YoY and Cloud +63% YoY demonstrate durable "
             "compounding across both core and AI-driven revenue. I hold a bullish view on "
-            "the long-run thesis. Confidence at 0.15 is modest — the target sits close to "
+            "the long-run thesis. Confidence at 0.15 is modest, as the target sits close to "
             "market-implied, reflecting that I largely agree with the market rather than "
             "trying to override it."
         ),
@@ -148,7 +148,7 @@ RESEARCH_TIERS: dict = {
         ),
         "ASML": (
             "Not currently holding. ASML is the sole global EUV supplier with no credible "
-            "competitive threat and demand visibility into 2027 — the business quality is "
+            "competitive threat and demand visibility into 2027, but the business quality is "
             "not in question. The caution is valuation: the recent price run-up has moved "
             "the stock above what I think is justified on a near-term basis, limiting "
             "margin of safety. Confidence at 0.10 reflects this: I have no new information "
@@ -175,7 +175,7 @@ def render_rationale(ticker: str) -> str:
     if ticker in RESEARCH_TIERS["TACTICAL"]:
         return f"[Tactical] {RESEARCH_TIERS['TACTICAL'][ticker]}"
     return (
-        "[Systematic] No active thesis — "
+        "[Systematic] No active thesis; "
         "confidence calibrated to defer to market-prior equilibrium signal."
     )
 
@@ -271,7 +271,7 @@ DCF_OUTPUTS = {
             },
             {
                 "name":   "Revenue Growth – Stage 1 (FY2028–31)",
-                "actual": "—",
+                "actual": "N/A",
                 "bear":   "~14%",
                 "base":   "~20%",
                 "bull":   "~26%",
@@ -280,7 +280,7 @@ DCF_OUTPUTS = {
             },
             {
                 "name":   "Revenue Growth – Stage 2 (FY2032–36)",
-                "actual": "—",
+                "actual": "N/A",
                 "bear":   "~5%",
                 "base":   "~9%",
                 "bull":   "~11%",
@@ -828,13 +828,13 @@ def run_copula_simulation(tick_rets, bl_w_series, theta=2.0, n_scenarios=3_000, 
     Each of the n_steps daily draws is i.i.d. (no GARCH / volatility clustering).
     theta > 0 controls crash co-movement: higher = assets lock together more in the tails.
 
-    Returns port_paths (n_steps+1, n_scenarios) — same shape as run_correlated_gbm.
+    Returns port_paths (n_steps+1, n_scenarios), same shape as run_correlated_gbm.
     """
     rng      = np.random.default_rng(seed)
     n_assets = len(tick_rets.columns)
     w        = bl_w_series.reindex(tick_rets.columns).fillna(0).values
 
-    # Drop any rows where ANY ticker has a NaN — custom tickers with shorter
+    # Drop any rows where ANY ticker has a NaN, custom tickers with shorter
     # listing history cause per-column lengths to differ, which breaks np.stack.
     tick_rets_aligned = tick_rets.dropna()
 
@@ -883,10 +883,10 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
 
     Returns
     -------
-    garch_params : dict  — {ticker: {omega, alpha, beta, mu}}
-    std_resids   : dict  — {ticker: array of standardised residuals z_t = ε_t / σ_t}
-    last_state   : dict  — {ticker: {sigma2, epsilon}} in scaled units (returns × 100)
-    cond_vol_df  : DataFrame — annualised conditional volatility per asset over time
+    garch_params : dict  : {ticker: {omega, alpha, beta, mu}}
+    std_resids   : dict  : {ticker: array of standardised residuals z_t = ε_t / σ_t}
+    last_state   : dict  : {ticker: {sigma2, epsilon}} in scaled units (returns × 100)
+    cond_vol_df  : DataFrame : annualised conditional volatility per asset over time
     """
     try:
         from arch import arch_model
@@ -930,7 +930,7 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
         # Standardised residuals: z_t = ε_t / σ_t  ≈ i.i.d. once vol is stripped out
         std_resids[col] = (res.resid / res.conditional_volatility).values
 
-        # Last observed state — seeds the forward GARCH recursion
+        # Last observed state, seeds the forward GARCH recursion
         last_state[col] = {
             'sigma2':  float(res.conditional_volatility.iloc[-1] ** 2),  # σ²_T  (scaled²)
             'epsilon': float(res.resid.iloc[-1]),                          # ε_T   (scaled)
@@ -970,7 +970,7 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
         [rankdata(_resid_arr[:, i]) / (_n_obs + 1)
          for i in range(_resid_arr.shape[1])],
         axis=1,
-    )  # (n_obs, n_assets) — uniform margins strictly in (0, 1)
+    )  # (n_obs, n_assets), uniform margins strictly in (0, 1)
 
     def _clayton_neg_ll(log_theta):
         """
@@ -1000,7 +1000,7 @@ def fit_garch_params(_tick_rets, tickers_key: tuple = ()):
     fitted_theta = float(np.exp(_opt.x))
 
     # Align std_resids to min_len so run_garch_copula_simulation receives
-    # equal-length arrays for every ticker — custom tickers with shorter history
+    # equal-length arrays for every ticker, custom tickers with shorter history
     # produce shorter residual series, which breaks np.stack downstream.
     std_resids_aligned = {col: std_resids[col][-min_len:] for col in _tick_rets.columns}
 
@@ -1017,7 +1017,7 @@ def run_garch_copula_simulation(
     Three layers stacked:
       1. GARCH(1,1): per-asset time-varying volatility
              σ²_t = ω + α · ε²_{t-1} + β · σ²_{t-1}
-         A large shock on day t raises σ² for day t+1 — volatility clustering.
+         A large shock on day t raises σ² for day t+1, volatility clustering.
 
       2. Clayton Copula (Frailty method): correlated draws of standardised
          residuals z_t across all assets, with lower-tail dependence controlled by θ.
@@ -1047,7 +1047,7 @@ def run_garch_copula_simulation(
     betas  = np.array([garch_params[col]['beta']  for col in cols])
     mus    = np.array([garch_params[col]['mu']     for col in cols])
 
-    # Each scenario starts from the last observed σ² and ε — path-dependent from here
+    # Each scenario starts from the last observed σ² and ε, path-dependent from here
     # Broadcasting from (n_assets,) to (n_scenarios, n_assets)
     sigma2_s  = np.tile([last_state[col]['sigma2']  for col in cols], (n_scenarios, 1))
     epsilon_s = np.tile([last_state[col]['epsilon'] for col in cols], (n_scenarios, 1))
@@ -1091,10 +1091,10 @@ def run_garch_copula_simulation(
 def run_garch_copula_all_strategies(_tick_rets, _garch_params, _std_resids, _last_state, strategy_names, _strategy_weights_arr, theta=2.0, n_scenarios=2_000, n_steps=252, seed=42, tickers_key: tuple = ()):
     """
     Runs one set of GARCH-Copula asset paths and applies all strategy weight
-    vectors in a single pass — the expensive GARCH + copula sampling happens
+    vectors in a single pass, the expensive GARCH + copula sampling happens
     once; weight application is a cheap matmul per step.
 
-    strategy_names        : tuple[str]  — names, same order as weight rows
+    strategy_names        : tuple[str]  : names, same order as weight rows
     _strategy_weights_arr : np.ndarray (n_strategies, n_assets)
 
     Returns dict {strategy_name: terminal_portfolio_values (n_scenarios,)}
@@ -1146,7 +1146,7 @@ def run_spy_garch_simulation(_spx_rets_aligned, n_scenarios=2_000, n_steps=252, 
     """
     Single-asset GARCH(1,1) + empirical inverse-transform simulation for SPY.
 
-    No copula is needed — SPY is already a diversified index with no cross-asset
+    No copula is needed, as SPY is already a diversified index with no cross-asset
     dependency to model. Uses the same GARCH + empirical residual approach as
     the multi-asset simulation for methodological consistency.
 
@@ -1259,7 +1259,7 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
     if missing_pct > 0.05:
         return False, (
             f"**{ticker}** has {missing_pct:.0%} missing price data from {start_date_str}. "
-            "This is too high for a reliable covariance estimate — the data is likely incomplete."
+            "This is too high for a reliable covariance estimate, as the data is likely incomplete."
         ), []
 
     # ── Soft warnings (non-blocking) ──────────────────────────────────────────
@@ -1278,7 +1278,7 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
         mcap = t.fast_info.market_cap
         if mcap is not None and mcap < 10e9:
             soft_warnings.append(
-                f"Market cap is ~${mcap / 1e9:.1f}B — below the $10B minimum "
+                f"Market cap is ~${mcap / 1e9:.1f}B, below the $10B minimum "
                 "used to screen the core universe."
             )
     except Exception:
@@ -1413,7 +1413,7 @@ with st.sidebar:
 
                 # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,then a generic placeholder.
                 _cons_default = float(mean_t) if mean_t else None
-                if _is_dcf: 
+                if is_dcf: 
                     _target_default =  float(BASE_TARGETS.get (ticker, 100.0))
                 else:
                     _target_default = (
@@ -1757,13 +1757,13 @@ with tab1:
         using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity below 1**,
         **(3) consecutive revenue growth over 5 years**, and **(4) a minimum market cap of $10 billion**.
         ROIC was chosen as the primary quality filter because it measures how efficiently a company
-        converts capital into profit — sustained high ROIC over multiple years is one of the most
+        converts capital into profit. Sustained high ROIC over multiple years is one of the most
         reliable indicators of a durable competitive advantage. FCF margin was deliberately not used
         as the primary screen as it would exclude high-quality compounders like AMZN, MSFT, and GOOGL
         which are in an unprecedented capex cycle for data-centre buildouts.
 
         The resulting universe is concentrated in technology, semiconductors, payments infrastructure,
-        and financial data — sectors where capital-light business models and high switching costs tend
+        and financial data, sectors where capital-light business models and high switching costs tend
         to produce durable moats. Two names warrant a note: FICO carries negative book equity due to
         sustained buybacks rather than distress, which causes standard debt screens to misread it;
         ASML is the sole supplier of extreme ultraviolet lithography equipment globally, making it
@@ -1791,7 +1791,7 @@ with tab1:
             # ── Placeholder for companies without a completed model ────────────
             if _ticker not in INVESTMENT_THESES or _ticker not in DCF_OUTPUTS:
                 st.info(
-                    f"**{_ticker}** — DCF model in progress. This tab will show the full "
+                    f"**{_ticker}**: DCF model in progress. This tab will show the full "
                     "investment thesis, football field valuation, and assumptions table once "
                     "the Wall Street Prep model is finalised.",
                     icon="⚡",
@@ -1801,7 +1801,7 @@ with tab1:
             _thesis = INVESTMENT_THESES[_ticker]
             _dcf    = DCF_OUTPUTS[_ticker]
 
-            # Live current price — uses latest close from the already-loaded price data
+            # Live current price, uses latest close from the already-loaded price data
             _cp = (
                 float(price_data[_ticker].iloc[-1])
                 if _ticker in price_data.columns
@@ -1819,7 +1819,7 @@ with tab1:
             _vm1.metric(
                 "Current Price",
                 f"${_cp:,.2f}",
-                help="Latest closing price — live from Yahoo Finance",
+                help="Latest closing price, live from Yahoo Finance",
             )
             _vm2.metric(
                 "DCF Fair Value",
@@ -1965,7 +1965,7 @@ with tab1:
             # ── Summary of DCF Assumptions ──────────────────────────────────
             st.markdown("##### Summary of DCF Assumptions")
 
-            # Part A — Income Statement Drivers (base case only)
+            # Part A: Income Statement Drivers (base case only)
             st.markdown("###### Income Statement Drivers")
             st.caption(
                 "**FY2026 Actual** anchors each assumption to the last reported fiscal year. "
@@ -1995,7 +1995,7 @@ with tab1:
                 unsafe_allow_html=True,
             )
 
-            # Part B — DCF & Terminal Value Assumptions
+            # Part B: DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
 
             _dcf_rows = _dcf["dcf_assumptions"]
@@ -2235,7 +2235,7 @@ with tab2:
             st.markdown("**📊 Systematic**")
             st.caption(
                 "No active thesis. Confidence is calibrated to stay close to "
-                "market equilibrium — the model chooses the weight, not a view."
+                "market equilibrium; the model chooses the weight, not a view."
             )
 
     st.html("<div style='height: 6px;'></div>")
@@ -2300,9 +2300,9 @@ with tab2:
                 "Tier",
                 width="small",
                 help=(
-                    "⚡ Full DCF — confidence derived from a completed bottom-up model. "
-                    "🎯 Tactical — personal holding or monitored thesis, single-bullet rationale. "
-                    "📊 Systematic — no active thesis; confidence defers to market equilibrium."
+                    "⚡ Full DCF: confidence derived from a completed bottom-up model. "
+                    "🎯 Tactical: personal holding or monitored thesis, single-bullet rationale. "
+                    "📊 Systematic: no active thesis, confidence defers to market equilibrium."
                 ),
             ),
             "BL Direction": st.column_config.TextColumn(
@@ -2501,7 +2501,7 @@ with tab3:
     )
     st.plotly_chart(fig2, width="stretch")
 
-# ── GARCH fitting (cached) — shared by Tab 4 stress context and Tab 5 GARCH-Copula ──
+# ── GARCH fitting (cached), shared by Tab 4 stress context and Tab 5 GARCH-Copula ──
 garch_params, std_resids_g, last_state, cond_vol_df, fitted_theta = fit_garch_params(
     tick_rets, tuple(tick_rets.columns)
 )
@@ -2654,14 +2654,10 @@ with tab4:
         total_period_return = (1 + bl_period_rets).prod() - 1 
         
         ann_rets_bl_period = erk.annualize_rets(bl_period_rets, periods_per_year=252)
-        ann_vol_bl_period = erk.annualize_vol(bl_period_rets, periods_per_year=252)
-        skew_bl_period = erk.skewness(bl_period_rets) # Left here but not useful acutally for short period stress tests
-        kurt_bl_period = erk.kurtosis(bl_period_rets) # Left here but not useful acutally for short period stress tests
-        cf_var_bl_period = erk.var_gaussian(bl_period_rets, level=5, modified=True) * np.sqrt(252) # Left here but not useful acutally for short period stress tests
-        cvar_bl_period = erk.cvar_historic(bl_period_rets, level=5) * np.sqrt(252) # Left here but not useful acutally for short period stress tests
-        sharpe_bl_period = erk.sharpe_ratio(bl_period_rets, riskfree_rate=RF, periods_per_year=252)
+        ann_vol_bl_period  = erk.annualize_vol(bl_period_rets, periods_per_year=252)
+        sharpe_bl_period   = erk.sharpe_ratio(bl_period_rets, riskfree_rate=RF, periods_per_year=252)
         cumprod_bl = (1 + bl_period_rets).cumprod()
-        max_dd_bl = (cumprod_bl / cumprod_bl.cummax() - 1).min()
+        max_dd_bl  = (cumprod_bl / cumprod_bl.cummax() - 1).min()
 
         # SPY benchmark for the same period
         spx_period = spx_rets.loc[start:end]
@@ -2721,9 +2717,9 @@ with tab5:
     st.markdown(
         """
         **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
-        and the S&P 500 across three lenses: a historical wealth index, a 1-year Monte Carlo 
-        return forecast, lastly a CPPI drawdown protection analysis.** The wealth index 
-        and Monte Carlo answer *how does BL compare to simpler approaches?* The CPPI analysis asks 
+        and the S&P 500 across three lenses: a historical wealth index, a 1-year GBM return 
+        forecast, lastly a CPPI drawdown protection analysis.** The wealth index 
+        and GBM forecast answer *how does BL compare to simpler approaches?* The CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
         behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
         strategies, is built for wealth accumulation. However, most real investors have a loss tolerance, 
@@ -2995,72 +2991,85 @@ with tab5:
 
     # ── GARCH-Copula 1Y Return Forecast ───────────────────────────────────
     if garch_params is not None:
-        st.markdown("#### 3. GARCH-Copula 1Y Return Forecast")
-        st.caption(
-            "The same five strategies ran through a more robust GARCH-Copula simulation "
-            "which accounts for (1) correlated crashes and independent rallies (through Clayton-Copula) "
-            "and (2) volatility clustering (through GARCH(1,1))."
-            "Compare the **5th percentile column** directly with the GBM table above. "
-            "The gap is the tail risk that GBM systematically misses. "
-            f"Uses Maximum Likelihood Estimation (MLE)-fitted θ = {_theta_default:.2f} and 2,000 scenarios."
-        )
-
-        _gc_strat_names = tuple(strategy_weights.keys())
-        _gc_weights_arr = np.stack([
-            w.reindex(tick_rets.columns).fillna(0).values
-            for w in strategy_weights.values()
-        ])
-
-        with st.spinner("Running GARCH-Copula for all strategies…"):
-            _gc_strat_results = run_garch_copula_all_strategies(
-                tick_rets, garch_params, std_resids_g, last_state,
-                _gc_strat_names, _gc_weights_arr,
-                theta=_theta_default, n_scenarios=2_000, n_steps=252, seed=int(seed),
-                tickers_key=tuple(tick_rets.columns),
+        with st.expander("📐 Exploratory Extension: GARCH-Copula 1Y Return Forecast", expanded=False):
+            st.info(
+                "**Note on this section:** The GARCH-Copula simulation was added as an exploratory "
+                "extension to understand why GBM understates tail risk, and it is not part of the core "
+                "EDHEC coursework. The two methodological improvements over GBM are: "
+                "(1) **GARCH(1,1)** replaces the constant-volatility assumption with volatility that "
+                "clusters, meaning high-volatility days tend to follow high-volatility days, which is a "
+                "well-documented empirical property of equity returns. "
+                "(2) **Clayton copula** replaces the Gaussian correlation structure with one that "
+                "allows correlations to spike in the lower tail, i.e. assets crash together more "
+                "than they rally together. The copula parameter θ is fitted via Maximum Likelihood "
+                "Estimation on the standardised residuals from the GARCH step. "
+                "The practical result is a fatter left tail relative to GBM, visible in the 5th "
+                "percentile column. I explored this to understand the limitation I had already "
+                "documented in the GBM section above.",
+                icon="ℹ️",
+            )
+            st.caption(
+                "Compare the **5th percentile column** directly with the GBM table above. "
+                "The gap is the tail risk that GBM systematically misses. "
+                f"MLE-fitted θ = {_theta_default:.2f}, 2,000 scenarios."
             )
 
-        _gc_comparison = {}
-        for _sn, _fv in _gc_strat_results.items():
-            _gc_comparison[_sn] = {
-                "Expected Return": float(np.mean(_fv))            - 1,
-                "5th pct":         float(np.percentile(_fv,  5))  - 1,
-                "95th pct":        float(np.percentile(_fv, 95))  - 1,
-                "Spread (95--5)":  float(np.percentile(_fv, 95) - np.percentile(_fv, 5)),
-            }
+            _gc_strat_names = tuple(strategy_weights.keys())
+            _gc_weights_arr = np.stack([
+                w.reindex(tick_rets.columns).fillna(0).values
+                for w in strategy_weights.values()
+            ])
 
-        _gc_comp_df = pd.DataFrame(_gc_comparison).T.sort_values("Expected Return", ascending=False)
-        st.dataframe(
-            _gc_comp_df.style
-                .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
-                .format("{:.3f}", subset=["Spread (95--5)"])
-                .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
-            width="stretch",
-        )
+            with st.spinner("Running GARCH-Copula for all strategies…"):
+                _gc_strat_results = run_garch_copula_all_strategies(
+                    tick_rets, garch_params, std_resids_g, last_state,
+                    _gc_strat_names, _gc_weights_arr,
+                    theta=_theta_default, n_scenarios=2_000, n_steps=252, seed=int(seed),
+                    tickers_key=tuple(tick_rets.columns),
+                )
 
-        _fig_gc_comp = go.Figure()
-        for _sn, _row in _gc_comparison.items():
-            _c = _dotplot_colours.get(_sn, "#888888")
-            _fig_gc_comp.add_trace(go.Scatter(
-                x=[_sn],
-                y=[_row["Expected Return"]],
-                mode="markers",
-                marker=dict(size=14, symbol="circle", color=_c),
-                error_y=dict(
-                    type="data", symmetric=False,
-                    array     =[_row["95th pct"] - _row["Expected Return"]],
-                    arrayminus=[_row["Expected Return"] - _row["5th pct"]],
-                    color=_c,
-                ),
-                name=_sn,
-            ))
-        _fig_gc_comp.update_layout(
-            title=f"GARCH-Copula: Expected 1Y Return with 95% CI  (θ = {_theta_default:.1f})",
-            yaxis_tickformat=".1%",
-            yaxis_title="1-Year Return",
-            height=420,
-            showlegend=False,
-        )
-        st.plotly_chart(_fig_gc_comp, width="stretch")
+            _gc_comparison = {}
+            for _sn, _fv in _gc_strat_results.items():
+                _gc_comparison[_sn] = {
+                    "Expected Return": float(np.mean(_fv))            - 1,
+                    "5th pct":         float(np.percentile(_fv,  5))  - 1,
+                    "95th pct":        float(np.percentile(_fv, 95))  - 1,
+                    "Spread (95--5)":  float(np.percentile(_fv, 95) - np.percentile(_fv, 5)),
+                }
+
+            _gc_comp_df = pd.DataFrame(_gc_comparison).T.sort_values("Expected Return", ascending=False)
+            st.dataframe(
+                _gc_comp_df.style
+                    .format("{:.2%}", subset=["Expected Return", "5th pct", "95th pct"])
+                    .format("{:.3f}", subset=["Spread (95--5)"])
+                    .background_gradient(subset=["Expected Return"], cmap="YlGnBu"),
+                width="stretch",
+            )
+
+            _fig_gc_comp = go.Figure()
+            for _sn, _row in _gc_comparison.items():
+                _c = _dotplot_colours.get(_sn, "#888888")
+                _fig_gc_comp.add_trace(go.Scatter(
+                    x=[_sn],
+                    y=[_row["Expected Return"]],
+                    mode="markers",
+                    marker=dict(size=14, symbol="circle", color=_c),
+                    error_y=dict(
+                        type="data", symmetric=False,
+                        array     =[_row["95th pct"] - _row["Expected Return"]],
+                        arrayminus=[_row["Expected Return"] - _row["5th pct"]],
+                        color=_c,
+                    ),
+                    name=_sn,
+                ))
+            _fig_gc_comp.update_layout(
+                title=f"GARCH-Copula: Expected 1Y Return with 95% CI  (θ = {_theta_default:.1f})",
+                yaxis_tickformat=".1%",
+                yaxis_title="1-Year Return",
+                height=420,
+                showlegend=False,
+            )
+            st.plotly_chart(_fig_gc_comp, width="stretch")
 
     st.divider()
 
