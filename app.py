@@ -1380,7 +1380,7 @@ with st.sidebar:
             with col:
                 # Ticker label + earnings recency flag
                 earnings_flag  = " 🟡" if recent_earnings.get(ticker, False) else ""
-                _is_dcf = ticker in DCF_OVERIDES
+                _is_dcf = ticker in DCF_OVERRIDES
                 _dcf_tag = "⚡" if _is_dcf else ""
                 if ticker in TICKERS:
                     label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
