@@ -1849,21 +1849,7 @@ with tab1:
                 f"{_dcf['wacc']:.2%}",
                 help="Weighted Average Cost of Capital used to discount cash flows.",
             )
-
-            # ── Full Model Download ─────────────────────────────────────────
-            st.markdown("##### Full DCF Model Download")
-            _link = _dcf.get("model_link")
-            if _link:
-                st.markdown(
-                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
-                )
-            else:
-                st.info(
-                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
-                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
-                    icon="📎",
-                )
-                
+            
             st.divider()
 
             # ── Football Field Valuation ────────────────────────────────────
@@ -2018,7 +2004,23 @@ with tab1:
                 "</table>",
                 unsafe_allow_html=True,
             )
+            
+            st.divider()
 
+            # ── Full Model Download ─────────────────────────────────────────
+            st.markdown("##### Full DCF Model Download")
+            _link = _dcf.get("model_link")
+            if _link:
+                st.markdown(
+                    f"📥 **[Download the full 3-Statement Model & DCF for {_ticker}]({_link})**  \n"
+                )
+            else:
+                st.info(
+                    f"Model link not yet configured. Populate `DCF_OUTPUTS['{_ticker}']['model_link']` "
+                    "in `app.py` with a Google Drive share link or GitHub raw-download URL.",
+                    icon="📎",
+                )
+                
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB2 - Confidence
 # ══════════════════════════════════════════════════════════════════════════════
