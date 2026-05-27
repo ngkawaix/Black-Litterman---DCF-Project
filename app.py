@@ -224,13 +224,9 @@ DCF_OUTPUTS = {
         "model_link": "https://docs.google.com/spreadsheets/d/19oXEuxVTQGbzZCCk0CrFZKSfFDtIPB2uYhfoYx7k4cs/edit?usp=sharing",
 
         "football_field": [
-            # Perpetuity range from sensitivity table: WACC ~12.44%, g = 2.5–4.0%
             {"label": "DCF: Perpetuity (2.5–4.0% g, 12.44% WACC)",       "low": 167.24, "high": 182.35, "base": 170.90},
-            # EBITDA multiple range: 16x–22x at 12.44% WACC (linear scaling off base 19x → $274.98)
             {"label": "DCF: Exit EBITDA Multiple (16–22x at 12.44% WACC)", "low": 246.00, "high": 304.00, "base": 274.98},
-            # Analyst consensus from S&P Global / Investing.com, May 2026
             {"label": "Analyst Consensus",                                  "low": 180.00, "high": 500.00, "base": 294.00},
-            # 52-week range as of 22 May 2026 (source: Investing.com)
             {"label": "52-Week Range",                                      "low": 132.92, "high": 236.54, "base": None},
         ],
 
@@ -3214,9 +3210,7 @@ with tab5:
     st.markdown("###### Quarterly Equity Allocation Snapshots")
     st.caption(
         "Quarter-end equity allocation (% of portfolio) derived from the CPPI strategy. "
-        "Green = fully invested (≥ 80%), amber = partially de-risked (30–80%), "
-        "red = near or at cash lock-in (< 30%). Values reflect the allocation *entering* the next quarter."
-    )
+        )
 
     _alloc_aligned  = cppi_alloc.reindex(btr.index).clip(0, 1)
     _quarterly_alloc = _alloc_aligned.resample("QE").last() * 100
