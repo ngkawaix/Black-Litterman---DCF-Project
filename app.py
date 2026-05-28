@@ -54,7 +54,7 @@ BASE_TARGETS = {
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
-    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 222.94,
+    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 228.35,
     "TSM":  463.00, "V":    399.00,
 }
 
@@ -89,13 +89,14 @@ RESEARCH_TIERS: dict = {
     "FULL_DCF": {
         "NVDA": {
             "rationale": (
-                "Completed DCF (May 2026) yields a merged fair value of $222.94, the simple "
-                "average of the perpetuity approach ($170.90) and the exit-EBITDA approach "
-                "($274.98). The $104 spread between the two methods is the honest answer to "
-                "terminal value uncertainty for a high-growth compounder: the perpetuity "
-                "penalises via the discount rate; the exit multiple captures near-term earnings "
-                "momentum. Confidence of 0.45 reflects that spread, and it is a genuine "
-                "acknowledgment of uncertainty, not a weak view on the business."
+                "Completed DCF (May 2026) yields a merged fair value of $228.35, the simple "
+                "average of the perpetuity approach ($175.48) and the exit-EBITDA approach "
+                "($281.22). Base-case WACC of 12.20% (Rf=4.50%, \u03b2=1.79 industry-adjusted, "
+                "Damodaran ERP=4.24% May 2026 update); the \u0024106 spread between the two methods "
+                "is the honest answer to terminal value uncertainty for a high-growth compounder: the perpetuity "
+                "penalises via the discount rate; the exit multiple captures near-term earnings momentum. "
+                "Confidence of 0.45 reflects that spread and is a genuine acknowledgment of uncertainty, "
+                "not a weak view on the business."
             ),
             "date": "May 2026",
         },
@@ -217,15 +218,15 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 215.33,         # Latest closing price, 22 May 2026
-        "DCF Fair Value": 222.94,         # Merged perpetuity / EBITDA average
-        "wacc":                    0.1244,
+        "DCF Fair Value": 228.35,         # Merged perpetuity / EBITDA average
+        "wacc":                    0.1220,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 19,
-        "model_link": "https://docs.google.com/spreadsheets/d/19oXEuxVTQGbzZCCk0CrFZKSfFDtIPB2uYhfoYx7k4cs/edit?usp=sharing",
+        "model_link": "https://docs.google.com/spreadsheets/d/1f6yXc8R1_Faq8n0NhSWwO7gs0zVDx9zuOzJmo4LYVJc/edit?usp=sharing",
 
         "football_field": [
-            {"label": "DCF: Perpetuity (2.5–4.0% g, 12.44% WACC)",       "low": 167.24, "high": 182.35, "base": 170.90},
-            {"label": "DCF: Exit EBITDA Multiple (16–22x at 12.44% WACC)", "low": 246.00, "high": 304.00, "base": 274.98},
+            {"label": "DCF: Perpetuity (2.0–4.0% g, 12.20% WACC)",        "low": 166.42, "high": 186.77, "base": 175.48},
+            {"label": "DCF: Exit EBITDA Multiple (17–21x at 12.20% WACC)",  "low": 261.16, "high": 301.30, "base": 281.22},
             {"label": "Analyst Consensus",                                  "low": 180.00, "high": 500.00, "base": 294.00},
             {"label": "52-Week Range",                                      "low": 132.92, "high": 236.54, "base": None},
         ],
@@ -234,12 +235,12 @@ DCF_OUTPUTS = {
             {"Cost of Debt": "3.20%",
              "Tax Rate": "17.00%",
              "Cost of Debt (After Tax)": "2.66%",
-             "Risk Free Rate": "4.56%",
-             "Observed Beta": "2.250",
-             "Industry Beta (Adjusted)": "1.670",
-             "Market Risk Premium": "4.66%",
-             "Cost of Equity": "12.34%",
-             "WACC": "12.44%"
+             "Risk Free Rate": "4.50%",
+             "Observed Beta (2yr weekly, CNBC)": "1.790",
+             "Industry Beta (Adjusted)": "1.790",
+             "Market Risk Premium": "4.24%",
+             "Cost of Equity": "12.10%",
+             "WACC": "12.20%"
             },
         ],
 
@@ -312,12 +313,13 @@ DCF_OUTPUTS = {
         "dcf_assumptions": [
             {
                 "name": "WACC",
-                "bear": "12.4%",
-                "base": "12.4%",
-                "bull": "12.4%",
-                "note": "12.44% via CAPM: Rf = 4.56% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
-                        "industry-adjusted β = 1.670 (de-levered peer group: AMD, AVGO, TSM), Damodaran ERP = 4.66%. "
-                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure. "
+                "bear": "12.2%",
+                "base": "12.2%",
+                "bull": "12.2%",
+                "note": "12.20% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
+                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's capital structure), "
+                        "Damodaran ERP = 4.24% (May 2026 update, down from 4.66% in January). "
+                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC effectively equals cost of equity. "
             },
             {
                 "name": "Terminal Growth Rate (g)",
@@ -341,21 +343,21 @@ DCF_OUTPUTS = {
             },
             {
                 "name": "Implied Price: Perpetuity",
-                "bear": "~$167",
-                "base": "$170.90",
-                "bull": "~$182",
-                "note": "The perpetuity approach implies ~21% downside to current price, driven by (1) "
-                        "a high WACC (12.44%) partly due to the unusually high 10Y Treasury Yield in May 2026 "
-                        "and (2) a relatively conservative 3% terminal growth rate. "
+                "bear": "~$166",
+                "base": "$175.48",
+                "bull": "~$187",
+                "note": "The perpetuity approach implies ~19% downside to the current price, driven by "
+                        "a conservative 3% terminal growth rate at a WACC of 12.20%. The lower WACC versus "
+                        "prior estimates reflects Damodaran's updated May 2026 ERP of 4.24% (vs 4.66% in January). "
             },
             {
                 "name": "Implied Price: Exit Multiple",
-                "bear": "~$246",
-                "base": "$274.98",
-                "bull": "~$304",
-                "note": "Exit multiple approach implies ~28% upside to the current price driven by a 19x exit EV/EBITDA "
-                        "multiple which implies a 8.1% terminal growth rate. A merged fair value of $222.94 is the simple "
-                        "avergae of both the exit multiple and perpetuity approaches."
+                "bear": "~$261",
+                "base": "$281.22",
+                "bull": "~$301",
+                "note": "Exit multiple approach implies ~31% upside to the current price driven by a 19x exit EV/EBITDA "
+                        "multiple implying a 7.9% terminal growth rate. The merged fair value of $228.35 is the simple "
+                        "average of both the exit multiple and perpetuity approaches."
             },
         ],
     },
@@ -1915,120 +1917,79 @@ with tab1:
             st.divider()
 
             # ── Investment Thesis ──────────────────────────────────────────
-            # All containers use the same spacing rules:
-            #   - heading → bullets : 0.5rem (matches Streamlit h5 default margin-bottom)
-            #   - bullet item gap   : 0.4rem
-            #   - between containers: 8px spacer
+            # Rendered as plain markdown — edit text directly in INVESTMENT_THESES above.
 
-            # Row 1: Investment Thesis
-            with st.container(border=True):
-                st.markdown("##### Investment Thesis")
-                _thesis_items = "".join(
-                    f"<li style='margin-bottom:0.4rem;'>{p}</li>"
-                    for p in _thesis["theses"]
-                )
-                st.markdown(
-                    f"<ul style='margin:0;padding-left:1.2rem;'>{_thesis_items}</ul>",
-                    unsafe_allow_html=True,
-                )
+            st.markdown("##### Investment Thesis")
+            for _pt in _thesis["theses"]:
+                st.markdown(f"- {_pt}")
 
-            st.html("<div style='height: 8px;'></div>")
+            st.markdown("##### Latest Earnings")
+            for _pe in _thesis.get("latest_earnings", []):
+                st.markdown(f"- {_pe}")
 
-            # Row 2: Latest Earnings | Forward Guidance (equal-height HTML flexbox)
-            # Titles use <h5> so they inherit Streamlit's h5 styling and match ##### above
-            _earn_items = "".join(
-                f"<li style='margin-bottom:0.4rem;'>{p}</li>"
-                for p in _thesis.get("latest_earnings", [])
-            )
-            _guid_items = "".join(
-                f"<li style='margin-bottom:0.4rem;'>{p}</li>"
-                for p in _thesis.get("guidance", [])
-            )
-            st.markdown(
-                f"""<div style='display:flex;gap:1rem;align-items:stretch;'>
-  <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
-    <h5 style='margin:0 0 0.5rem 0;'>Latest Earnings</h5>
-    <ul style='margin:0;padding-left:1.2rem;'>{_earn_items}</ul>
-  </div>
-  <div style='flex:1;border:1px solid rgba(128,128,128,0.3);border-radius:0.5rem;padding:1rem;'>
-    <h5 style='margin:0 0 0.5rem 0;'>Forward Guidance</h5>
-    <ul style='margin:0;padding-left:1.2rem;'>{_guid_items}</ul>
-  </div>
-</div>""",
-                unsafe_allow_html=True,
-            )
-
-            st.html("<div style='height: 8px;'></div>")
-
-            # Row 3: Key Growth Drivers
-            with st.container(border=True):
+            _gc1, _gc2 = st.columns(2)
+            with _gc1:
+                st.markdown("##### Forward Guidance")
+                for _pg in _thesis.get("guidance", []):
+                    st.markdown(f"- {_pg}")
+            with _gc2:
                 st.markdown("##### Key Growth Drivers")
-                _gd_items = "".join(
-                    f"<li style='margin-bottom:0.4rem;'><strong>{name}</strong> — {desc}</li>"
-                    for name, desc in _thesis["growth_drivers"]
-                )
-                st.markdown(
-                    f"<ul style='margin:0;padding-left:1.2rem;'>{_gd_items}</ul>",
-                    unsafe_allow_html=True,
-                )
+                for _gname, _gdesc in _thesis["growth_drivers"]:
+                    st.markdown(f"- **{_gname}** — {_gdesc}")
 
             st.divider()
 
-            # ── Summary of DCF Assumptions ──────────────────────────────────
+            # ── Summary of DCF Assumptions (pandas DataFrames) ─────────────
             st.markdown("##### Summary of DCF Assumptions")
 
-            # Part A: Income Statement Drivers (base case only)
+            # Part A: Income Statement Drivers
             st.markdown("###### Income Statement Drivers")
             st.caption(
                 "**FY2026 Actual** anchors each assumption to the last reported fiscal year. "
-                "**Base Case** values map directly to the active scenario in the 3-Statement Model."
+                "**Bear / Base / Bull** map directly to the three scenarios in the 3-Statement Model."
             )
-
             _is_rows = _dcf["is_assumptions"]
-            _is_html_rows = "".join(
-                "<tr>"
-                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['name']}</td>"
-                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['actual']}</td>"
-                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['base']}</td>"
-                f"<td style='padding:6px 10px;vertical-align:top;font-size:13px;color:#888'>{r['note']}</td>"
-                "</tr>"
+            _is_df = pd.DataFrame([
+                {
+                    "Metric":         r["name"],
+                    "FY2026 Actual":  r["actual"],
+                    "Bear":           r.get("bear", "—"),
+                    "Base":           r["base"],
+                    "Bull":           r.get("bull", "—"),
+                    "Note":           r["note"],
+                }
                 for r in _is_rows
-            )
-            st.markdown(
-                "<table style='width:100%;border-collapse:collapse;'>"
-                "<thead><tr style='border-bottom:2px solid #e0e0e0;text-align:left;'>"
-                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Metric</th>"
-                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>FY2026 Actual</th>"
-                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Base Case</th>"
-                "<th style='padding:6px 10px;font-size:13px;'>Note</th>"
-                "</tr></thead>"
-                f"<tbody>{_is_html_rows}</tbody>"
-                "</table>",
-                unsafe_allow_html=True,
+            ]).set_index("Metric")
+            st.dataframe(_is_df, use_container_width=True,
+                column_config={
+                    "Note": st.column_config.TextColumn("Note", width="large"),
+                    "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
+                    "Bear":  st.column_config.TextColumn("Bear",  width="small"),
+                    "Base":  st.column_config.TextColumn("Base",  width="small"),
+                    "Bull":  st.column_config.TextColumn("Bull",  width="small"),
+                }
             )
 
             # Part B: DCF & Terminal Value Assumptions
             st.markdown("###### DCF & Terminal Value Assumptions")
-
             _dcf_rows = _dcf["dcf_assumptions"]
-            _dcf_html_rows = "".join(
-                "<tr>"
-                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['name']}</td>"
-                f"<td style='padding:6px 10px;vertical-align:top;white-space:nowrap;font-size:13px'>{r['base']}</td>"
-                f"<td style='padding:6px 10px;vertical-align:top;font-size:13px;color:#888'>{r['note']}</td>"
-                "</tr>"
+            _dcf_df = pd.DataFrame([
+                {
+                    "Assumption": r["name"],
+                    "Bear":       r.get("bear", "—"),
+                    "Base":       r["base"],
+                    "Bull":       r.get("bull", "—"),
+                    "Note":       r["note"],
+                }
                 for r in _dcf_rows
-            )
-            st.markdown(
-                "<table style='width:100%;border-collapse:collapse;'>"
-                "<thead><tr style='border-bottom:2px solid #e0e0e0;text-align:left;'>"
-                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Assumption</th>"
-                "<th style='padding:6px 10px;font-size:13px;white-space:nowrap;width:1%'>Base Case</th>"
-                "<th style='padding:6px 10px;font-size:13px;'>Note</th>"
-                "</tr></thead>"
-                f"<tbody>{_dcf_html_rows}</tbody>"
-                "</table>",
-                unsafe_allow_html=True,
+            ]).set_index("Assumption")
+            st.dataframe(_dcf_df, use_container_width=True,
+                column_config={
+                    "Note": st.column_config.TextColumn("Note", width="large"),
+                    "Bear": st.column_config.TextColumn("Bear", width="small"),
+                    "Base": st.column_config.TextColumn("Base", width="small"),
+                    "Bull": st.column_config.TextColumn("Bull", width="small"),
+                }
             )
             
             st.divider()
