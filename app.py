@@ -176,7 +176,7 @@ INVESTMENT_THESES = {
         "latest_earnings": [
             "NVDA reported GAAP revenue of $81.6B (+85% YoY, +20% QoQ) and gross margin expansion from 71.1% (FY2026) "
             "to 74.9% (Q1 FY2027), signalling a re-acceleration of growth for the third consecutive quarter and "
-            "indicating strong adoption of NVIDIA's Grace-Blackwell platforms.",
+            "indicating strong adoption of NVIDIA's Grace-Blackwell (GB) platforms.",
         ],
         "theses": [
             "NVDA adopts a full stack approach and remains at the forefront of AI hardware and software innovation. The release of its Vera-Rubin "
@@ -184,7 +184,7 @@ INVESTMENT_THESES = {
             "custom ASICs by hyperscalers (e.g. Google's Ironwood TPU, Amazon's AWS Trainium-3).",
             "CUDA remains a durable software moat, making switching costs structurally prohibitive for the roughly "
             "4M developers trained on the ecosystem.",
-            "NVDA's net cash position of $53.88B and strong FCF generation provide significant reserves to innovate "
+            "NVDA's net cash position of 53.88B and strong FCF generation provide significant reserves to innovate "
             "and defend its moat.",
         ],
         "guidance": [
@@ -192,15 +192,15 @@ INVESTMENT_THESES = {
             "provide full-year revenue guidance, this implies a full-year trajectory of roughly 390B, equivalent to "
             "approximately 81.3% YoY revenue growth, up from 65.5% in FY2026.",
             "NVIDIA guided a full-year effective tax rate of 16% to 18%.",
-            "NVDA announced an $80B buyback authorisation and a 25x dividend increase, with payout on 26 June 2026 "
+            "NVDA announced an 80B buyback authorisation and a 25x dividend increase, with payout on 26 June 2026 "
             "(ex-dividend: 4 June 2026), signalling management's confidence in sustained near-term cash flow generation.",
         ],
         "growth_drivers": [
         (       "Networking as a Second Revenue Engine",
-                "Data Center networking revenue hit $14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
+                "Data Center networking revenue hit 14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
                 "outpacing compute growth (+77% YoY) for the third consecutive quarter. InfiniBand, "
                 "Spectrum-X Ethernet, and NVLink are now mandatory infrastructure for GB200 NVL72 rack "
-                "deployments, structurally attaching about $1 of networking per $4 of compute."
+                "deployments."
             ),
             (
                 "Inference Inflection via Agentic AI",
@@ -212,7 +212,7 @@ INVESTMENT_THESES = {
             (
                 "Roll Out of Vera Rubin",
                 "Vera Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
-                "overlapping with continued GB300 demand. The Vera CPU is the higher-conviction near-term "
+                "overlapping with GB300 demand. The Vera CPU is the higher-conviction near-term "
                 "catalyst with CFO Kress guiding for ~$20B visibility for FY2027 thusfar, entering an additional $200B TAM. "
             ),
         ],
