@@ -1363,7 +1363,6 @@ with st.sidebar:
         "Calibrate the Confidence levels with the Confidence tab."
     )
     st.caption("🟡 = earnings reported in the last 30 days")
-    st.caption("**Last Updated: 15 May 2026**")
     user_targets    = {}
     user_confidence = {}
 
@@ -1599,8 +1598,8 @@ with tab0:
         """
         **I started this self-guided project to better understand investment 
         management and to guide the sizing of my own portfolio allocations.** 
-        It implements the skillsand knowledge that I have acquired over the last 
-        three months from *EDHEC's Advanced Portfolio Construction and Analysis* 
+        It implements the skills and knowledge that I have acquired over the last 
+        four months (Feb-May 2026) from *EDHEC's Advanced Portfolio Construction and Analysis* 
         and *Wall Street Prep's DCF Modelling Course* - all with the aim of 
         answering one question: Having derived the 1Y price target of a stock through 
         DCF analysis, how does one use this knowledge to size their portfolios?
@@ -1626,7 +1625,6 @@ with tab0:
         allocation inside a drawdown floor, allowing it to coexist with a capital 
         preservation mandate.
 
-        *Last Updated: 16 May 2026*
         """
     )
 
