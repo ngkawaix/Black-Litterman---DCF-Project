@@ -179,9 +179,9 @@ INVESTMENT_THESES = {
             "indicating strong adoption of NVIDIA's Grace-Blackwell platforms.",
         ],
         "theses": [
-            "NVDA remains at the forefront of AI hardware and software innovation. The release of its Vera-Rubin "
+            "NVDA adopts a full stack approach and remains at the forefront of AI hardware and software innovation. The release of its Vera-Rubin "
             "architecture at GTC in March 2026 further cements its lead ahead of AMD, despite growing threats from "
-            "custom silicon by hyperscalers (e.g. Google's Ironwood TPU, Amazon's Trainium).",
+            "custom ASICs by hyperscalers (e.g. Google's Ironwood TPU, Amazon's AWS Trainium-3).",
             "CUDA remains a durable software moat, making switching costs structurally prohibitive for the roughly "
             "4M developers trained on the ecosystem.",
             "NVDA's net cash position of $53.88B and strong FCF generation provide significant reserves to innovate "
@@ -196,20 +196,24 @@ INVESTMENT_THESES = {
             "(ex-dividend: 4 June 2026), signalling management's confidence in sustained near-term cash flow generation.",
         ],
         "growth_drivers": [
-            (
-                "Hyperscaler Capex Cycle",
-                "Microsoft, Google, Meta, and Amazon are guiding $280B+ in combined 2026 capex, the majority directed "
-                "at GPU cluster buildouts. NVIDIA captures an estimated 70–80% of this spend through its H100/Blackwell platforms.",
+        (       "Networking as a Second Revenue Engine",
+                "Data Center networking revenue hit $14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
+                "outpacing compute growth (+77% YoY) for the third consecutive quarter. InfiniBand, "
+                "Spectrum-X Ethernet, and NVLink are now mandatory infrastructure for GB200 NVL72 rack "
+                "deployments, structurally attaching ~$1 of networking per ~$4 of compute. "
             ),
             (
-                "Inference Inflection",
-                "Inference workloads are growing faster than training as deployed models scale to production. Higher GPU "
-                "utilisation per chip improves per-unit economics and brings a new class of enterprise buyers online.",
-            ),
+                "Inference Inflection via Agentic AI",
+                "Inference accounts for roughly two-thirds of all AI compute in 2026, up from one-third in 2023 "
+                "(Gartner), with McKinsey projecting 35% CAGR through 2030 vs. 22% for training. Agentic "
+                "AI is expected to compound demand with Huang noting that agentic systems will require more compute "
+                "steps per query compared to traditional chatbots ",
+            ),e
             (
-                "Sovereign AI",
-                "35+ national governments have commissioned dedicated GPU infrastructure. This spend is largely insulated "
-                "from US–China export restrictions and represents a durable multi-year demand runway outside the hyperscaler cycle.",
+                "Roll Out of Vera Rubin",
+                "Vera Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
+                "overlapping with continued GB300 demand. The Vera CPU is the higher-conviction near-term "
+                "catalyst with CFO Kress guiding for ~$20B visibility for FY2027 thusfar, entering an additional $200B TAM. "
             ),
         ],
     },
@@ -1917,7 +1921,7 @@ with tab1:
             st.divider()
 
             # ── Investment Thesis ──────────────────────────────────────────
-            # Rendered as plain markdown — edit text directly in INVESTMENT_THESES above.
+            # Rendered as plain markdown -  edit text directly in INVESTMENT_THESES above.
 
             st.markdown("##### Investment Thesis")
             for _pt in _thesis["theses"]:
@@ -1935,7 +1939,7 @@ with tab1:
             with _gc2:
                 st.markdown("##### Key Growth Drivers")
                 for _gname, _gdesc in _thesis["growth_drivers"]:
-                    st.markdown(f"- **{_gname}** — {_gdesc}")
+                    st.markdown(f"- **{_gname}**: {_gdesc}")
 
             st.divider()
 
