@@ -1426,9 +1426,6 @@ with st.sidebar:
 
     # ── Section 4: Add Custom Tickers ─────────────────────────────────────────
     st.subheader("4. Custom Tickers")
-    st.caption(
-
-    )
 
     _inp_col, _btn_col = st.columns([3, 1])
     with _inp_col:
