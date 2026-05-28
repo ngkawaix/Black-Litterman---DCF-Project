@@ -1828,7 +1828,7 @@ with tab1:
             )
 
             st.caption(
-                "**Updated from NVDA's Q1 FY2027 Report: 20 May 2026** ",
+                "**Updated from NVDA's Q1 FY2027 Report: 20 May 2026** "
                 "DCF Fair Value is the simple average between the perpetuity and exit multiple DCF valuations"
             )
             st.divider()
