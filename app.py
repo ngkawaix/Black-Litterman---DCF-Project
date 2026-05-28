@@ -2979,19 +2979,16 @@ with tab5:
         with st.expander("📐 Exploratory Extension: GARCH-Copula 1Y Return Forecast", expanded=False):
             st.info(
                 "**Note on this section:** The GARCH-Copula simulation was added as an exploratory "
-                "extension to understand why GBM understates tail risk, and it is not part of the core "
+                "extension to understand how GBM understates tail risk, and it is not part of the core "
                 "EDHEC coursework. The two methodological improvements over GBM are: "
-                "(1) **GARCH(1,1)** replaces the constant-volatility assumption with volatility that "
-                "clusters, meaning high-volatility days tend to follow high-volatility days, which is a "
-                "well-documented empirical property of equity returns. "
+                "(1) **GARCH(1,1)** replaces the constant-volatility assumption with volatility clustering"
+                "in different period windows."
                 "(2) **Clayton copula** replaces the Gaussian correlation structure with one that "
-                "allows correlations to spike in the lower tail, i.e. assets crash together more "
-                "than they rally together. The copula parameter θ is fitted via Maximum Likelihood "
+                "allows correlations to spike in the lower tail such that assets crash together more "
+                "while rallying independently. The copula parameter θ is fitted via Maximum Likelihood "
                 "Estimation on the standardised residuals from the GARCH step. "
                 "The practical result is a fatter left tail relative to GBM, visible in the 5th "
-                "percentile column. I explored this to understand the limitation I had already "
-                "documented in the GBM section above.",
-                icon="ℹ️",
+                "percentile column.",
             )
             st.caption(
                 "Compare the **5th percentile column** directly with the GBM table above. "
