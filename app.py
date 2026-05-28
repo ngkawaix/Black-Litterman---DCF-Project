@@ -1700,13 +1700,13 @@ with tab0:
         | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix - one view per stock |
         | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
 
-        **The intuition:** The formula is a tug-of-war between π and Q, refereed by
+        **Intuition:** The formula is a tug-of-war between π and Q, refereed by
         uncertainty. When confidence is high, Ω is small, its inverse is large, and Q
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
         its inverse shrinks, and the posterior barely moves from equilibrium. The
         covariance Σ ensures that stocks with shared risk exposures influence each
         other such that a high-conviction view on NVDA nudges the posterior for TSM too,
-        because they co-move. The table in **Views, Returns & Weights** tab show this blending in action.
+        because they move together. The table in the **Views, Returns & Weights** tab show this blending in action.
         """
     )
 
