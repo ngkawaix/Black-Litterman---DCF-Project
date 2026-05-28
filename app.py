@@ -288,7 +288,7 @@ DCF_OUTPUTS = {
                 "base":   "8.6%",
                 "bull":   "7.0%",
                 "note":   "Straight-lined at 8.6% through Stage 1, consistent with recent actuals. "
-                          "Stage 2 stepped up modestly as NVIDIA invests to defend its moat as it matures.",
+                          "Stage 2 stepped up modestly as NVIDIA invests to defend the CUDA moat against accelerating competition.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -297,7 +297,7 @@ DCF_OUTPUTS = {
                 "base":   "1.9%",
                 "bull":   "1.7%",
                 "note":   "Structurally low due to NVIDIA's direct hyperscaler sales model (no channel markup). "
-                          "Stage 2 gradually increases to 3.0% as NVIDIA as it matures.",
+                          "Stage 2 gradually increases to 3.0% as NVIDIA expands its enterprise and edge go-to-market footprint.",
             },
             {
                 "name":   "Tax Rate",
@@ -305,7 +305,7 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at 17.%, the midpoint of management's full-year FY2027 guidance. "
+                "note":   "Straight-lined at full-year FY2027 guidance of 17.0%. "
                           "FY2026 actual of 15.1% was depressed by non-recurring tax benefits and should not be extrapolated.",
             },
         ],
@@ -317,8 +317,8 @@ DCF_OUTPUTS = {
                 "base": "12.2%",
                 "bull": "12.2%",
                 "note": "12.20% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
-                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's Q1 2027 capital structure), "
-                        "Damodaran ERP = 4.24% (May 2026). "
+                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's capital structure), "
+                        "Damodaran ERP = 4.24% (May 2026 update, down from 4.66% in January). "
                         "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC effectively equals cost of equity. "
             },
             {
@@ -327,6 +327,7 @@ DCF_OUTPUTS = {
                 "base": "3.0%",
                 "bull": "4.0%",
                 "note": "Base 3.0% set marginally above long-run nominal GDP growth (~2.5%). "
+                        "Reflects NVIDIA's CUDA ecosystem durability. "
                         "Conservative relative to consensus-implied growth of 8.1% in the exit-multiple model. "
             },
             {
@@ -338,14 +339,14 @@ DCF_OUTPUTS = {
                         "as top-line growth decelerates from ~80% toward single digits by FY2036. "
                         "Peer benchmarks: AVGO 20x, ASML 22.5x, AMD 25x, QCOM 22.5x (sector median ~21.5x). "
                         "A 12.5% discount applied to the peer median reflects anticipated growth deceleration "
-                        "by the terminal year.",
+                        "and rising custom silicon competition by the terminal year.",
             },
             {
                 "name": "Implied Price: Perpetuity",
                 "bear": "~$166",
                 "base": "$175.48",
                 "bull": "~$187",
-                "note": "The perpetuity approach implies downside to the current price (as of analysis), driven by "
+                "note": "The perpetuity approach implies ~19% downside to the current price, driven by "
                         "a conservative 3% terminal growth rate at a WACC of 12.20%. The lower WACC versus "
                         "prior estimates reflects Damodaran's updated May 2026 ERP of 4.24% (vs 4.66% in January). "
             },
@@ -1376,6 +1377,8 @@ with st.sidebar:
                     label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
                 else:
                     label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
+                if _is_dcf:
+                    st.caption("Price target pinned to DCF model output")
                 
                 st.markdown(label)
 
@@ -1950,20 +1953,16 @@ with tab1:
                 {
                     "Metric":         r["name"],
                     "FY2026 Actual":  r["actual"],
-                    "Bear":           r.get("bear", "—"),
-                    "Base":           r["base"],
-                    "Bull":           r.get("bull", "—"),
+                    "Base Case":      r["base"],
                     "Note":           r["note"],
                 }
                 for r in _is_rows
             ]).set_index("Metric")
             st.dataframe(_is_df, use_container_width=True,
                 column_config={
-                    "Note": st.column_config.TextColumn("Note", width="large"),
+                    "Note":          st.column_config.TextColumn("Note",          width="large"),
                     "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
-                    "Bear":  st.column_config.TextColumn("Bear",  width="small"),
-                    "Base":  st.column_config.TextColumn("Base",  width="small"),
-                    "Bull":  st.column_config.TextColumn("Bull",  width="small"),
+                    "Base Case":     st.column_config.TextColumn("Base Case",     width="small"),
                 }
             )
 
@@ -1973,19 +1972,15 @@ with tab1:
             _dcf_df = pd.DataFrame([
                 {
                     "Assumption": r["name"],
-                    "Bear":       r.get("bear", "—"),
-                    "Base":       r["base"],
-                    "Bull":       r.get("bull", "—"),
+                    "Base Case":  r["base"],
                     "Note":       r["note"],
                 }
                 for r in _dcf_rows
             ]).set_index("Assumption")
             st.dataframe(_dcf_df, use_container_width=True,
                 column_config={
-                    "Note": st.column_config.TextColumn("Note", width="large"),
-                    "Bear": st.column_config.TextColumn("Bear", width="small"),
-                    "Base": st.column_config.TextColumn("Base", width="small"),
-                    "Bull": st.column_config.TextColumn("Bull", width="small"),
+                    "Note":      st.column_config.TextColumn("Note",      width="large"),
+                    "Base Case": st.column_config.TextColumn("Base Case", width="small"),
                 }
             )
             
@@ -2221,7 +2216,7 @@ with tab2:
             st.markdown("**📊 Systematic**")
             st.caption(
                 "No active thesis. Confidence is calibrated to stay close to "
-                "market equilibrium; the model chooses the weight, not a view."
+                "market equilibrium; the model does not choose a view."
             )
 
     st.html("<div style='height: 6px;'></div>")
@@ -2359,7 +2354,7 @@ with tab3:
     st.markdown(
         """
         **This tab walks through the full Black-Litterman pipeline in sequence.**
-        Starting from DCF price targets, it computes the excess return view (Q)
+        Starting from DCF price targets, the model computes the excess return view (Q)
         for each stock, blends it with the market-implied equilibrium return (π) using
         confidence settings, and produces the BL posterior return that the
         optimiser uses. The final section shows how those posterior returns
