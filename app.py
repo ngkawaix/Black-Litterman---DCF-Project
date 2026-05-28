@@ -2699,7 +2699,7 @@ with tab5:
         **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
         and the S&P 500**, presenting a historical wealth index, a 1-year GBM return 
         forecast and a CPPI drawdown protection analysis. While the wealth index 
-        and GBM forecast answer the question of "how does BL compare to alternative strategies?*, the CPPI analysis asks 
+        and GBM forecast answer the question of "how does BL compare to alternative strategies?", the CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
         behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
         strategies, is built for wealth accumulation. However, most real investors have a loss tolerance, 
@@ -2715,7 +2715,7 @@ with tab5:
         allocation applying the current optimal weights to the full history. This is an intentional 
         design choice rather than an oversight. As BL weights are derived from a forward-looking 
         view on price targets rather than purely from historical patterns, applying them statically 
-        must be read more simply as "how would this portfolio have done retrospectively."
+        must be read more simply as "how would this portfolio have done retrospectively?"
 
         **Model Caveats**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
