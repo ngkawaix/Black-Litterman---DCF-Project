@@ -200,14 +200,14 @@ INVESTMENT_THESES = {
                 "Data Center networking revenue hit $14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
                 "outpacing compute growth (+77% YoY) for the third consecutive quarter. InfiniBand, "
                 "Spectrum-X Ethernet, and NVLink are now mandatory infrastructure for GB200 NVL72 rack "
-                "deployments, structurally attaching ~$1 of networking per ~$4 of compute. "
+                "deployments, structurally attaching about $1 of networking per $4 of compute."
             ),
             (
                 "Inference Inflection via Agentic AI",
                 "Inference accounts for roughly two-thirds of all AI compute in 2026, up from one-third in 2023 "
                 "(Gartner), with McKinsey projecting 35% CAGR through 2030 vs. 22% for training. Agentic "
                 "AI is expected to compound demand with Huang noting that agentic systems will require more compute "
-                "steps per query compared to traditional chatbots ",
+                "steps per query compared to traditional chatbots."
             ),
             (
                 "Roll Out of Vera Rubin",
