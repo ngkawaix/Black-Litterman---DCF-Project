@@ -1381,8 +1381,6 @@ with st.sidebar:
                     label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
                 else:
                     label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
-                if _is_dcf:
-                    st.caption("Price target pinned to DCF model output")
                 
                 st.markdown(label)
 
