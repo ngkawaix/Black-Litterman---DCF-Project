@@ -1830,7 +1830,8 @@ with tab1:
             )
 
             st.caption(
-                "DCF as per latest earning Q1 FY2027 Report: 20 May 2026"
+                "**Updated as per latest earning Q1 FY2027 Report: 20 May 2026**"
+                "DCF Fair Value is the simple average between the perpetuity and exit multiple DCF valuations"
             )
             st.divider()
 
