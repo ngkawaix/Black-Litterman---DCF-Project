@@ -15,7 +15,7 @@ Deployment note:
 
 import warnings
 warnings.filterwarnings("ignore")
-
+T
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -1378,7 +1378,7 @@ with st.sidebar:
                 if ticker in TICKERS:
                     label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
                 else:
-                    label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
+                    label = f"**{ticker}**{earnings_flag}" if ticker in TICKERS else f"**{ticker}** ✦{earnings_flag}"
                 
                 st.markdown(label)
 
