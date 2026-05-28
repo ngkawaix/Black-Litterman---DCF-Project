@@ -2697,7 +2697,7 @@ with tab5:
     st.markdown(
         """
         **This tab benchmarks the Black-Litterman portfolio against four alternative strategies 
-        and the S&P 500, presenting a historical wealth index, a 1-year GBM return 
+        and the S&P 500**, presenting a historical wealth index, a 1-year GBM return 
         forecast and a CPPI drawdown protection analysis. While the wealth index 
         and GBM forecast answer the question of "how does BL compare to alternative strategies?*, the CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
