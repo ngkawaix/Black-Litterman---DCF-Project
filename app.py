@@ -196,7 +196,7 @@ INVESTMENT_THESES = {
             "(ex-dividend: 4 June 2026), signalling management's confidence in sustained near-term cash flow generation.",
         ],
         "growth_drivers": [
-        (       "Networking as a Second Revenue Engine",
+        (       "Networking",
                 "Data Center networking revenue hit 14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
                 "outpacing compute growth (+77% YoY) for the third consecutive quarter. InfiniBand, "
                 "Spectrum-X Ethernet, and NVLink are now mandatory infrastructure for GB200 NVL72 rack "
@@ -210,10 +210,10 @@ INVESTMENT_THESES = {
                 "steps per query compared to traditional chatbots."
             ),
             (
-                "Roll Out of Vera Rubin",
-                "Vera Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
+                "Vera-Rubin Shipments",
+                "Vera-Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
                 "overlapping with GB300 demand. The Vera CPU is the higher-conviction near-term "
-                "catalyst with CFO Kress guiding for ~$20B visibility for FY2027 thusfar, entering an additional $200B TAM. "
+                "catalyst with CFO Kress guiding for ~20B visibility for FY2027 thusfar, entering an additional 200B TAM. "
             ),
         ],
     },
