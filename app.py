@@ -197,7 +197,7 @@ INVESTMENT_THESES = {
         ],
         "growth_drivers": [
         (       "Networking",
-                "Data Center networking revenue hit 14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
+                "Data Centre networking revenue hit 14.8B in Q1 FY2027, up 199% YoY and 35% QoQ, "
                 "outpacing compute growth (+77% YoY) for the third consecutive quarter. InfiniBand, "
                 "Spectrum-X Ethernet, and NVLink are now mandatory infrastructure for GB200 NVL72 rack "
                 "deployments."
