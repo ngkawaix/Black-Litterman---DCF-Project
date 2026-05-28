@@ -288,7 +288,7 @@ DCF_OUTPUTS = {
                 "base":   "8.6%",
                 "bull":   "7.0%",
                 "note":   "Straight-lined at 8.6% through Stage 1, consistent with recent actuals. "
-                          "Stage 2 stepped up modestly as NVIDIA invests to defend the CUDA moat against accelerating competition.",
+                          "Stage 2 stepped up modestly as NVIDIA invests to defend its moat as it matures.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -297,7 +297,7 @@ DCF_OUTPUTS = {
                 "base":   "1.9%",
                 "bull":   "1.7%",
                 "note":   "Structurally low due to NVIDIA's direct hyperscaler sales model (no channel markup). "
-                          "Stage 2 gradually increases to 3.0% as NVIDIA expands its enterprise and edge go-to-market footprint.",
+                          "Stage 2 gradually increases to 3.0% as NVIDIA as it matures.",
             },
             {
                 "name":   "Tax Rate",
@@ -305,7 +305,7 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at full-year FY2027 guidance of 17.0%. "
+                "note":   "Straight-lined at 17.%, the midpoint of management's full-year FY2027 guidance. "
                           "FY2026 actual of 15.1% was depressed by non-recurring tax benefits and should not be extrapolated.",
             },
         ],
@@ -317,8 +317,8 @@ DCF_OUTPUTS = {
                 "base": "12.2%",
                 "bull": "12.2%",
                 "note": "12.20% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
-                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's capital structure), "
-                        "Damodaran ERP = 4.24% (May 2026 update, down from 4.66% in January). "
+                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's Q1 2027 capital structure), "
+                        "Damodaran ERP = 4.24% (May 2026). "
                         "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC effectively equals cost of equity. "
             },
             {
@@ -327,7 +327,6 @@ DCF_OUTPUTS = {
                 "base": "3.0%",
                 "bull": "4.0%",
                 "note": "Base 3.0% set marginally above long-run nominal GDP growth (~2.5%). "
-                        "Reflects NVIDIA's CUDA ecosystem durability. "
                         "Conservative relative to consensus-implied growth of 8.1% in the exit-multiple model. "
             },
             {
@@ -339,14 +338,14 @@ DCF_OUTPUTS = {
                         "as top-line growth decelerates from ~80% toward single digits by FY2036. "
                         "Peer benchmarks: AVGO 20x, ASML 22.5x, AMD 25x, QCOM 22.5x (sector median ~21.5x). "
                         "A 12.5% discount applied to the peer median reflects anticipated growth deceleration "
-                        "and rising custom silicon competition by the terminal year.",
+                        "by the terminal year.",
             },
             {
                 "name": "Implied Price: Perpetuity",
                 "bear": "~$166",
                 "base": "$175.48",
                 "bull": "~$187",
-                "note": "The perpetuity approach implies ~19% downside to the current price, driven by "
+                "note": "The perpetuity approach implies downside to the current price (as of analysis), driven by "
                         "a conservative 3% terminal growth rate at a WACC of 12.20%. The lower WACC versus "
                         "prior estimates reflects Damodaran's updated May 2026 ERP of 4.24% (vs 4.66% in January). "
             },
@@ -1377,8 +1376,6 @@ with st.sidebar:
                     label = f"**{ticker}**{_dcf_tag}{earnings_flag}"
                 else:
                     label = f"**{ticker}**{flag}" if ticker in TICKERS else f"**{ticker}** ✦{flag}"
-                if _is_dcf:
-                    st.caption("Price target pinned to DCF model output")
                 
                 st.markdown(label)
 
