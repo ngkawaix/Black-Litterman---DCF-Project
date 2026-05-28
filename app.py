@@ -208,7 +208,7 @@ INVESTMENT_THESES = {
                 "(Gartner), with McKinsey projecting 35% CAGR through 2030 vs. 22% for training. Agentic "
                 "AI is expected to compound demand with Huang noting that agentic systems will require more compute "
                 "steps per query compared to traditional chatbots ",
-            ),e
+            ),
             (
                 "Roll Out of Vera Rubin",
                 "Vera Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
