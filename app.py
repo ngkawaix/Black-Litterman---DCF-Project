@@ -283,7 +283,7 @@ DCF_OUTPUTS = {
                 "base":   "74.5%",
                 "bull":   "75–77%",
                 "note":   "74.5% is the midpoint of management's Q2 FY2027 gross margin guidance. "
-                          "Stage 2 modest compression assumes inference pricing pressure as customers gain more architectural choice.",
+                          "Stage 2 modest compression assumes inference pricing pressure as hyperscalers compete with NVDA on pricing.",
             },
             {
                 "name":   "R&D % of Revenue",
@@ -292,7 +292,7 @@ DCF_OUTPUTS = {
                 "base":   "8.6%",
                 "bull":   "7.0%",
                 "note":   "Straight-lined at 8.6% through Stage 1, consistent with recent actuals. "
-                          "Stage 2 stepped up modestly as NVIDIA invests to defend the CUDA moat against accelerating competition.",
+                          "Stage 2 stepped up modestly as NVIDIA matures.",
             },
             {
                 "name":   "SG&A % of Revenue",
@@ -300,8 +300,8 @@ DCF_OUTPUTS = {
                 "bear":   "2.2%",
                 "base":   "1.9%",
                 "bull":   "1.7%",
-                "note":   "Structurally low due to NVIDIA's direct hyperscaler sales model (no channel markup). "
-                          "Stage 2 gradually increases to 3.0% as NVIDIA expands its enterprise and edge go-to-market footprint.",
+                "note":   "Structurally low due to NVIDIA's direct hyperscaler sales model. "
+                          "Stage 2 gradually increases to 3.0% as NVIDIA matures.",
             },
             {
                 "name":   "Tax Rate",
@@ -309,8 +309,7 @@ DCF_OUTPUTS = {
                 "bear":   "17.0%",
                 "base":   "17.0%",
                 "bull":   "17.0%",
-                "note":   "Straight-lined at full-year FY2027 guidance of 17.0%. "
-                          "FY2026 actual of 15.1% was depressed by non-recurring tax benefits and should not be extrapolated.",
+                "note":   "Straight-lined at 17% midpoint of Q1 full-year FY2027 guidance. "
             },
         ],
         # DCF and terminal value assumptions: no FY2026 Actual column for these rows.
@@ -350,16 +349,15 @@ DCF_OUTPUTS = {
                 "bear": "~$166",
                 "base": "$175.48",
                 "bull": "~$187",
-                "note": "The perpetuity approach implies ~19% downside to the current price, driven by "
-                        "a conservative 3% terminal growth rate at a WACC of 12.20%. The lower WACC versus "
-                        "prior estimates reflects Damodaran's updated May 2026 ERP of 4.24% (vs 4.66% in January). "
+                "note": "The perpetuity approach implies a downside to the current price, driven by "
+                        "a conservative 3% terminal growth rate at a WACC of 12.20%. "
             },
             {
                 "name": "Implied Price: Exit Multiple",
                 "bear": "~$261",
                 "base": "$281.22",
                 "bull": "~$301",
-                "note": "Exit multiple approach implies ~31% upside to the current price driven by a 19x exit EV/EBITDA "
+                "note": "Exit multiple approach implies an upside to the current price driven by a 19x exit EV/EBITDA "
                         "multiple implying a 7.9% terminal growth rate. The merged fair value of $228.35 is the simple "
                         "average of both the exit multiple and perpetuity approaches."
             },
