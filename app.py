@@ -1427,20 +1427,22 @@ with st.sidebar:
     # ── Section 4: Add Custom Tickers ─────────────────────────────────────────
     st.subheader("4. Custom Tickers")
     st.caption(
-        "Add any valid Yahoo Finance ticker. "
-        "Tickers must have at least **1 008 trading days (~4 years)** of data from your chosen "
-        "start date and less than 5% missing values before being admitted. "
-        "A shorter-history ticker would truncate the covariance and backtest window for every "
-        "other stock in the universe."
+
     )
 
     _inp_col, _btn_col = st.columns([3, 1])
     with _inp_col:
         _new_ticker_raw = st.text_input(
             "Ticker symbol",
-            placeholder="e.g. SPOT",
+            placeholder="e.g. CRM",
             key="new_ticker_input",
             label_visibility="collapsed",
+            help = ("Add any valid Yahoo Finance ticker. "
+                    "Tickers must have at least **1 008 trading days (~4 years)** of data from your chosen "
+                    "start date and less than 5% missing values before being admitted. "
+                    "A shorter-history ticker would truncate the covariance and backtest window for every "
+                    "other stock in the universe."
+                   ),
         )
     with _btn_col:
         _add_clicked = st.button("Add", use_container_width=True, key="add_ticker_btn")
