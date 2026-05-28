@@ -1728,6 +1728,8 @@ with tab1:
         and see the resulting portfolio allocation displayed in the Views, Returns & Weights tab.
         """
     )
+    
+    st.divider()
 
     # ── Section 1: Stock Universe & Selection Criteria ────────────────────────
     st.markdown("#### 1. Stock Universe & Selection Criteria")
@@ -1770,9 +1772,7 @@ with tab1:
             # ── Placeholder for companies without a completed model ────────────
             if _ticker not in INVESTMENT_THESES or _ticker not in DCF_OUTPUTS:
                 st.info(
-                    f"**{_ticker}**: DCF model in progress. This tab will show the full "
-                    "investment thesis, football field valuation, and assumptions table once "
-                    "the Wall Street Prep model is finalised.",
+                    f"**{_ticker}**: DCF model in progress.",
                     icon="⚡",
                 )
                 continue
@@ -1830,10 +1830,11 @@ with tab1:
             )
 
             st.caption(
-                "**Updated as per latest earning Q1 FY2027 Report: 20 May 2026**"
+                "**Updated from NVDA's Q1 FY2027 Report: 20 May 2026** ",
                 "DCF Fair Value is the simple average between the perpetuity and exit multiple DCF valuations"
             )
             st.divider()
+
 
             # ── Football Field Valuation ────────────────────────────────────
             st.markdown("##### DCF Valuation Football Field")
