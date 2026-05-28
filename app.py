@@ -3296,5 +3296,5 @@ st.divider()
 st.caption(
     "⚠️ **Disclaimer**: This app is for educational and personal research purposes only. "
     "Nothing here constitutes financial advice. All data is sourced from Yahoo Finance and FRED. "
-    "Price targets are personal estimates -- not investment recommendations."
+    "Price targets are personal estimates and are not investment recommendations."
 )
