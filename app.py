@@ -1706,7 +1706,7 @@ with tab0:
         its inverse shrinks, and the posterior barely moves from equilibrium. The
         covariance Σ ensures that stocks with shared risk exposures influence each
         other such that a high-conviction view on NVDA nudges the posterior for TSM too,
-        because they co-move. The table in the next tab shows this blending in action.
+        because they co-move. The table in **Views, Returns & Weights** tab show this blending in action.
         """
     )
 
@@ -1722,7 +1722,7 @@ with tab1:
         manual DCF analysis, the app utilises aggregate price targets pulled automatically from Yahoo Finance.
         Stock tickers with DCF analysis that I have conducted override the price targets by analysts and reflect
         my personal view on the valuation of those companies (NVDA available, META coming soon).
-        You may override the price targets in the bar, adjust the confidence levels under the Confidence tab, 
+        You may override the price targets in the bar, adjust the confidence levels under the **Confidence** tab, 
         and see the resulting portfolio allocation displayed in the Views, Returns & Weights tab.
         """
     )
@@ -2721,8 +2721,8 @@ with tab5:
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
         This comparison is best read as an illustration of the structural differences between BL and
         the other strategies rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
-        provides a more comparable forward-looking view, though as noted in the Simulation & Stress 
-        Tests tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
+        provides a more comparable forward-looking view, though as noted in the **Simulation & Stress 
+        Tests** tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
         a tail-risk estimate.
         """
         )
