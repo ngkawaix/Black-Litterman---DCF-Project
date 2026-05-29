@@ -1739,8 +1739,8 @@ with tab1:
         FCF margin was deliberately excluded as a screen to avoid penalising compounders like AMZN, 
         MSFT, and GOOGL that are in a heavy capex cycle for AI infrastructure.
         
-        Two names warrant a note: **FICO** carries negative book equity from sustained buybacks, 
-        not financial distress. **ASML** is the sole global EUV lithography supplier and is 
+        Two names warrant a note: FICO carries negative book equity from sustained buybacks, 
+        not financial distress. ASML is the sole global EUV lithography supplier and is 
         structurally irreplaceable in the semiconductor supply chain.
         """
     )
