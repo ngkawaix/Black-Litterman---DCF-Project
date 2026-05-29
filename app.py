@@ -1592,7 +1592,7 @@ with tab0:
         **I started this self-guided project to better understand investment 
         management and to guide the sizing of my own portfolio allocations.** 
         It implements the skills and knowledge that I have acquired over the last 
-        four months (Feb-May 2026) from *EDHEC's Advanced Portfolio Construction and Analysis* 
+        few months from *EDHEC's Advanced Portfolio Construction and Analysis* 
         and *Wall Street Prep's DCF Modelling Course* - all with the aim of 
         answering one question: Having derived the 1Y price target of a stock through 
         DCF analysis, how does one use this knowledge to size their portfolios?
@@ -1650,10 +1650,10 @@ with tab0:
     st.markdown("#### How Black-Litterman Works")
     st.markdown(
         """
-        Most portfolio optimisers have a fundamental problem: feed them expected returns
+        Most portfolio optimisers have a well-known flaw. Feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
         unstable allocations (i.e. prone to error maximisation where even small estimation errors
-        result in highly concentrated portfolios where no sensible investor would put their money into).
+        result in highly concentrated portfolios where no sensible investor would actually hold).
 
         **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
@@ -1661,12 +1661,13 @@ with tab0:
 
         The model has two inputs:
 
-        - **The market prior (π)** - what the market implies everyone should expect,
+        - **The market prior (π)**: what the market implies everyone should expect,
           derived by reverse-engineering the CAPM: if every investor holds the market
           portfolio, what expected returns would justify current prices and weights?
-          This is the baseline the model starts from.
+          This is the baseline the model starts from. Note that the market prior for this app
+          uses the stock universe capweights and not capweights as derived from the S&P 500.
 
-        - **Analyst views (Q)** - the excess return implied by each DCF price target
+        - **Analyst views (Q)**: the excess return implied by each DCF price target
           (total return minus the risk-free rate). This is the forward-looking judgment layer.
 
         It then blends them using a precision-weighted average. *Precision* is inverse
@@ -1685,21 +1686,23 @@ with tab0:
 
         | Symbol | Name | What it means |
         |--------|------|---------------|
-        | **μ_BL** | Posterior expected return | The model's final blended return estimate - what feeds into the optimiser |
+        | **μ_BL** | Posterior expected return | The model's final blended return estimate which feeds into the optimiser |
         | **π** (pi) | Market-implied equilibrium return | What the market collectively expects, derived from cap weights and risk aversion |
         | **Q** | Analyst views | Excess return implied by each DCF price target (total return minus risk-free rate) |
-        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together - captures correlation risk |
-        | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller = trust the market more |
-        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix - one view per stock |
+        | **Σ** (Sigma) | Covariance matrix | How much each stock moves, and how they move together, capturing correlation risk |
+        | **τ** (tau) | Prior uncertainty scalar | How much to distrust the market prior; smaller means more trust in the market |
+        | **P** | View matrix | Maps each view to the stocks it applies to; here an identity matrix for one view per stock |
         | **Ω** (Omega) | View uncertainty matrix | How uncertain each analyst view is; computed from the confidence sliders via the Idzorek method |
 
         **Intuition:** The formula is a tug-of-war between π and Q, refereed by
         uncertainty. When confidence is high, Ω is small, its inverse is large, and Q
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
-        its inverse shrinks, and the posterior barely moves from equilibrium. The
-        covariance Σ ensures that stocks with shared risk exposures influence each
-        other such that a high-conviction view on NVDA nudges the posterior for TSM too,
-        because they move together. The table in the **Views, Returns & Weights** tab show this blending in action.
+        its inverse shrinks, and the posterior barely moves from equilibrium. The covariance Σ 
+        ensures that stocks with shared risk exposures influence each other. 
+        A high-conviction view on NVDA shifts the posterior expected return for TSM too, 
+        because their historical co-movement is baked into how the model distributes that 
+        view across the universe. The table in the **Views, Returns & Weights** tab show 
+        this blending in action.
         """
     )
 
