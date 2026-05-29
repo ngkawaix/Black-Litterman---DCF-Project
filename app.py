@@ -558,7 +558,7 @@ def load_valuation_metrics(tickers):
             "EV/EBITDA":   info.get("enterpriseToEbitda",           None),
             "P/S":         info.get("priceToSalesTrailing12Months", None),
             "P/B":         info.get("priceToBook",                  None),
-            "Debt/Equity"  info.get("debtToEquity",                 None),
+            "Debt/Equity": info.get("debtToEquity",                 None),
             "Last Earnings": last_earnings,
             "Next Earnings": next_earnings,
         }
