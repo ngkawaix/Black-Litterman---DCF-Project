@@ -1751,7 +1751,8 @@ with tab1:
         """
     )
 
-    load_valuation_metrics(active_tickers)
+    valuation_metrics = load_valuation_metrics(active_tickers)
+    st.dataframe(valuation_metrics, use_container_width=False)
     
     st.divider()
 
