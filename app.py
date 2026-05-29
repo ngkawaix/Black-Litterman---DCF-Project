@@ -1793,7 +1793,7 @@ with tab1:
                 help="Latest closing price, live from Yahoo Finance",
             )
             _vm2.metric(
-                "DCF Fair Value",
+                "**DCF Fair Value**",
                 f"${_fair_value:,.2f}",
                 f"{_upside:+.1%}",
                 delta_color="normal",
