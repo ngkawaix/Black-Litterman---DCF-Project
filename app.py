@@ -1731,10 +1731,9 @@ with tab1:
         **(2) debt-to-equity below 1**, **(3) 5-year revenue growth above 15%**, and 
         **(4) minimum market cap of $10 billion**, producing a candidate list of roughly 42 stocks. 
         From this, I selected businesses with identifiable competitive moats and a reasonable 
-        spread across sectors. Not all positions carry an active thesis for most with the  
-        allocation defering to the market prior and with views only reserved for names where I have 
-        done deeper research.
-
+        spread across sectors. Not all positions carry an active thesis for most with the allocation defering
+        to the market prior and with views only reserved for names where I have done deeper research.
+        
         ROIC was chosen as the primary filter because it measures capital efficiency independent of 
         leverage. Sustained high ROIC is one of the most reliable indicators of a durable moat. 
         FCF margin was deliberately excluded as a screen to avoid penalising compounders like AMZN, 
