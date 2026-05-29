@@ -92,9 +92,7 @@ RESEARCH_TIERS: dict = {
                 "Completed DCF (May 2026) yields a merged fair value of $228.35, the simple "
                 "average of the perpetuity approach ($175.48) and the exit-EBITDA approach "
                 "($281.22). Base-case WACC of 12.20% (Rf=4.50%, \u03b2=1.79 industry-adjusted, "
-                "Damodaran ERP=4.24% May 2026 update); the \u0024106 spread between the two methods "
-                "is the honest answer to terminal value uncertainty for a high-growth compounder: the perpetuity "
-                "penalises via the discount rate; the exit multiple captures near-term earnings momentum. "
+                "Damodaran ERP=4.24% May 2026 update). "
                 "Confidence of 0.45 reflects that spread and is a genuine acknowledgment of uncertainty, "
                 "not a weak view on the business."
             ),
@@ -113,24 +111,18 @@ RESEARCH_TIERS: dict = {
         "GOOGL": (
             "Personal holding. Search +19% YoY and Cloud +63% YoY demonstrate durable "
             "compounding across both core and AI-driven revenue as per Q1 FY2026 earnings announced on 29 April 2026. "
-            "I hold a bullish view on the long-run thesis. Confidence at 0.15 is modest, as the target sits close to "
-            "market-implied, reflecting that I largely agree with the market rather than "
-            "trying to override it."
+            "I hold a bullish view on the long-run thesis. Confidence at 0.15 as the target sits close to market-implied, "
+            "reflecting broad agreement with the market rather than a strong override."
         ),
         "TSM": (
             "Personal holding. Dominant advanced-node manufacturer underpinning the global "
-            "AI infrastructure stack. The target is set 4% below market-implied as a "
-            "deliberate discount for Taiwan geopolitical risk, which is real and unresolvable "
-            "within a 1-year horizon. Confidence at 0.25 preserves the discount signal "
+            "AI infrastructure stack. Confidence at 0.25 preserves a discount for Taiwan's country risk "
             "without making TSM a dominant underweight."
         ),
         "ASML": (
-            "Not currently holding. ASML is the sole global EUV supplier with no credible "
-            "competitive threat and demand visibility into 2027, but the business quality is "
-            "not in question. The caution is valuation: the recent price run-up has moved "
-            "the stock above what I think is justified on a near-term basis, limiting "
-            "margin of safety. Confidence at 0.10 reflects this: I have no new information "
-            "advantage over a market that already prices the EUV monopoly premium."
+            "ASML is the sole global EUV supplier with no credible competitive threat  "
+            "and demand visibility into 2027. Confidence at 0.10 reflects caution with valuation "
+            "with the cost run up eroding at Margin of Safety (MoS). Premium is priced in at current valuations. "
         ),
     },
 }
@@ -566,6 +558,7 @@ def load_valuation_metrics(tickers):
             "EV/EBITDA":   info.get("enterpriseToEbitda",           None),
             "P/S":         info.get("priceToSalesTrailing12Months", None),
             "P/B":         info.get("priceToBook",                  None),
+            "Debt/Equity"  info.get("debtToEquity",                 None),
             "Last Earnings": last_earnings,
             "Next Earnings": next_earnings,
         }
@@ -1718,12 +1711,12 @@ with tab1:
     st.markdown(
         """
         **This tab explains the selection of the stock universe, and the derivation of the price
-        targets used for Max Sharpe Ratio portfolio allocator.** For most stocks which do not have a
-        manual DCF analysis, the app utilises aggregate price targets pulled automatically from Yahoo Finance.
+        targets used for the BL model.** For most stocks which do not have a
+        manual DCF analysis, I applied aggregate price targets pulled automatically from Yahoo Finance.
         Stock tickers with DCF analysis that I have conducted override the price targets by analysts and reflect
         my personal view on the valuation of those companies (NVDA available, META coming soon).
-        You may override the price targets in the bar, adjust the confidence levels under the **Confidence** tab, 
-        and see the resulting portfolio allocation displayed in the Views, Returns & Weights tab.
+        You may override the price targets in the sidebar, adjust the confidence levels under the **Confidence** tab, 
+        and see the resulting portfolio allocation displayed in the **Views, Returns & Weights** tab.
         """
     )
     
@@ -1733,26 +1726,25 @@ with tab1:
     st.markdown("#### 1. Stock Universe & Selection Criteria")
     st.markdown(
         """
-        The 17 stocks in this portfolio were selected through a systematic fundamental screen
-        using four criteria: **(1) 5-year average ROIC above 15%**, **(2) debt-to-equity below 1**,
-        **(3) consecutive revenue growth over 5 years**, and **(4) a minimum market cap of $10 billion**.
-        ROIC was chosen as the primary quality filter because it measures how efficiently a company
-        converts capital into profit. Sustained high ROIC over multiple years is one of the most
-        reliable indicators of a durable competitive advantage. FCF margin was deliberately not used
-        as the primary screen as it would exclude high-quality compounders like AMZN, MSFT, and GOOGL
-        which are in an unprecedented capex cycle for data centre buildouts.
+        The 17 stocks were selected through a combination of quantitative screening and qualitative 
+        judgment. The initial screen filtered for **(1) 5-year average ROIC above 15%**, 
+        **(2) debt-to-equity below 1**, **(3) 5-year revenue growth above 15%**, and 
+        **(4) minimum market cap of $10 billion**, producing a candidate list of roughly 42 stocks. 
+        From this, I selected businesses with identifiable competitive moats and a reasonable 
+        spread across sectors. Not all positions carry an active thesis for most with the  
+        allocation defering to the market prior and with views only reserved for names where I have 
+        done deeper research.
 
-        The resulting universe is concentrated in technology, semiconductors, payments infrastructure,
-        and financial data, sectors where capital-light business models and high switching costs tend
-        to produce durable moats. Two names warrant a note: FICO carries negative book equity due to
-        sustained buybacks rather than distress, which causes standard debt screens to misread it;
-        ASML is the sole supplier of extreme ultraviolet lithography equipment globally, making it
-        structurally irreplaceable within the AI infrastructure stack.
+        ROIC was chosen as the primary filter because it measures capital efficiency independent of 
+        leverage. Sustained high ROIC is one of the most reliable indicators of a durable moat. 
+        FCF margin was deliberately excluded as a screen to avoid penalising compounders like AMZN, 
+        MSFT, and GOOGL that are in a heavy capex cycle for AI infrastructure.
+        
+        Two names warrant a note: **FICO** carries negative book equity from sustained buybacks, 
+        not financial distress. **ASML** is the sole global EUV lithography supplier and is 
+        structurally irreplaceable in the semiconductor supply chain.
         """
     )
-
-    valuation_metrics = load_valuation_metrics(active_tickers)
-    st.dataframe(valuation_metrics, use_container_width=False)
     
     st.divider()
 
