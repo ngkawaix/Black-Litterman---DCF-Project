@@ -1751,6 +1751,8 @@ with tab1:
         """
     )
 
+    load_valuation_metrics(active_tickers)
+    
     st.divider()
 
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
