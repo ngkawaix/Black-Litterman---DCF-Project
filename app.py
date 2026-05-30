@@ -1744,7 +1744,7 @@ with tab1:
     # ── Section 2: Individual DCF Models ──────────────────────────────────────
     st.markdown("#### 2. Individual DCF Models")
     st.caption(
-        "✅ NVDA model is complete; ❌ META is in progress. "
+        "✅ NVDA model is complete; ❌ META coming soon. "
         "All other stocks use analyst consensus targets from Yahoo Finance in the BL model."
     )
 
@@ -2692,9 +2692,8 @@ with tab5:
         behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
         strategies, is built for wealth accumulation. However, most real investors have a loss tolerance, 
         and cannot afford to absorb drawdowns like the 34% COVID crash and simply wait for recovery. 
-        CPPI wraps a dynamic floor around BL, creating a version of the portfolio that a 
-        capital-constrained investor could hold. Comparing the two reveals the cost of that 
-        protection in terms of forgone upside.
+        CPPI wraps a dynamic floor around BL, creating a version of the portfolio that an 
+        investor could hold. Comparing the two reveals the cost of that protection in terms of forgone upside.
 
         The historical wealth index uses a rolling backtest with the estimation window set in the 
         sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, and Risk Parity are all 
