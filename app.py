@@ -103,7 +103,7 @@ RESEARCH_TIERS: dict = {
     "TACTICAL": {
         "AMZN": (
             "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
-            "operating margin represent a genuine inflection from investment phase to "
+            "operating margin represent an inflection from investment phase to "
             "profitable scale. Bullish thesis, but confidence is kept at 0.25 because the "
             "target is near market-implied."
         ),
@@ -145,7 +145,7 @@ def render_rationale(ticker: str) -> str:
         return f"[Tactical] {RESEARCH_TIERS['TACTICAL'][ticker]}"
     return (
         "[Systematic] No active thesis; "
-        "confidence calibrated to defer to market-prior equilibrium signal."
+        "confidence calibrated to defer to the universe-implied equlibrium return  (π) ."
     )
 
 STRESS_PERIODS = {
@@ -1604,7 +1604,7 @@ with tab0:
         than wealth preservation.** Institutions with fixed payment obligations, 
         such as sovereign wealth funds, would instead adopt a liability-driven approach, 
         matching liability payment schedules to future cash outflows. The CPPI framework in the 
-        **Strategy Comparison* tab is one bridge between the two: it wraps the BL equity 
+        **Strategy Comparison** tab is one bridge between the two: it wraps the BL equity 
         allocation inside a drawdown floor, allowing it to coexist with a capital 
         preservation mandate.
 
@@ -2489,10 +2489,10 @@ with tab4:
         historical market shocks to evaluate performance during systemic crises.
 
         **Model Caveats**: While GBM captures *typical* market uncertainty, it assumes that
-        market returnsn follow a normal Gaussian distribution. 
+        market returns follow a normal Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
-        stocks that are otherwise not correlated all fall together, which a strandard GBM will 
+        stocks that are otherwise not correlated all fall together, which a standard GBM will 
         understate. The Monte Carlo simulation therefore represents 
         a baseline for normal market regimes, while the historical stress test provides 
         the necessary reality check for tail risk.
