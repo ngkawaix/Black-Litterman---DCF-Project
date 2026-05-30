@@ -1516,15 +1516,6 @@ with st.sidebar:
     )
     estimation_window = estimation_window_yrs * 252
 
-    st.divider()
-    st.caption(
-        "🔮 **DCF integration coming soon** -- once the Wall Street Prep models "
-        "are finalised, xlwings will pull targets directly from Excel into the "
-        "views matrix above."
-    )
-
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA  (price data and metadata already fetched before the sidebar)
 # ─────────────────────────────────────────────────────────────────────────────
