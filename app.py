@@ -61,10 +61,10 @@ BASE_TARGETS = {
 BASE_CONFIDENCE = {
     "AAPL": 0.20, "ADBE": 0.15, "AMAT": 0.15,
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
-    "FICO": 0.45, "GOOGL":0.15, "LRCX": 0.10,
-    "MA":   0.55, "META": 0.65, "MSCI": 0.55,
-    "MSFT": 0.60, "NFLX": 0.30, "NVDA": 0.45,
-    "TSM":  0.25, "V":    0.50,
+    "FICO": 0.25, "GOOGL":0.15, "LRCX": 0.10,
+    "MA":   0.55, "META": 0.25, "MSCI": 0.25,
+    "MSFT": 0.60, "NFLX": 0.25, "NVDA": 0.45,
+    "TSM":  0.25, "V":    0.25,
 }
 
 # ── DCF Override Dict ─────────────────────────────────────────────────────────
@@ -101,6 +101,14 @@ RESEARCH_TIERS: dict = {
 
     # ── Tier 2: Tactical / Thematic (personal thesis, no full model) ──────────
     "TACTICAL": {
+        "MA": (
+            "High conviction in the long-run durability of the payments network and its pricing power. "
+            "Confidence at 0.55 reflects a genuine bullish lean without a full model."
+        ),
+        "MSFT": (
+            "Strongest enterprise moat in the universe with deep AI integration across cloud and productivity. "
+            "Confidence at 0.60 reflects strong conviction in the long-run compounding thesis."
+        ),
         "AMZN": (
             "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
             "operating margin represent an inflection from investment phase to "
