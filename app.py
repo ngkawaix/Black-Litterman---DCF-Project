@@ -62,7 +62,7 @@ BASE_CONFIDENCE = {
     "AAPL": 0.20, "ADBE": 0.15, "AMAT": 0.15,
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
     "FICO": 0.25, "GOOGL":0.15, "LRCX": 0.10,
-    "MA":   0.55, "META": 0.25, "MSCI": 0.25,
+    "MA":   0.25, "META": 0.25, "MSCI": 0.25,
     "MSFT": 0.60, "NFLX": 0.25, "NVDA": 0.45,
     "TSM":  0.25, "V":    0.25,
 }
@@ -101,28 +101,24 @@ RESEARCH_TIERS: dict = {
 
     # ── Tier 2: Tactical / Thematic (personal thesis, no full model) ──────────
     "TACTICAL": {
-        "MA": (
-            "High conviction in the long-run durability of the payments network and its pricing power. "
-            "Confidence at 0.55 reflects a genuine bullish lean without a full model."
-        ),
         "MSFT": (
             "Strongest enterprise moat in the universe with deep AI integration across cloud and productivity. "
             "Confidence at 0.60 reflects strong conviction in the long-run compounding thesis."
         ),
         "AMZN": (
-            "Personal holding. AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
+            "AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
             "operating margin represent an inflection from investment phase to "
             "profitable scale. Bullish thesis, but confidence is kept at 0.25 because the "
             "target is near market-implied."
         ),
         "GOOGL": (
-            "Personal holding. Search +19% YoY and Cloud +63% YoY demonstrate durable "
+            "Search +19% YoY and Cloud +63% YoY demonstrate durable "
             "compounding across both core and AI-driven revenue as per Q1 FY2026 earnings announced on 29 April 2026. "
-            "I hold a bullish view on the long-run thesis. Confidence at 0.15 as the target sits close to market-implied, "
+            "Confidence at 0.15 as the target sits close to market-implied, "
             "reflecting broad agreement with the market rather than a strong override."
         ),
         "TSM": (
-            "Personal holding. Dominant advanced-node manufacturer underpinning the global "
+            "Dominant advanced-node manufacturer underpinning the global "
             "AI infrastructure stack. Confidence at 0.25 preserves a discount for Taiwan's country risk "
             "without making TSM a dominant underweight."
         ),
