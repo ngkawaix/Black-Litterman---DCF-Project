@@ -93,8 +93,7 @@ RESEARCH_TIERS: dict = {
                 "average of the perpetuity approach ($175.48) and the exit-EBITDA approach "
                 "($281.22). Base-case WACC of 12.20% (Rf=4.50%, \u03b2=1.79 industry-adjusted, "
                 "Damodaran ERP=4.24% May 2026 update). "
-                "Confidence of 0.45 reflects that spread and is an acknowledgment of uncertainty "
-                "and is not a weak view on the business."
+                "Confidence of 0.45 reflects an acknowledgment of uncertainty based on the wide spread of the two valuation methods"
             ),
             "date": "May 2026",
         },
@@ -1722,8 +1721,8 @@ with tab1:
         **(2) debt-to-equity below 1**, **(3) 5-year revenue growth above 15%**, and 
         **(4) minimum market cap of $10 billion**, producing a candidate list of roughly 42 stocks. 
         From this, I selected businesses with identifiable competitive moats and a reasonable 
-        spread across sectors. Not all positions carry an active thesis for most with the allocation defering
-        to the market prior and with views only reserved for names where I have done deeper research.
+        spread across sectors. Most positions don't carry an active thesis; the allocation defers 
+        to the market prior, with views reserved for names where I've done deeper research.
         
         ROIC was chosen as the primary filter because it measures capital efficiency independent of 
         leverage. Sustained high ROIC is one of the most reliable indicators of a durable moat. 
@@ -2700,7 +2699,7 @@ with tab5:
         **Model Caveats**: The historical comparison is not a like-for-like backtest. 
         The rolling strategies adapt to new data over time while BL holds fixed weights throughout. 
         This comparison is best read as an illustration of the structural differences between BL and
-        the other strategies rather than a performance horse race. The 1-Year Monte Carlo Return Forecast in Section 2 
+        the other strategies. The 1-Year Monte Carlo Return Forecast in Section 2 
         provides a more comparable forward-looking view, though as noted in the **Simulation & Stress 
         Tests** tab, GBM paths assume Gaussian returns and should be treated as a baseline rather than 
         a tail-risk estimate.
