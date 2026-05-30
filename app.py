@@ -93,8 +93,8 @@ RESEARCH_TIERS: dict = {
                 "average of the perpetuity approach ($175.48) and the exit-EBITDA approach "
                 "($281.22). Base-case WACC of 12.20% (Rf=4.50%, \u03b2=1.79 industry-adjusted, "
                 "Damodaran ERP=4.24% May 2026 update). "
-                "Confidence of 0.45 reflects that spread and is a genuine acknowledgment of uncertainty, "
-                "not a weak view on the business."
+                "Confidence of 0.45 reflects that spread and is an acknowledgment of uncertainty "
+                "and is not a weak view on the business."
             ),
             "date": "May 2026",
         },
@@ -1602,10 +1602,10 @@ with tab0:
         strategies. 
 
         **One limitation of this app is that it optimises for wealth accumulation rather 
-        than wealth preservation.** Institutions with fixed payment obligations 
-        (i.e. sovereign wealth funds) would instead adopt a liability-driven approach, 
-        matching asset duration to future cash outflows. The CPPI framework in the 
-        Strategy Comparison tab is one bridge between the two: it wraps the BL equity 
+        than wealth preservation.** Institutions with fixed payment obligations, 
+        such as sovereign wealth funds, would instead adopt a liability-driven approach, 
+        matching liability payment schedules to future cash outflows. The CPPI framework in the 
+        **Strategy Comparison* tab is one bridge between the two: it wraps the BL equity 
         allocation inside a drawdown floor, allowing it to coexist with a capital 
         preservation mandate.
 
@@ -1690,10 +1690,7 @@ with tab0:
         pulls the posterior strongly away from π. When confidence is low, Ω is large,
         its inverse shrinks, and the posterior barely moves from equilibrium. The covariance Σ 
         ensures that stocks with shared risk exposures influence each other. 
-        A high-conviction view on NVDA shifts the posterior expected return for TSM too, 
-        because their historical co-movement is baked into how the model distributes that 
-        view across the universe. The table in the **Views, Returns & Weights** tab show 
-        this blending in action.
+        The table in the **Views, Returns & Weights** tab show this blending in action.
         """
     )
 
@@ -1733,9 +1730,6 @@ with tab1:
         FCF margin was deliberately excluded as a screen to avoid penalising compounders like AMZN, 
         MSFT, and GOOGL that are in a heavy capex cycle for AI infrastructure.
         
-        Two names warrant a note: FICO carries negative book equity from sustained buybacks, 
-        not financial distress. ASML is the sole global EUV lithography supplier and is 
-        structurally irreplaceable in the semiconductor supply chain.
         """
     )
     
@@ -2495,12 +2489,12 @@ with tab4:
         2. **Historical Stress Testing**: Backtests the portfolio against actual 
         historical market shocks to evaluate performance during systemic crises.
 
-        **Model Caveats**: While GBM captures *typical* market uncertainty, it 
-        fundamentally assumes a Gaussian distribution and constant volatility. 
+        **Model Caveats**: While GBM captures *typical* market uncertainty, it assumes that
+        market returnsn follow a normal Gaussian distribution. 
         It cannot model **volatility clustering** or the **breakdown of historical 
         correlations** that occur during severe market drawdowns. In a free-fall market, 
-        diversification benefits often vanish, a tail-risk reality that standard GBM 
-        systematically understates. The Monte Carlo simulation therefore represents 
+        stocks that are otherwise not correlated all fall together, which a strandard GBM will 
+        understate. The Monte Carlo simulation therefore represents 
         a baseline for normal market regimes, while the historical stress test provides 
         the necessary reality check for tail risk.
         """
@@ -2689,18 +2683,17 @@ with tab5:
         forecast and a CPPI drawdown protection analysis. While the wealth index 
         and GBM forecast answer the question of "how does BL compare to alternative strategies?", the CPPI analysis asks 
         a different question: *what does it cost to protect capital, and how does the BL portfolio 
-        behave once a drawdown floor is imposed?* This matters because BL, like all Sharpe-maximising 
-        strategies, is built for wealth accumulation. However, most real investors have a loss tolerance, 
+        behave once a drawdown floor is imposed?* This matters because BL is built for wealth accumulation. However, most real investors have a loss tolerance, 
         and cannot afford to absorb drawdowns like the 34% COVID crash and simply wait for recovery. 
         CPPI wraps a dynamic floor around BL, creating a version of the portfolio that an 
-        investor could hold. Comparing the two reveals the cost of that protection in terms of forgone upside.
+        investor could hold.
 
         The historical wealth index uses a rolling backtest with the estimation window set in the 
         sidebar. Equal-Weighted, Cap-Weighted, Global Minimum Variance, and Risk Parity are all 
         properly rolled, with weights re-estimated at each step using only data available at that 
         point, so there is no look-ahead bias. Black-Litterman is shown differently, as a static 
         allocation applying the current optimal weights to the full history. This is an intentional 
-        design choice rather than an oversight. As BL weights are derived from a forward-looking 
+        design choice. As BL weights are derived from a forward-looking 
         view on price targets rather than purely from historical patterns, applying them statically 
         must be read more simply as "how would this portfolio have done retrospectively?"
 
