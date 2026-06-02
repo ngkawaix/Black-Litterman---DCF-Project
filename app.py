@@ -2044,8 +2044,8 @@ with tab2:
     st.markdown("#### 1. Conviction Map")
     st.caption(
         "Adjusting the confidence sliders in the slide bar will result in this map changing "
-        "dyanmically. Use this chart and the Confidence Levels and Rationale to make map "
-        "your own convictions. "
+        "dyanmically. Use this chart and the Confidence Levels to make map "
+        "price target confidences relative to the market. "
     )
 
     # ── Build per-ticker conviction rows from live BL outputs ─────────────────
