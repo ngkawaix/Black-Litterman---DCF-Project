@@ -1609,7 +1609,7 @@ with tab0:
         **One limitation of this app is that it optimises for wealth accumulation rather 
         than wealth preservation.** Institutions with fixed payment obligations, 
         such as sovereign wealth funds, would instead adopt a liability-driven approach, 
-        matching liability payment schedules to future cash outflows. The CPPI framework in the 
+        duration-matching asset cash flows to known liability schedules. The CPPI framework in the 
         **Strategy Comparison** tab is one bridge between the two: it wraps the BL equity 
         allocation inside a drawdown floor, allowing it to coexist with a capital 
         preservation mandate.
