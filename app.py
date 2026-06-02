@@ -54,7 +54,7 @@ BASE_TARGETS = {
     "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
-    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 228.35,
+    "MSFT": 562.00, "NFLX": 115.00, "NVDA": 242.47,
     "TSM":  463.00, "V":    399.00,
 }
 
@@ -89,9 +89,9 @@ RESEARCH_TIERS: dict = {
     "FULL_DCF": {
         "NVDA": {
             "rationale": (
-                "Completed DCF (May 2026) yields a merged fair value of $228.35, the simple "
-                "average of the perpetuity approach ($175.48) and the exit-EBITDA approach "
-                "($281.22). Base-case WACC of 12.20% (Rf=4.50%, \u03b2=1.79 industry-adjusted, "
+                "Completed DCF (Q1 FY2027, May 2026) yields a merged fair value of $242.47, the simple "
+                "average of the perpetuity approach ($190.15) and the exit-EBITDA approach "
+                "($294.80). Base-case WACC of 11.52% (Rf=4.50%, \u03b2=1.634 industry-adjusted, "
                 "Damodaran ERP=4.24% May 2026 update). "
                 "Confidence of 0.45 reflects an acknowledgment of uncertainty based on the wide spread of the two valuation methods"
             ),
@@ -217,15 +217,15 @@ INVESTMENT_THESES = {
 DCF_OUTPUTS = {
     "NVDA": {
         "current_price": 215.33,         # Latest closing price, 22 May 2026
-        "DCF Fair Value": 228.35,         # Merged perpetuity / EBITDA average
-        "wacc":                    0.1220,
+        "DCF Fair Value": 242.47,         # Merged perpetuity / EBITDA average
+        "wacc":                    0.1152,
         "terminal_growth":         0.03,
         "terminal_ebitda_multiple": 19,
         "model_link": "https://docs.google.com/spreadsheets/d/1f6yXc8R1_Faq8n0NhSWwO7gs0zVDx9zuOzJmo4LYVJc/edit?usp=sharing",
 
         "football_field": [
-            {"label": "DCF: Perpetuity (2.0–4.0% g, 12.20% WACC)",        "low": 166.42, "high": 186.77, "base": 175.48},
-            {"label": "DCF: Exit EBITDA Multiple (17–21x at 12.20% WACC)",  "low": 261.16, "high": 301.30, "base": 281.22},
+            {"label": "DCF: Perpetuity (2.0–4.0% g, 11.52% WACC)",        "low": 179.11, "high": 204.09, "base": 190.15},
+            {"label": "DCF: Exit EBITDA Multiple (17–21x at 11.52% WACC)",  "low": 274.00, "high": 316.00, "base": 294.80},
             {"label": "Analyst Consensus",                                  "low": 180.00, "high": 500.00, "base": 294.00},
             {"label": "52-Week Range",                                      "low": 132.92, "high": 236.54, "base": None},
         ],
@@ -236,10 +236,10 @@ DCF_OUTPUTS = {
              "Cost of Debt (After Tax)": "2.66%",
              "Risk Free Rate": "4.50%",
              "Observed Beta (Bloomberg)": "2.240",
-             "Industry Beta (Adjusted)": "1.790",
+             "Industry Beta (Adjusted)": "1.634",
              "Market Risk Premium": "4.24%",
-             "Cost of Equity": "12.10%",
-             "WACC": "12.20%"
+             "Cost of Equity": "11.43%",
+             "WACC": "11.52%"
             },
         ],
 
@@ -311,13 +311,13 @@ DCF_OUTPUTS = {
         "dcf_assumptions": [
             {
                 "name": "WACC",
-                "bear": "12.2%",
-                "base": "12.2%",
-                "bull": "12.2%",
-                "note": "12.20% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
-                        "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's capital structure), "
+                "bear": "11.52%",
+                "base": "11.52%",
+                "bull": "11.52%",
+                "note": "11.52% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
+                        "industry-adjusted β = 1.634 (de-levered peer group: AMD, AVGO, TSM, QCOM, ASML; re-levered at NVDA's capital structure), "
                         "Damodaran ERP = 4.24% (May 2026 update, down from 4.66% in January). "
-                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC marginally above cost of equity due to the net cash position. "
+                        "NVIDIA's large net cash position (net debt = -$54.1B) pushes equity weight above 1; WACC sits marginally above cost of equity of 11.43%. "
             },
             {
                 "name": "Terminal Growth Rate (g)",
@@ -341,19 +341,20 @@ DCF_OUTPUTS = {
             },
             {
                 "name": "Implied Price: Perpetuity",
-                "bear": "~$166",
-                "base": "$175.48",
-                "bull": "~$187",
-                "note": "The perpetuity approach implies a downside to the current price, driven by "
-                        "a conservative 3% terminal growth rate at a WACC of 12.20%. "
+                "bear": "~$179",
+                "base": "$190.15",
+                "bull": "~$204",
+                "note": "The perpetuity approach implies a modest downside to the current price ($215.33), driven by "
+                        "a conservative 3% terminal growth rate at a WACC of 11.52%. "
+                        "The lower WACC (refined beta 1.634 vs prior 1.790) lifted the base value from $175.48 to $190.15. "
             },
             {
                 "name": "Implied Price: Exit Multiple",
-                "bear": "~$261",
-                "base": "$281.22",
-                "bull": "~$301",
+                "bear": "~$274",
+                "base": "$294.80",
+                "bull": "~$316",
                 "note": "Exit multiple approach implies an upside to the current price driven by a 19x exit EV/EBITDA "
-                        "multiple implying a 7.9% terminal growth rate. The merged fair value of $228.35 is the simple "
+                        "multiple implying a 7.3% terminal growth rate. The merged fair value of $242.47 is the simple "
                         "average of both the exit multiple and perpetuity approaches."
             },
         ],
