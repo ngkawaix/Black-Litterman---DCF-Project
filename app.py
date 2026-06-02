@@ -1228,7 +1228,8 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
                 f"(minimum {_MIN_DAYS} required, roughly 4 years). "
                 "A short-history ticker truncates the covariance matrix and backtest period "
                 "for the entire universe, not just itself. "
-                "Try moving the start date forward, or choose a stock with a longer listing history."
+                "Try moving the data start date **earlier** (further back in time) to give this ticker more history, "
+                "or choose a stock with a longer listing history."
             ), []
     except Exception as exc:
         return False, f"Failed to download price data for **{ticker}**: {exc}", []
@@ -2722,6 +2723,26 @@ with tab5:
     m_cppi   = st.session_state["m_cppi"]
     mdd_cppi = st.session_state["mdd_cppi_pct"] / 100
 
+    # ── Guard: cap estimation_window to available data ───────────────────────
+    # estimation_window (in trading days) can exceed len(tick_rets) when the
+    # user sets data_start_date too recently relative to the window slider.
+    # e.g. start_date = _MAX_START (~3yr ago, ~756 td) + window = 7yr (1764 td)
+    # -> tick_rets.index[1764] raises IndexError and crashes the entire tab.
+    # Cap silently and surface a clear warning so the user knows what happened.
+    _n_available_td = len(tick_rets)
+    _max_safe_ew    = max(_n_available_td - 2, 1)   # leave at least 1 row after the window
+    if estimation_window > _max_safe_ew:
+        _safe_yrs = max(_max_safe_ew // 252, 1)
+        st.warning(
+            "**Estimation window reduced automatically.**  \n"
+            f"The selected window ({estimation_window_yrs}yr = {estimation_window} trading days) "
+            f"exceeds the available price history ({_n_available_td} trading days from "
+            f"{data_start_date}).  \n"
+            f"Window capped at **{_safe_yrs}yr ({_safe_yrs * 252} trading days)** for this run.  \n"
+            "To use a longer window, move the **data start date** earlier in the sidebar.",
+        )
+        estimation_window = _safe_yrs * 252
+
     # ── Pre-compute returns for wealth index ──────────────────────────────────
     ew_r, cw_r, gmv_r, erc_r = run_backtests(
         tick_rets, tick_capweights, estimation_window
@@ -2748,6 +2769,20 @@ with tab5:
         "BL (CPPI)":               pd.Series(cppi_r).squeeze(),
         "S&P 500 (SPY)":           spx_rets.reindex(tick_rets.index),
     }).loc[valid_start_date:].dropna()
+
+    # ── Guard: abort Tab 5 cleanly if btr is empty ───────────────────────────
+    # btr can be empty when valid_start_date falls at or past the last row of
+    # tick_rets (e.g. extremely short data range or estimation_window == n-1).
+    # Every downstream operation indexes btr.index[0], so we stop here with a
+    # clear message rather than propagating an opaque KeyError/IndexError.
+    if btr.empty:
+        st.error(
+            "**Not enough data to build the wealth index.**  \n"
+            "After reserving the estimation window, no rows remain for the backtest period.  \n"
+            "**Fix:** move the **data start date** earlier in the sidebar, "
+            "or reduce the **estimation window** slider."
+        )
+        st.stop()
 
     # ── Section 1: Historical Wealth Index ────────────────────────────────────
     st.markdown("#### 1. Historical Wealth Index")
