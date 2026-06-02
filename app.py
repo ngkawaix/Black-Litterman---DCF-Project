@@ -125,7 +125,7 @@ RESEARCH_TIERS: dict = {
         "ASML": (
             "ASML is the sole global EUV supplier with no credible competitive threat  "
             "and demand visibility into 2027. Confidence at 0.10 reflects caution with valuation "
-            "with the cost run up eroding at Margin of Safety (MoS). Premium is priced in at current valuations. "
+            "with the cost run up eroding the Margin of Safety (MoS). Premium is priced in at current valuations. "
         ),
     },
 }
@@ -149,7 +149,7 @@ def render_rationale(ticker: str) -> str:
         return f"[Tactical] {RESEARCH_TIERS['TACTICAL'][ticker]}"
     return (
         "[Systematic] No active thesis; "
-        "confidence calibrated to defer to the universe-implied equlibrium return  (π) ."
+        "confidence calibrated to defer to the universe-implied equilibrium return  (π) ."
     )
 
 STRESS_PERIODS = {
@@ -208,7 +208,7 @@ INVESTMENT_THESES = {
                 "Vera-Rubin Shipments",
                 "Vera-Rubin begins initial shipments in Q3 FY2027 with volume ramp targeted for Q4, "
                 "overlapping with GB300 demand. The Vera CPU is the higher-conviction near-term "
-                "catalyst with CFO Kress guiding for ~20B visibility for FY2027 thusfar, entering an additional 200B TAM. "
+                "catalyst with CFO Kress guiding for ~20B visibility for FY2027 thus far, entering an additional 200B TAM. "
             ),
         ],
     },
@@ -235,7 +235,7 @@ DCF_OUTPUTS = {
              "Tax Rate": "17.00%",
              "Cost of Debt (After Tax)": "2.66%",
              "Risk Free Rate": "4.50%",
-             "Observed Beta (2yr weekly, CNBC)": "1.790",
+             "Observed Beta (Bloomberg)": "2.240",
              "Industry Beta (Adjusted)": "1.790",
              "Market Risk Premium": "4.24%",
              "Cost of Equity": "12.10%",
@@ -317,7 +317,7 @@ DCF_OUTPUTS = {
                 "note": "12.20% via CAPM: Rf = 4.50% (10Y UST as of 23 May 2026, elevated by Moody's US downgrade and fiscal deficit concerns), "
                         "industry-adjusted β = 1.79 (de-levered peer group: AMD, AVGO, TSM, re-levered at NVDA's capital structure), "
                         "Damodaran ERP = 4.24% (May 2026 update, down from 4.66% in January). "
-                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC effectively equals cost of equity. "
+                        "NVIDIA's large net cash position makes equity the near-total weight in the capital structure; WACC marginally above cost of equity due to the net cash position. "
             },
             {
                 "name": "Terminal Growth Rate (g)",
@@ -1586,7 +1586,7 @@ with tab0:
         """
         **I started this self-guided project to better understand investment 
         management and to guide the sizing of my own portfolio allocations.** 
-        It implements the skills and knowledge that I have acquired over the last 
+        It is built on what I have learned over the last 
         few months from *EDHEC's Advanced Portfolio Construction and Analysis* 
         and *Wall Street Prep's DCF Modelling Course* - all with the aim of 
         answering one question: Having derived the 1Y price target of a stock through 
@@ -1648,7 +1648,7 @@ with tab0:
         Most portfolio optimisers have a well-known flaw. Feed them expected returns
         built purely from historical data or analyst targets, and they produce extreme,
         unstable allocations (i.e. prone to error maximisation where even small estimation errors
-        result in highly concentrated portfolios where no sensible investor would actually hold).
+        result in highly concentrated portfolios where no sensible investor would hold).
 
         **Black-Litterman solves this problem by never letting a view stand alone.**
         Instead, it always asks: *relative to what the market collectively believes,
@@ -1998,7 +1998,7 @@ with tab2:
         Confidence in the Black-Litterman Model is not absolute. It is always 
         relative to the market. A confidence of 0 means ignoring your view entirely 
         and defer to what the market implies. Conversely, a confidence of 1 means you
-        trusts your view completely and let it override the market equilibrium.
+        trust your view completely and let it override the market equilibrium.
         
         This matters because the direction of the effect depends on whether your 
         price target is above or below what the market is already pricing in. 
