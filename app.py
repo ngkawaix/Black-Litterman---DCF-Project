@@ -2194,7 +2194,7 @@ with tab2:
             st.markdown("**🎯 Tactical**")
             st.caption(
                 "Personal holding or high-level thesis. Single-sentence "
-                "rationale; no full model. Direction is genuine, depth is limited."
+                "rationale; no full model."
             )
     with _t3:
         with st.container(border=True):
