@@ -326,7 +326,7 @@ DCF_OUTPUTS = {
                 "bull": "4.0%",
                 "note": "Base 3.0% set marginally above long-run nominal GDP growth (~2.5%). "
                         "Reflects NVIDIA's CUDA ecosystem durability. "
-                        "Conservative relative to consensus-implied growth of 8.1% in the exit-multiple model. "
+                        "Conservative relative to consensus-implied growth of 7.3% in the exit-multiple model. "
             },
             {
                 "name": "Terminal EBITDA Multiple",
