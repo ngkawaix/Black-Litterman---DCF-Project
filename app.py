@@ -346,7 +346,6 @@ DCF_OUTPUTS = {
                 "bull": "~$204",
                 "note": "The perpetuity approach implies a modest downside to the current price ($215.33), driven by "
                         "a conservative 3% terminal growth rate at a WACC of 11.52%. "
-                        "The lower WACC (refined beta 1.634 vs prior 1.790) lifted the base value from $175.48 to $190.15. "
             },
             {
                 "name": "Implied Price: Exit Multiple",
