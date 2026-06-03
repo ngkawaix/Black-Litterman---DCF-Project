@@ -175,7 +175,7 @@ INVESTMENT_THESES = {
         ],
         "theses": [
             "NVDA adopts a full stack approach and remains at the forefront of AI hardware and software innovation. The release of its Vera-Rubin "
-            "architecture at GTC in March 2026 further cements its lead ahead of AMD, despite growing threats from "
+            "architecture at GTC in March 2026 further extends its lead ahead of AMD, despite growing threats from "
             "custom ASICs by hyperscalers (e.g. Google's Ironwood TPU, Amazon's AWS Trainium-3).",
             "CUDA remains a durable software moat, making switching costs structurally prohibitive for the roughly "
             "4M developers trained on the ecosystem.",
