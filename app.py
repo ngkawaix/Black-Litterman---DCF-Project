@@ -1663,7 +1663,7 @@ with tab0:
           uses the stock universe capweights and not capweights as derived from the S&P 500.
 
         - **Analyst views (Q)**: the excess return implied by each DCF price target
-          (total return minus the risk-free rate). This is the forward-looking judgment layer.
+          (total return minus the risk-free rate). This is the forward-looking view of the investor.
 
         It then blends them using a precision-weighted average. *Precision* is inverse
         uncertainty: the higher the confidence, the more weight a view receives. The
@@ -1931,6 +1931,7 @@ with tab1:
             st.markdown("###### Income Statement Drivers")
             st.caption(
                 "**FY2026 Actual** anchors each assumption to the last reported fiscal year. "
+                "
             )
             _is_rows = _dcf["is_assumptions"]
             _is_df = pd.DataFrame([
