@@ -468,11 +468,14 @@ def load_ticker_metadata(tickers):
         for _attempt in range(3):
             try:
                 info = t.info
-                n_analysts - info.get("numberOfAnalystsOpinions", None)
+                n_analysts = (
+                    info.get("numberOfAnalystOpinions")
+                    or info.get("numAnalystOpinions")
+                )
                 break
             except Exception:
-                if _attempt < 2: 
-                    time.sleep(2.0 + _attempt) 
+                if _attempt < 2:
+                    time.sleep(2.0 + _attempt)
 
         for _attempt in range(3):
             try:
@@ -486,6 +489,17 @@ def load_ticker_metadata(tickers):
 
         if mean_t is None:
             mean_t = info.get("targetMeanPrice", None)
+
+        if mean_t is not None and n_analysts is None:
+            try:
+                time.sleep(1.5)
+                _info_retry = t.info
+                n_analysts = (
+                    _info_retry.get("numberOfAnalystOpinions")
+                    or _info_retry.get("numAnalystOpinions")
+                )
+            except Exception:
+                pass
 
         consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
 
