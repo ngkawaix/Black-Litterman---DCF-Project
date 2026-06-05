@@ -365,26 +365,55 @@ DCF_OUTPUTS = {
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Fetching market data from Yahoo Finance…")
 def load_market_data(tickers, start="2012-01-01"):
+    import time
+
     data = yf.download(tickers, start=start, interval="1d", auto_adjust=True, progress=False)
     price_data = data["Close"]
     price_data.index = price_data.index.tz_localize(None)
     price_data = price_data.loc[~price_data.index.duplicated(keep="first")]
 
-    # Drop tickers whose entire column is NaN (failed/rate-limited downloads).
-    failed = price_data.columns[price_data.isna().all()].tolist()
-    if failed:
+    # Identify tickers that returned all-NaN from the batch download.
+    # Yahoo Finance occasionally silently drops one ticker from a batch response
+    # without raising an error. Retry each failed ticker individually before giving up.
+    failed_initial = price_data.columns[price_data.isna().all()].tolist()
+    still_failed = []
+
+    for ticker in failed_initial:
+        recovered = False
+        for attempt in range(3):
+            time.sleep(1.5 + attempt)   # back off: 1.5s → 2.5s → 3.5s
+            try:
+                retry = yf.download(
+                    ticker, start=start, interval="1d",
+                    auto_adjust=True, progress=False,
+                )
+                if retry.empty:
+                    continue
+                retry_close = retry["Close"].squeeze()
+                retry_close.index = retry_close.index.tz_localize(None)
+                if not retry_close.isna().all():
+                    price_data[ticker] = retry_close.reindex(price_data.index)
+                    recovered = True
+                    break
+            except Exception:
+                pass
+        if not recovered:
+            still_failed.append(ticker)
+
+    if still_failed:
         st.warning(
-            f"⚠️ Could not download price data for: **{', '.join(failed)}**. "
+            f"⚠️ Could not download price data for: **{', '.join(still_failed)}**. "
             "These tickers have been excluded from this run. "
-            "Yahoo Finance likely rate-limited pull request - refresh in a minute to retry.",
+            "Yahoo Finance likely rate-limited the pull — refresh in a minute to retry.",
         )
-        price_data = price_data.drop(columns=failed)
+        price_data = price_data.drop(columns=still_failed)
 
     # Forward-fill intra-series gaps, then use dropna(how="all") so a single
     # missing ticker on one day does not wipe out the entire returns history.
     price_data = price_data.ffill()
     tick_rets  = price_data.pct_change().dropna(how="all")
     return price_data, tick_rets
+    
 
 # Retrieval of Market Cap, Consensus Estimates and Earnings Data
 @st.cache_data(show_spinner="Fetching ticker metadata (market cap, price data, consensus, earnings)…", ttl=86400)
