@@ -2223,7 +2223,6 @@ with tab2:
             _tier = "📊 Systematic"
 
         _conf_rows[_tkr] = {
-            "Tier":                  _tier,
             "Target ($)":            _tgt,
             "Break-even ($)":        _be,
             "BL Direction":          "▲ Bullish" if _q_pi > 0 else "▼ Bearish",
