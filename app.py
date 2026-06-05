@@ -1496,7 +1496,7 @@ with st.sidebar:
 
     tau = st.slider(
         "τ  Prior Uncertainty",
-        min_value=0.01, max_value=0.10, value=0.025, step=0.01,
+        min_value=0.01, max_value=0.10, value=0.025, step=0.005,
         help=("Tau is the uncertainty in the prior returns benchmark. For this model, the Cap-Weighted allocation returns are the benchmark"
               "Standard value is 0.025 as used by He-Litterman. Smaller means you trust the market more."
               )
