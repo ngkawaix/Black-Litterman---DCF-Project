@@ -1333,8 +1333,7 @@ with st.sidebar:
     data_range_help = (
         "**Minimum: 2012-06-01** – one month after META's IPO (the most recent in the universe).\n\n"
         "**Recommended Default: 2015-01-01** – captures multiple market regimes "
-        "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull) "
-        "without anchoring the covariance to the post-GFC zero-rate anomaly (2012-2014).\n\n"
+        "(2015 volatility spike, 2018 correction, COVID crash, 2022 rate hikes, 2023-25 AI bull).\n\n"
         "Going shorter than 5 years risks an under-identified covariance matrix for 17 stocks."
     )
     data_start_date = st.sidebar.date_input(
