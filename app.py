@@ -1931,7 +1931,6 @@ with tab1:
             st.markdown("###### Income Statement Drivers")
             st.caption(
                 "**FY2026 Actual** anchors each assumption to the last reported fiscal year. "
-                "**Bear / Base / Bull** map directly to the three scenarios in the 3-Statement Model."
             )
             _is_rows = _dcf["is_assumptions"]
             _is_df = pd.DataFrame([
