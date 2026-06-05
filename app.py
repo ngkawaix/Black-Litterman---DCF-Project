@@ -1703,7 +1703,7 @@ with tab0:
         result in highly concentrated portfolios where no sensible investor would hold).
 
         **Black-Litterman solves this problem by never letting a view stand alone.**
-        Instead, it always asks: *relative to what the market collectively believes,
+        Instead, it asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
 
         The model has two inputs:
