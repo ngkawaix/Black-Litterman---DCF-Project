@@ -462,18 +462,28 @@ def load_ticker_metadata(tickers):
 
         # ── Consensus & Earnings Target Fetching ──
         info = {}
-        try:
-            info = t.info
-        except Exception:
-            pass
-
         mean_t = None
-        n_analysts = info.get("numberOfAnalystOpinions", None)
-        try:
-            apt = t.analyst_price_targets
-            mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
-        except Exception:
-            pass
+        n_analysts = None
+
+        for _attempt in range(3):
+            try:
+                info = t.info
+                n_analysts - info.get("numberOfAnalystsOpinions", None)
+                break
+            except Exception:
+                if _attempt < 2: 
+                    time.sleep(2.0 + _attempt) 
+
+        for _attempt in range(3):
+            try:
+                apt = t.analyst_price_targets
+                mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
+                if mean_t is not None:
+                    break
+            except Exception:
+                if _attempt < 2:
+                    time.sleep(2.0 + _attempt)
+
         if mean_t is None:
             mean_t = info.get("targetMeanPrice", None)
 
