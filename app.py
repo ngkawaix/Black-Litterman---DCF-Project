@@ -3123,7 +3123,7 @@ with tab5:
 
     with st.expander("⚙️ CPPI Parameters", expanded=True):
         st.caption(
-            "At each step, the Constant Portfolio Protection Insurance (CPPI) allocates equity exposure equal to the multiplier times the cushion "
+            "At each step, the Constant Portfolio Protection Insurance (CPPI) allocates equity exposure equal to multiplier x cushion "
             "(portfolio value minus floor), with the remainder in a safe asset. "
             "The two parameters below set how aggressively equity is sized and where the floor sits."
         )
