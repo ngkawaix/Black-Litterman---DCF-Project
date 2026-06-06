@@ -2465,9 +2465,9 @@ with tab3:
     st.markdown("#### 2. Optimised Portfolio Weights")
     st.caption(
         "The BL posterior returns from Part 1 feed directly into a long-only (no shorting) "
-        "Max Sharpe optimisation. Stocks with higher posterior returns and lower "
-        "correlation to the rest of the portfolio receive higher weights. "
-        "The table also shows alternative weighting schemes for reference (bounded by min and max weights in the side bar."
+        "Max Sharpe optimisation (bounded by max and min position size constraints) in the side bar. "
+        "Stocks with higher posterior returns and lower correlation to the rest of the portfolio "
+        "receive higher weights. The table also shows alternative weighting schemes for reference."
     )
 
     ew_w   = erk.weight_ew(tick_rets)
