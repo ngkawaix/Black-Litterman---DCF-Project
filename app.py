@@ -525,7 +525,7 @@ def load_ticker_metadata(tickers):
     weights = mcap_series / mcap_series.sum()
     return weights, consensus, recent_earnings
 
-@st.cache_data(show_spinner="Loading risk-free rate from FRED…")
+@st.cache_data(show_spinner="Loading risk-free rate…")
 def load_rf():
     # Primary: FRED 1-year Treasury (DGS1)
     try:
@@ -533,16 +533,16 @@ def load_rf():
         df = pd.read_csv(url)
         df = df.set_index(df.columns[0])
         df = df[df["DGS1"] != "."]
-        return float(df["DGS1"].iloc[-1]) / 100
+        return float(df["DGS1"].iloc[-1]) / 100, "FRED 1Y Treasury (DGS1)"
     except Exception:
         pass
 
-    # Secondary: yfinance ^IRX, then fixed fallback
+    # Secondary: yfinance 13-week T-bill (^IRX)
     try:
         irx = yf.Ticker("^IRX").history(period="5d")["Close"].dropna()
-        return float(irx.iloc[-1]) / 100
+        return float(irx.iloc[-1]) / 100, "Yahoo 13-week T-bill (^IRX, fallback)"
     except Exception:
-        return 0.04
+        return 0.04, "static 4.00% fallback (FRED + Yahoo unavailable)"
 
 @st.cache_data(show_spinner="Fetching valuation metrics…", ttl=86400)
 def load_valuation_metrics(tickers):
@@ -1567,7 +1567,7 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA  (price data and metadata already fetched before the sidebar)
 # ─────────────────────────────────────────────────────────────────────────────
-RF = load_rf()
+RF, RF_SOURCE = load_rf()
 spx_rets    = load_benchmark_data()
 val_metrics = load_valuation_metrics(active_tickers)
 
@@ -1604,7 +1604,7 @@ with st.spinner("Running Black-Litterman optimisation…"):
 # ─────────────────────────────────────────────────────────────────────────────
 st.title("Portfolio Optimiser (DCF-BL)")
 st.caption(
-    f"Risk-free rate (1Y T-bill): **{RF:.2%}** (retrieved from FRED) |  "
+    f"Risk-free rate: **{RF:.2%}** ({RF_SOURCE}) |  "
     f"Universe: **{len(active_tickers)} stocks** |  "
     f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
 )
@@ -3340,8 +3340,8 @@ with tab5:
         },
     )
 
-    st.caption(
-        f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} (current 1Y T-bill) across "
+st.caption(
+        f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} ({RF_SOURCE}) across "
         "all historical windows and is time invariant. In practice this varied significantly, going near zero during the GFC Echo (2015) "
         "and COVID Crash (2020), rising to ~4.5% during the 2022 rate hike cycle. A time-varying rate would "
         "improve return attribution precision, but the primary outputs here (drawdown reduction, floor breach, "
