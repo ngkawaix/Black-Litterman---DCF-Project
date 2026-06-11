@@ -527,17 +527,20 @@ def load_ticker_metadata(tickers):
 
 @st.cache_data(show_spinner="Loading risk-free rate from FRED…")
 def load_rf():
+    # Primary: FRED 1-year Treasury (DGS1)
     try:
-        url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
         df = pd.read_csv(url)
-        df   = df[df["DGS1"] != "."]
-        rate = float(df["DGS1"].iloc[-1]) / 100
+        df = df.set_index(df.columns[0])
+        df = df[df["DGS1"] != "."]
+        return float(df["DGS1"].iloc[-1]) / 100
     except Exception:
         pass
-    # Fallback on yfinance
+
+    # Secondary: yfinance ^IRX, then fixed fallback
     try:
         irx = yf.Ticker("^IRX").history(period="5d")["Close"].dropna()
-    return float(irx.iloc[-1]) / 100
+        return float(irx.iloc[-1]) / 100
     except Exception:
         return 0.04
 
