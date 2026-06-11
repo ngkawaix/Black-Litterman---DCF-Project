@@ -529,13 +529,17 @@ def load_ticker_metadata(tickers):
 def load_rf():
     try:
         url  = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
-        df   = pd.read_csv(url, index_col="observation_date", parse_dates=True)
+        df = pd.read_csv(url)
         df   = df[df["DGS1"] != "."]
         rate = float(df["DGS1"].iloc[-1]) / 100
-        return rate
+    except Exception:
+        pass
+    # Fallback on yfinance
+    try:
+        irx = yf.Ticker("^IRX").history(period="5d")["Close"].dropna()
+    return float(irx.iloc[-1]) / 100
     except Exception:
         return 0.04
-
 
 @st.cache_data(show_spinner="Fetching valuation metrics…", ttl=86400)
 def load_valuation_metrics(tickers):
