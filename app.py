@@ -1689,12 +1689,12 @@ with tab0:
     st.markdown("#### How Black-Litterman Works")
     st.markdown(
         """
-        Most portfolio optimisers have a well-known flaw. Feed them expected returns
-        built purely from historical data or analyst targets, and they produce extreme,
-        unstable allocations (i.e. prone to error maximisation where even small estimation errors
-        result in highly concentrated portfolios where no sensible investor would hold).
+        In 1952, Markowitz showed that portfolio risk depends on how assets move together,
+        not just their stats in isolation. However, his framework has a famous flaw: feed it
+        expected returns from historical data or analyst targets, and small estimation errors
+        blow up into extreme, unstable allocations no sensible investor would hold.
 
-        **Black-Litterman solves this problem by never letting a view stand alone.**
+        **Black-Litterman (1990-92) solves this problem by never letting a view stand alone.**
         Instead, it asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
 
