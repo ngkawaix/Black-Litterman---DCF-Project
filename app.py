@@ -1538,10 +1538,6 @@ with st.sidebar:
 
     # ── Section 5: Temporarily Exclude Tickers ────────────────────────────────
     st.subheader("5. Exclude Tickers")
-    st.caption(
-        "Temporarily remove stocks from the universe without deleting them. "
-        "Useful for stress-testing concentration or studying the impact of individual names."
-    )
 
     _new_exclusions = st.multiselect(
         "Exclude tickers",
