@@ -28,7 +28,7 @@ st.set_page_config(
 # CONSTANTS
 # ─────────────────────────────────────────────────────────────────────────────
 TICKERS = sorted([
-    "AAPL", "ADBE", "AMAT", "AMZN", "ASML", "CPRT",
+    "AAPL", "ADBE", "AMAT", "AMZN", "ASML", "SPGI",
     "FICO", "GOOGL","LRCX", "MA",   "META", "MSCI",
     "MSFT", "NFLX", "NVDA", "TSM",  "V",
 ])
@@ -36,7 +36,7 @@ TICKERS = sorted([
 # My base case price targets
 BASE_TARGETS = {
     "AAPL": 305.00, "ADBE": 328.00, "AMAT": 486.00,
-    "AMZN": 312.00, "ASML": 1661.00, "CPRT":  43.00,
+    "AMZN": 312.00, "ASML": 1661.00, "SPGI": 560.00,
     "FICO": 1562.00, "GOOGL": 428.00, "LRCX": 310.00,
     "MA":   650.00, "META": 827.00, "MSCI": 685.00,
     "MSFT": 562.00, "NFLX": 115.00, "NVDA": 242.47,
@@ -45,7 +45,7 @@ BASE_TARGETS = {
 
 BASE_CONFIDENCE = {
     "AAPL": 0.20, "ADBE": 0.15, "AMAT": 0.15,
-    "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
+    "AMZN": 0.25, "ASML": 0.10, "SPGI": 0.30,
     "FICO": 0.25, "GOOGL":0.15, "LRCX": 0.10,
     "MA":   0.25, "META": 0.25, "MSCI": 0.25,
     "MSFT": 0.50, "NFLX": 0.25, "NVDA": 0.45,
@@ -111,6 +111,12 @@ RESEARCH_TIERS: dict = {
             "ASML is the sole global EUV supplier with no credible competitive threat  "
             "and demand visibility into 2027. Confidence at 0.10 reflects caution with valuation "
             "with the cost run up eroding the Margin of Safety (MoS). Premium is priced in at current valuations. "
+        ),
+        "SPGI": (
+            "S&P Global commands a structural moat across three durable revenue streams: Ratings (fee-per-issuance "
+            "on every global bond), Market Intelligence data subscriptions, and Indices tracking roughly $4T in passive AUM. "
+            "Private credit expansion is a structural tailwind for the Ratings segment. "
+            "Confidence at 0.30 reflects a clear moat thesis with strong pricing power, without a completed DCF."
         ),
     },
 }
@@ -1327,9 +1333,12 @@ with st.sidebar:
         st.session_state.ticker_add_msg = None   # (kind, text) tuple or None
     if "ticker_add_warnings" not in st.session_state:
         st.session_state.ticker_add_warnings = []
+    if "excluded_tickers" not in st.session_state:
+        st.session_state.excluded_tickers = []
 
-    # Active universe = core 17 + any user-added tickers (both sorted)
-    active_tickers = sorted(TICKERS + st.session_state.custom_tickers)
+    # Active universe = core 17 + any user-added tickers, minus any temporarily excluded
+    _full_pool     = sorted(TICKERS + st.session_state.custom_tickers)
+    active_tickers = [t for t in _full_pool if t not in st.session_state.excluded_tickers]
 
     # --- Data Range Selection ---
     _FLOOR = date(2012, 6, 1)
@@ -1527,8 +1536,38 @@ with st.sidebar:
 
     st.divider()
 
+    # ── Section 5: Temporarily Exclude Tickers ────────────────────────────────
+    st.subheader("5. Exclude Tickers")
+    st.caption(
+        "Temporarily remove stocks from the universe without deleting them. "
+        "Useful for stress-testing concentration or studying the impact of individual names."
+    )
+
+    _new_exclusions = st.multiselect(
+        "Exclude tickers",
+        options=_full_pool,
+        default=st.session_state.excluded_tickers,
+        label_visibility="collapsed",
+        help=(
+            "Excluded tickers are removed from all calculations — BL optimisation, "
+            "backtests, and simulations — for this session. Re-select at any time to restore them."
+        ),
+    )
+
+    if _new_exclusions != st.session_state.excluded_tickers:
+        st.session_state.excluded_tickers = _new_exclusions
+        st.rerun()
+
+    if st.session_state.excluded_tickers:
+        st.caption(
+            f"🚫 Excluded ({len(st.session_state.excluded_tickers)}): "
+            f"{', '.join(st.session_state.excluded_tickers)}"
+        )
+
+    st.divider()
+
     # --- Other BL parameters ---
-    st.subheader("5. Other BL Parameters")
+    st.subheader("6. Other BL Parameters")
 
     delta = st.slider(
         "δ  Risk Aversion",
@@ -1549,7 +1588,7 @@ with st.sidebar:
     st.divider()
 
     # --- Backtest estimation window ---
-    st.subheader("6. Backtest Estimation Window")
+    st.subheader("7. Backtest Estimation Window")
 
     estimation_window_yrs = st.slider(
         "Estimation window (years)",
@@ -2117,7 +2156,7 @@ with tab2:
     _tpos = {
         "META": "top center",    "NFLX": "top center",    "FICO": "top center",
         "MSFT": "bottom center", "NVDA": "top center",    "ADBE": "bottom center",
-        "MA":   "bottom center", "CPRT": "top center",    "MSCI": "top center",
+        "MA":   "bottom center", "SPGI": "top center",    "MSCI": "top center",
         "V":    "top center",    "AMZN": "top center",    "AMAT": "bottom center",
         "AAPL": "bottom center", "LRCX": "bottom center", "TSM":  "bottom center",
         "ASML": "top center",   "GOOGL": "bottom center",
