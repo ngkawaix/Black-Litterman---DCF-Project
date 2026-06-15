@@ -3339,15 +3339,14 @@ with tab5:
             ),
         },
     )
-
-st.caption(
-        f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} ({RF_SOURCE}) across "
-        "all historical windows and is time invariant. In practice this varied significantly, going near zero during the GFC Echo (2015) "
-        "and COVID Crash (2020), rising to ~4.5% during the 2022 rate hike cycle. A time-varying rate would "
-        "improve return attribution precision, but the primary outputs here (drawdown reduction, floor breach, "
-        "and equity allocation dynamics) are determined entirely by the equity sleeve and are unaffected by "
-        "this assumption."
-    )
+    st.caption(
+            f"**Note on risk-free rate:** the safe sleeve earns a fixed {RF:.2%} ({RF_SOURCE}) across "
+            "all historical windows and is time invariant. In practice this varied significantly, going near zero during the GFC Echo (2015) "
+            "and COVID Crash (2020), rising to ~4.5% during the 2022 rate hike cycle. A time-varying rate would "
+            "improve return attribution precision, but the primary outputs here (drawdown reduction, floor breach, "
+            "and equity allocation dynamics) are determined entirely by the equity sleeve and are unaffected by "
+            "this assumption."
+        )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
