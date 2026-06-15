@@ -48,7 +48,7 @@ BASE_CONFIDENCE = {
     "AMZN": 0.25, "ASML": 0.10, "CPRT": 0.20,
     "FICO": 0.25, "GOOGL":0.15, "LRCX": 0.10,
     "MA":   0.25, "META": 0.25, "MSCI": 0.25,
-    "MSFT": 0.60, "NFLX": 0.25, "NVDA": 0.45,
+    "MSFT": 0.50, "NFLX": 0.25, "NVDA": 0.45,
     "TSM":  0.25, "V":    0.25,
 }
 
@@ -88,7 +88,7 @@ RESEARCH_TIERS: dict = {
     "TACTICAL": {
         "MSFT": (
             "Strongest enterprise moat in the universe with deep AI integration across cloud and productivity. "
-            "Confidence at 0.60 reflects strong conviction in the long-run compounding thesis."
+            "Confidence at 0.50 reflects strong conviction in the long-run compounding thesis."
         ),
         "AMZN": (
             "AWS re-accelerating to +28% YoY ($37.6B) and record 13.1% "
