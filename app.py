@@ -1490,7 +1490,7 @@ with st.sidebar:
                    ),
         )
     with _btn_col:
-        _add_clicked = st.button("Add", use_container_width=True, key="add_ticker_btn")
+        _add_clicked = st.button("Add", width=True, key="add_ticker_btn")
 
     if _add_clicked and _new_ticker_raw.strip():
         _t = _new_ticker_raw.strip().upper()
@@ -1979,7 +1979,7 @@ with tab1:
                 margin=dict(t=20, b=40, l=10, r=40),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02),
             )
-            st.plotly_chart(_fig_ff, use_container_width=True)
+            st.plotly_chart(_fig_ff, width=True)
 
             st.divider()
 
@@ -2024,7 +2024,7 @@ with tab1:
                 }
                 for r in _is_rows
             ]).set_index("Metric")
-            st.dataframe(_is_df, use_container_width=True,
+            st.dataframe(_is_df, width=True,
                 column_config={
                     "Note":          st.column_config.TextColumn("Note",          width="large"),
                     "FY2026 Actual": st.column_config.TextColumn("FY2026 Actual", width="small"),
@@ -2043,7 +2043,7 @@ with tab1:
                 }
                 for r in _dcf_rows
             ]).set_index("Assumption")
-            st.dataframe(_dcf_df, use_container_width=True,
+            st.dataframe(_dcf_df, width=True,
                 column_config={
                     "Note":      st.column_config.TextColumn("Note",      width="large"),
                     "Base Case": st.column_config.TextColumn("Base Case", width="small"),
