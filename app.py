@@ -1411,7 +1411,7 @@ with st.sidebar:
     # --- Per-stock price targets ---
     st.subheader("3. Price Targets & Confidence")
     st.caption(
-        "1-Year price targets are the aggregate price estimates of analysts "
+        "1-Year price targets is the median price targets of analysts "
         "sourced from Yahoo Finance and are automatically ported in. "
         "Calibrate the Confidence levels with the Confidence tab."
     )
@@ -1644,7 +1644,7 @@ st.title("Portfolio Optimiser (DCF-BL)")
 st.caption(
     f"Risk-free rate: **{RF:.2%}** ({RF_SOURCE}) |  "
     f"Universe: **{len(active_tickers)} stocks** |  "
-    f"Data range: **{tick_rets.index[0].date()} → {tick_rets.index[-1].date()}**"
+    f"Data range: **{tick_rets.index[0].date()} → Last trading day closed: {tick_rets.index[-1].date()}**"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
