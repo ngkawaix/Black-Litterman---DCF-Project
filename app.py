@@ -453,7 +453,7 @@ def load_ticker_metadata(tickers):
 
         # ── Consensus & Earnings Target Fetching ──
         info = {}
-        mean_t = None
+        target_t = None
         n_analysts = None
 
         for _attempt in range(3):
@@ -474,17 +474,17 @@ def load_ticker_metadata(tickers):
         for _attempt in range(3):
             try:
                 apt = t.analyst_price_targets
-                mean_t = apt.get("mean", None) if isinstance(apt, dict) else None
+                target_t = apt.get("median", None) if isinstance(apt, dict) else None
                 if mean_t is not None:
                     break
             except Exception:
                 if _attempt < 2:
                     time.sleep(2.0 + _attempt)
 
-        if mean_t is None:
-            mean_t = info.get("targetMeanPrice", None)
+        if target_t is None:
+            target_t = info.get("targetMeanPrice", None)
 
-        if mean_t is not None and n_analysts is None:
+        if target_t is not None and n_analysts is None:
             try:
                 time.sleep(1.5)
                 _info_retry = t.info
@@ -495,7 +495,7 @@ def load_ticker_metadata(tickers):
             except Exception:
                 pass
 
-        consensus[ticker] = {"mean": mean_t, "n_analysts": n_analysts}
+        consensus[ticker] = {"median": target_t, "n_analysts": n_analysts}
 
         flagged = False
         try:
@@ -1436,16 +1436,16 @@ with st.sidebar:
 
                 # Consensus reference line
                 cons   = consensus_data.get(ticker, {})
-                mean_t = cons.get("mean", None)
+                target_t = cons.get("median", None)
                 n_ana  = cons.get("n_analysts", None)
                 if mean_t:
                     n_str = f" | from {int(n_ana)} analysts" if n_ana else ""
-                    st.caption(f"Consensus: ${mean_t:,.0f}{n_str}")
+                    st.caption(f"Consensus: ${target_t:,.0f}{n_str}")
                 else:
                     st.caption("Consensus: N/A")
 
                 # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,then a generic placeholder.
-                _cons_default = float(mean_t) if mean_t else None
+                _cons_default = float(target_t) if target_t else None
                 if _is_dcf: 
                     _target_default =  float(BASE_TARGETS.get (ticker, 100.0))
                 else:
