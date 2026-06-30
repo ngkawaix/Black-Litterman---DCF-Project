@@ -467,6 +467,7 @@ def load_ticker_metadata(tickers):
                 )
                 break
             except Exception:
+                info = {}
                 if _attempt < 2:
                     time.sleep(2.0 + _attempt)
 
