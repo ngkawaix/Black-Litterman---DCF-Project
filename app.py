@@ -459,6 +459,8 @@ def load_ticker_metadata(tickers):
         for _attempt in range(3):
             try:
                 info = t.info
+                if info = None:
+                    raise ValueError("t.info returned None (likely rate-limited)" )
                 n_analysts = (
                     info.get("numberOfAnalystOpinions")
                     or info.get("numAnalystOpinions")
