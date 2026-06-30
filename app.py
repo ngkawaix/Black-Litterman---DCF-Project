@@ -475,7 +475,7 @@ def load_ticker_metadata(tickers):
             try:
                 apt = t.analyst_price_targets
                 target_t = apt.get("median", None) if isinstance(apt, dict) else None
-                if mean_t is not None:
+                if target_t is not None:
                     break
             except Exception:
                 if _attempt < 2:
@@ -1438,7 +1438,7 @@ with st.sidebar:
                 cons   = consensus_data.get(ticker, {})
                 target_t = cons.get("median", None)
                 n_ana  = cons.get("n_analysts", None)
-                if mean_t:
+                if target_t:
                     n_str = f" | from {int(n_ana)} analysts" if n_ana else ""
                     st.caption(f"Consensus: ${target_t:,.0f}{n_str}")
                 else:
