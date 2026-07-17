@@ -3160,7 +3160,7 @@ with tab5:
         _col_m, _col_mdd = st.columns(2)
         _col_m.slider(
             "Multiplier (m)",
-            min_value=1.0, max_value=10.0, step=0.5, 
+            min_value=1.0, max_value=10.0, value=3.0 step=0.5, 
             key="m_cppi",
             help=(
                 "Scales equity exposure relative to the available cushion. "
@@ -3172,7 +3172,7 @@ with tab5:
         )
         _col_mdd.slider(
             "Max Drawdown Floor (%)",
-            min_value=5.0, max_value=40.0, step=1.0, 
+            min_value=5.0, max_value=40.0, value=15.0, step=1.0, 
             key="mdd_cppi_pct",
             help=(
                 "Maximum tolerated drawdown from the portfolio's all-time high. "
