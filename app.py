@@ -842,7 +842,7 @@ def run_correlated_gbm(tick_rets, mu_bl, bl_w_series, n_scenarios=500, n_years=1
         Z                 = np.random.normal(0, 1, size=(n_stocks, n_scenarios))
         correlated_shocks = L @ Z
         drift             = mu_vec - 0.5 * sigma_vec ** 2
-        diffusion         = correlated_shocks.T * sigma_vec
+        diffusion         = correlated_shocks.T
         all_paths[t]      = all_paths[t - 1] * np.exp(drift + diffusion)
 
     w         = bl_w_series.reindex(tick_rets.columns).fillna(0).values
