@@ -1733,7 +1733,7 @@ with tab0:
         blow up into extreme, unstable allocations that no sensible investor would hold.
 
         Between 1990 and 1992, Fischer Black and Robert Litterman devised a method to solve this problem by never letting a view stand alone: The Black-Litterman model.
-        Instead, of feeding estimated returns which were prone to small estimation errors, it asks: *relative to what the market collectively believes,
+        Instead of feeding estimated returns which were prone to small estimation errors, it asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
 
         The model has two inputs:
