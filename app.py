@@ -1727,13 +1727,13 @@ with tab0:
     st.markdown("#### How Black-Litterman Works")
     st.markdown(
         """
-        In 1952, Markowitz showed that portfolio risk depends on how assets move together,
-        not just their stats in isolation. However, his framework has a famous flaw: feed it
+        In 1952, Harry Markowitz showed that portfolio risk depends on how assets move together,
+        not just their stats in isolation. However, his framework had a famous flaw: feed it
         expected returns from historical data or analyst targets, and small estimation errors
-        blow up into extreme, unstable allocations no sensible investor would hold.
+        blow up into extreme, unstable allocations that no sensible investor would hold.
 
-        **Black-Litterman (1990-92) solves this problem by never letting a view stand alone.**
-        Instead, it asks: *relative to what the market collectively believes,
+        Between 1990 and 1992, Fischer Black and Robert Litterman devised a method to solve this problem by never letting a view stand alone: The Black-Litterman model.
+        Instead, of feeding estimated returns which were prone to small estimation errors, it asks: *relative to what the market collectively believes,
         how much should a view actually shift the allocation?*
 
         The model has two inputs:
