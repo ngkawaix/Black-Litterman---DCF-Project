@@ -1461,12 +1461,6 @@ with st.sidebar:
         help="Restore every ticker to its calibrated BASE_CONFIDENCE value.",
     )
 
-    st.caption(
-        "Idzorek clamps confidence to [0.01, 0.99], so neither extreme is degenerate. "
-        "At 0.00 the largest caps will pin at your max-position ceiling rather than "
-        "reproducing cap weights exactly."
-    )
-
     st.divider()
 
     # ── Section 4: Add Custom Tickers ─────────────────────────────────────────
