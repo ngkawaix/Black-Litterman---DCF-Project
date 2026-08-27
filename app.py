@@ -1437,20 +1437,20 @@ with st.sidebar:
     _c0, _c50, _c100, _creset = st.columns([1, 1, 1, 1.3])
 
     _c0.button(
-        "0.00", key="conf_all_0", width="stretch",
+        "0.0", key="conf_all_0", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 0.00),
         help=("Views carry almost no weight (omega is ~99x the prior variance). "
               "The posterior collapses onto the market prior pi, so BL weights "
               "approach cap weights, clipped by your max-position setting."),
     )
     _c50.button(
-        "0.50", key="conf_all_50", width="stretch",
+        "0.5", key="conf_all_50", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 0.50),
         help=("The (1 - c) / c ratio equals exactly 1, so omega = tau * sigma^2. "
               "This reproduces the standard He-Litterman proportional prior."),
     )
     _c100.button(
-        "1.00", key="conf_all_100", width="stretch",
+        "1.0", key="conf_all_100", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 1.00),
         help=("Views dominate (omega is ~1/99th of the prior variance). The "
               "posterior tracks your price targets and largely ignores pi."),
