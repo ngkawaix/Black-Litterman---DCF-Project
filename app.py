@@ -417,87 +417,82 @@ def load_ticker_metadata(tickers):
     mcap            = {}
     consensus       = {}
     recent_earnings = {}
-    
-    for ticker in tickers:
-        t = yf.Ticker(ticker)
+    next_earnings   = {}
 
-        # ── LAYER 1: Fast Info Property ──
-        try:
-            mcap[ticker] = t.fast_info.market_cap
-        except Exception:
-            mcap[ticker] = None
+    def _fetch_info(ticker, attempts=2):
+        """
+        yfinance memoises .info on the Ticker instance and flips its
+        _already_fetched flag BEFORE issuing the network request. Retrying on
+        the same object therefore returns the cached failure instantly, so a
+        fresh Ticker per attempt is the only way to actually re-request.
 
-        # ── LAYER 2: Standard Info Dictionary ──
-        if mcap[ticker] is None:
+        Returns (info_dict, ticker_obj). The ticker_obj is handed back so the
+        calendar pull reuses the same session rather than opening another.
+        """
+        t = None
+        for attempt in range(attempts):
+            t = yf.Ticker(ticker)
             try:
-                mcap[ticker] = t.info.get("marketCap", None)
+                info = t.info
+                if info:
+                    return info, t
             except Exception:
                 pass
-        
-        # ── LAYER 3: Programmatic Derivation (Shares * Price) ──
+            if attempt < attempts - 1:
+                time.sleep(2.0)
+        return {}, t
+
+    for ticker in tickers:
+        # ONE quoteSummary hit per ticker. _fetch_info() internally requests the
+        # financialData, quoteType, defaultKeyStatistics, assetProfile and
+        # summaryDetail modules and flattens them, so market cap, consensus
+        # target and analyst count all land in this single dict.
+        info, t = _fetch_info(ticker)
+
+        # ── Market cap ────────────────────────────────────────────────────────
+        # LAYER 1: the .info dict we already have (no extra request).
+        mcap[ticker] = info.get("marketCap")
+
+        # LAYER 2: fast_info is a different endpoint, so it is still worth a
+        # shot if the quoteSummary pull came back empty.
         if mcap[ticker] is None:
             try:
-                # Fallback to reconstructing from components if main field is rate-limited
-                shares = None
-                try: shares = t.fast_info.shares_outstanding
-                except Exception: shares = t.info.get("sharesOutstanding")
-                
-                price = None
-                try: price = t.fast_info.last_price
-                except Exception: price = t.info.get("previousClose")
-                
+                mcap[ticker] = t.fast_info.market_cap
+            except Exception:
+                mcap[ticker] = None
+
+        # LAYER 3: reconstruct from components (shares * price).
+        if mcap[ticker] is None:
+            try:
+                shares = info.get("sharesOutstanding")
+                price  = info.get("previousClose")
+                if shares is None or price is None:
+                    try:
+                        shares = shares or t.fast_info.shares_outstanding
+                        price  = price  or t.fast_info.last_price
+                    except Exception:
+                        pass
                 if shares and price:
                     mcap[ticker] = shares * price
             except Exception:
                 pass
 
-        # ── Consensus & Earnings Target Fetching ──
-        info = {}
-        target_t = None
-        n_analysts = None
-
-        for _attempt in range(3):
-            try:
-                info = t.info
-                if info is None:
-                    raise ValueError("t.info returned None (likely rate-limited)" )
-                n_analysts = (
-                    info.get("numberOfAnalystOpinions")
-                    or info.get("numAnalystOpinions")
-                )
-                break
-            except Exception:
-                info = {}
-                if _attempt < 2:
-                    time.sleep(2.0 + _attempt)
-
-        for _attempt in range(3):
-            try:
-                apt = t.analyst_price_targets
-                target_t = apt.get("median", None) if isinstance(apt, dict) else None
-                if target_t is not None:
-                    break
-            except Exception:
-                if _attempt < 2:
-                    time.sleep(2.0 + _attempt)
-
-        if target_t is None:
-            target_t = info.get("targetMeanPrice", None)
-
-        if target_t is not None and n_analysts is None:
-            try:
-                time.sleep(1.5)
-                _info_retry = t.info
-                n_analysts = (
-                    _info_retry.get("numberOfAnalystOpinions")
-                    or _info_retry.get("numAnalystOpinions")
-                )
-            except Exception:
-                pass
-
+        # ── Consensus ─────────────────────────────────────────────────────────
+        # Previously a separate t.analyst_price_targets call, which re-fetched
+        # the financialData module that .info had already pulled. Same numbers,
+        # one fewer round trip.
+        target_t = info.get("targetMedianPrice") or info.get("targetMeanPrice")
+        n_analysts = (
+            info.get("numberOfAnalystOpinions")
+            or info.get("numAnalystOpinions")
+        )
         consensus[ticker] = {"median": target_t, "n_analysts": n_analysts}
 
-        flagged = False
+        # ── Earnings calendar ─────────────────────────────────────────────────
+        # Parsed once, feeding both the "reported recently" flag and the next
+        # scheduled date. load_valuation_metrics used to repeat this call.
+        flagged   = False
+        next_date = "N/A"
         try:
             cal = t.calendar
             dates = []
@@ -507,15 +502,21 @@ def load_ticker_metadata(tickers):
             elif isinstance(cal, pd.DataFrame) and not cal.empty:
                 col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
                 dates = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
-            flagged = any(
-                cutoff <= pd.Timestamp(d).normalize() <= today
-                for d in dates if d is not None
-            )
+
+            norm    = [pd.Timestamp(d).normalize() for d in dates if d is not None]
+            flagged = any(cutoff <= d <= today for d in norm)
+            future  = [d for d in norm if d >= today]
+            if future:
+                next_date = min(future).strftime("%Y-%m-%d")
         except Exception:
             pass
-        recent_earnings[ticker] = flagged
 
-        time.sleep(0.35)   
+        recent_earnings[ticker] = flagged
+        next_earnings[ticker]   = next_date
+
+        # Politeness throttle. Deliberately kept: at 17 tickers this costs ~6s
+        # total, which is cheap insurance against tripping the rate limiter.
+        time.sleep(0.35)
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
@@ -532,7 +533,7 @@ def load_ticker_metadata(tickers):
         )
 
     weights = mcap_series / mcap_series.sum()
-    return weights, consensus, recent_earnings
+    return weights, consensus, recent_earnings, next_earnings
 
 @st.cache_data(show_spinner="Loading risk-free rate…")
 def load_rf():
@@ -552,77 +553,6 @@ def load_rf():
         return float(irx.iloc[-1]) / 100, "Yahoo 13-week T-bill (^IRX, fallback)"
     except Exception:
         return 0.04, "static 4.00% fallback (FRED + Yahoo unavailable)"
-
-@st.cache_data(show_spinner="Fetching valuation metrics…", ttl=86400)
-def load_valuation_metrics(tickers):
-    """
-    Fetches valuation ratios and earnings dates for each ticker via yfinance.
-    Kept separate from load_ticker_metadata so a slow or rate-limited ratio
-    pull does not block the sidebar from loading cap weights and consensus.
-
-    Returns a DataFrame indexed by ticker with columns:
-        P/E (TTM), Fwd P/E, Beta, EV/EBITDA, P/S, P/B,
-        Last Earnings, Next Earnings
-    """
-    import time
-
-    today = pd.Timestamp.today().normalize()
-    rows  = {}
-
-    for ticker in tickers:
-        t    = yf.Ticker(ticker)
-        info = {}
-        try:
-            info = t.info
-        except Exception:
-            pass
-
-        # ── Earnings dates ────────────────────────────────────────────────────
-        last_earnings = "N/A"
-        next_earnings = "N/A"
-
-        try:
-            mrq = info.get("mostRecentQuarter", None)
-            if mrq:
-                last_earnings = pd.Timestamp(mrq, unit="s").strftime("%Y-%m-%d")
-        except Exception:
-            pass
-
-        try:
-            cal   = t.calendar
-            dates = []
-            if isinstance(cal, dict):
-                raw   = cal.get("Earnings Date", [])
-                dates = raw if isinstance(raw, list) else [raw]
-            elif isinstance(cal, pd.DataFrame) and not cal.empty:
-                col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
-                dates    = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
-            future = [
-                pd.Timestamp(d).normalize()
-                for d in dates
-                if d is not None and pd.Timestamp(d).normalize() >= today
-            ]
-            if future:
-                next_earnings = min(future).strftime("%Y-%m-%d")
-        except Exception:
-            pass
-
-        # ── Valuation ratios ──────────────────────────────────────────────────
-        rows[ticker] = {
-            "P/E (TTM)":   info.get("trailingPE",                   None),
-            "Fwd P/E":     info.get("forwardPE",                    None),
-            "Beta":        info.get("beta",                         None),
-            "EV/EBITDA":   info.get("enterpriseToEbitda",           None),
-            "P/S":         info.get("priceToSalesTrailing12Months", None),
-            "P/B":         info.get("priceToBook",                  None),
-            "Debt/Equity": info.get("debtToEquity",                 None),
-            "Last Earnings": last_earnings,
-            "Next Earnings": next_earnings,
-        }
-        time.sleep(0.25)
-
-    return pd.DataFrame(rows).T
-
 
 @st.cache_data(show_spinner=False, ttl=86400)
 def load_benchmark_data():
@@ -1367,7 +1297,7 @@ with st.sidebar:
     price_data, tick_rets = load_market_data(active_tickers, start=data_start_date.strftime("%Y-%m-%d"))
     
     # Fetch the cached weights series and metadata
-    weights_series, consensus_data, recent_earnings = load_ticker_metadata(active_tickers)
+    weights_series, consensus_data, recent_earnings, next_earnings = load_ticker_metadata(active_tickers)
     
     # Build the cap-weight DataFrame dynamically with the fresh index
     idx = price_data.index
@@ -1607,7 +1537,6 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────────────────────
 RF, RF_SOURCE = load_rf()
 spx_rets    = load_benchmark_data()
-val_metrics = load_valuation_metrics(active_tickers)
 
 # Align date ranges
 common_index    = tick_rets.index.intersection(tick_capweights.index)
@@ -2102,7 +2031,7 @@ with tab2:
         """Green circle = reported < 30 days ago / Yellow = reporting within 30 days / dash otherwise."""
         if recent_earnings.get(tkr, False):
             return "🟢"
-        next_e = val_metrics.loc[tkr, "Next Earnings"]
+        next_e = next_earnings.get(tkr, "N/A")
         if next_e != "N/A":
             try:
                 if today <= pd.Timestamp(next_e).normalize() <= soon_cutoff:
