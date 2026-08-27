@@ -1254,6 +1254,25 @@ def validate_custom_ticker(ticker: str, start_date_str: str):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# CONFIDENCE BULK-SET CALLBACKS
+# ─────────────────────────────────────────────────────────────────────────────
+# Streamlit raises StreamlitAPIException if a widget's session-state key is
+# written to after that widget has been instantiated on the current run.
+# on_click callbacks fire BEFORE the rerun, so mutating conf_* in here lands
+# while the sliders are still unbuilt. Setting them inline would not work.
+def _set_all_confidence(tickers, level: float):
+    """Bulk-set every confidence slider in the active universe to `level`."""
+    for t in tickers:
+        st.session_state[f"conf_{t}"] = float(level)
+
+
+def _reset_confidence(tickers):
+    """Restore each slider to its calibrated BASE_CONFIDENCE value."""
+    for t in tickers:
+        st.session_state[f"conf_{t}"] = float(BASE_CONFIDENCE.get(t, 0.20))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # SIDEBAR -- User Inputs
 # ─────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
@@ -1349,6 +1368,12 @@ with st.sidebar:
     user_targets    = {}
     user_confidence = {}
 
+    # Seed each slider's default exactly once. After this the conf_* keys are
+    # the single source of truth for confidence, which is what lets the
+    # bulk-set buttons below write to them without fighting a `value=` default.
+    for _t in active_tickers:
+        st.session_state.setdefault(f"conf_{_t}", float(BASE_CONFIDENCE.get(_t, 0.20)))
+
     for i in range(0, len(active_tickers), 2):
         col_a, col_b = st.columns(2)
         for col, ticker in zip([col_a, col_b], active_tickers[i:i + 2]):
@@ -1391,14 +1416,56 @@ with st.sidebar:
                     step=1.0,
                     key=f"pt_{ticker}",
                 )
+                # No `value=` here on purpose. The default is seeded into
+                # st.session_state above, so passing both would trigger the
+                # "created with a default value but also had its value set via
+                # the Session State API" warning once the bulk buttons fire.
                 user_confidence[ticker] = st.slider(
                     "Confidence",
                     min_value=0.0,
                     max_value=1.0,
-                    value=float(BASE_CONFIDENCE.get(ticker, 0.20)),
                     step=0.05,
                     key=f"conf_{ticker}",
                 )
+
+    # ── Bulk-set confidence ───────────────────────────────────────────────────
+    # Sensitivity presets. Confidence enters BL through Idzorek's omega:
+    #     omega_i = ((1 - c_i) / c_i) * (p_i' (tau * sigma) p_i)
+    # With an identity P this is ((1 - c) / c) * tau * sigma_i^2, so the three
+    # levels are the two limits and the theoretical midpoint of that ratio.
+    st.caption("**Set all confidence levels**")
+    _c0, _c50, _c100, _creset = st.columns([1, 1, 1, 1.3])
+
+    _c0.button(
+        "0.00", key="conf_all_0", width="stretch",
+        on_click=_set_all_confidence, args=(active_tickers, 0.00),
+        help=("Views carry almost no weight (omega is ~99x the prior variance). "
+              "The posterior collapses onto the market prior pi, so BL weights "
+              "approach cap weights, clipped by your max-position setting."),
+    )
+    _c50.button(
+        "0.50", key="conf_all_50", width="stretch",
+        on_click=_set_all_confidence, args=(active_tickers, 0.50),
+        help=("The (1 - c) / c ratio equals exactly 1, so omega = tau * sigma^2. "
+              "This reproduces the standard He-Litterman proportional prior."),
+    )
+    _c100.button(
+        "1.00", key="conf_all_100", width="stretch",
+        on_click=_set_all_confidence, args=(active_tickers, 1.00),
+        help=("Views dominate (omega is ~1/99th of the prior variance). The "
+              "posterior tracks your price targets and largely ignores pi."),
+    )
+    _creset.button(
+        "Reset", key="conf_all_reset", width="stretch",
+        on_click=_reset_confidence, args=(active_tickers,),
+        help="Restore every ticker to its calibrated BASE_CONFIDENCE value.",
+    )
+
+    st.caption(
+        "Idzorek clamps confidence to [0.01, 0.99], so neither extreme is degenerate. "
+        "At 0.00 the largest caps will pin at your max-position ceiling rather than "
+        "reproducing cap weights exactly."
+    )
 
     st.divider()
 
