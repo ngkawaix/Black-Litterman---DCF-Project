@@ -1516,7 +1516,7 @@ with st.sidebar:
     _c100.button(
         "1.0", key="conf_all_100", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 1.00),
-        help=("Views dominate and completely ignores market implied returns."
+        help=("Views dominate and completely ignores market implied returns)."
     )
     _creset.button(
         "Reset", key="conf_all_reset", width="stretch",
