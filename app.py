@@ -407,116 +407,149 @@ def load_market_data(tickers, start="2012-01-01"):
     
 
 # Retrieval of Market Cap, Consensus Estimates and Earnings Data
-@st.cache_data(show_spinner="Fetching ticker metadata (market cap, price data, consensus, earnings)…", ttl=86400)
-def load_ticker_metadata(tickers):
+class TickerMetaError(RuntimeError):
+    """
+    Raised when a ticker's quoteSummary pull fails outright.
+
+    This exists so the failure is NOT cached. st.cache_data stores return
+    values but never exceptions, so raising here means the next rerun retries
+    instead of serving an empty dict for 24h.
+    """
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def _fetch_ticker_meta(ticker):
+    """
+    Metadata for ONE ticker. Cached per ticker, deliberately.
+
+    Caching the whole universe under a single list key meant that adding or
+    removing one ticker changed the key and forced a full refetch of every
+    ticker at once. That burst is what trips the Yahoo rate limiter, and the
+    degraded result then got cached for 24h. Per-ticker keys mean adding a
+    ticker costs exactly one network call and cannot disturb the other 17.
+
+    Raises TickerMetaError if the pull fails, so nothing bad is cached.
+    Returns consensus None only when the pull SUCCEEDED and the stock genuinely
+    has no analyst coverage, which is a real answer and safe to cache.
+    """
     import time
 
     today  = pd.Timestamp.today().normalize()
     cutoff = today - pd.Timedelta(days=30)
 
-    mcap            = {}
-    consensus       = {}
-    recent_earnings = {}
-    next_earnings   = {}
-
-    def _fetch_info(ticker, attempts=2):
-        """
-        yfinance memoises .info on the Ticker instance and flips its
-        _already_fetched flag BEFORE issuing the network request. Retrying on
-        the same object therefore returns the cached failure instantly, so a
-        fresh Ticker per attempt is the only way to actually re-request.
-
-        Returns (info_dict, ticker_obj). The ticker_obj is handed back so the
-        calendar pull reuses the same session rather than opening another.
-        """
-        t = None
-        for attempt in range(attempts):
-            t = yf.Ticker(ticker)
-            try:
-                info = t.info
-                if info:
-                    return info, t
-            except Exception:
-                pass
-            if attempt < attempts - 1:
-                time.sleep(2.0)
-        return {}, t
-
-    for ticker in tickers:
-        # ONE quoteSummary hit per ticker. _fetch_info() internally requests the
-        # financialData, quoteType, defaultKeyStatistics, assetProfile and
-        # summaryDetail modules and flattens them, so market cap, consensus
-        # target and analyst count all land in this single dict.
-        info, t = _fetch_info(ticker)
-
-        # ── Market cap ────────────────────────────────────────────────────────
-        # LAYER 1: the .info dict we already have (no extra request).
-        mcap[ticker] = info.get("marketCap")
-
-        # LAYER 2: fast_info is a different endpoint, so it is still worth a
-        # shot if the quoteSummary pull came back empty.
-        if mcap[ticker] is None:
-            try:
-                mcap[ticker] = t.fast_info.market_cap
-            except Exception:
-                mcap[ticker] = None
-
-        # LAYER 3: reconstruct from components (shares * price).
-        if mcap[ticker] is None:
-            try:
-                shares = info.get("sharesOutstanding")
-                price  = info.get("previousClose")
-                if shares is None or price is None:
-                    try:
-                        shares = shares or t.fast_info.shares_outstanding
-                        price  = price  or t.fast_info.last_price
-                    except Exception:
-                        pass
-                if shares and price:
-                    mcap[ticker] = shares * price
-            except Exception:
-                pass
-
-        # ── Consensus ─────────────────────────────────────────────────────────
-        # Previously a separate t.analyst_price_targets call, which re-fetched
-        # the financialData module that .info had already pulled. Same numbers,
-        # one fewer round trip.
-        target_t = info.get("targetMedianPrice") or info.get("targetMeanPrice")
-        n_analysts = (
-            info.get("numberOfAnalystOpinions")
-            or info.get("numAnalystOpinions")
-        )
-        consensus[ticker] = {"median": target_t, "n_analysts": n_analysts}
-
-        # ── Earnings calendar ─────────────────────────────────────────────────
-        # Parsed once, feeding both the "reported recently" flag and the next
-        # scheduled date. load_valuation_metrics used to repeat this call.
-        flagged   = False
-        next_date = "N/A"
+    # yfinance memoises .info on the Ticker instance and flips its
+    # _already_fetched flag BEFORE issuing the network request. Retrying on
+    # the same object returns the cached failure instantly, so a fresh Ticker
+    # per attempt is the only way to actually re-request.
+    info, t = {}, None
+    for attempt in range(2):
+        t = yf.Ticker(ticker)
         try:
-            cal = t.calendar
-            dates = []
-            if isinstance(cal, dict):
-                raw = cal.get("Earnings Date", [])
-                dates = raw if isinstance(raw, list) else [raw]
-            elif isinstance(cal, pd.DataFrame) and not cal.empty:
-                col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
-                dates = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
+            _info = t.info
+            if _info:
+                info = _info
+                break
+        except Exception:
+            pass
+        if attempt == 0:
+            time.sleep(2.0)
 
-            norm    = [pd.Timestamp(d).normalize() for d in dates if d is not None]
-            flagged = any(cutoff <= d <= today for d in norm)
-            future  = [d for d in norm if d >= today]
-            if future:
-                next_date = min(future).strftime("%Y-%m-%d")
+    if not info:
+        # Total failure. Raise so this is not cached for 24h.
+        raise TickerMetaError(ticker)
+
+    # ── Market cap ────────────────────────────────────────────────────────────
+    cap = info.get("marketCap")                       # LAYER 1: already in hand
+    if cap is None:                                   # LAYER 2: different endpoint
+        try:
+            cap = t.fast_info.market_cap
+        except Exception:
+            cap = None
+    if cap is None:                                   # LAYER 3: shares * price
+        try:
+            shares = info.get("sharesOutstanding")
+            price  = info.get("previousClose")
+            if shares is None or price is None:
+                try:
+                    shares = shares or t.fast_info.shares_outstanding
+                    price  = price  or t.fast_info.last_price
+                except Exception:
+                    pass
+            if shares and price:
+                cap = shares * price
         except Exception:
             pass
 
-        recent_earnings[ticker] = flagged
-        next_earnings[ticker]   = next_date
+    # ── Consensus ─────────────────────────────────────────────────────────────
+    # Reached only on a successful pull, so None here means "no analyst
+    # coverage", not "the request failed". That distinction is the whole point.
+    target_t   = info.get("targetMedianPrice") or info.get("targetMeanPrice")
+    n_analysts = info.get("numberOfAnalystOpinions") or info.get("numAnalystOpinions")
 
-        # Politeness throttle. Deliberately kept: at 17 tickers this costs ~6s
-        # total, which is cheap insurance against tripping the rate limiter.
-        time.sleep(0.35)
+    # ── Earnings calendar ─────────────────────────────────────────────────────
+    flagged, next_date = False, "N/A"
+    try:
+        cal   = t.calendar
+        dates = []
+        if isinstance(cal, dict):
+            raw = cal.get("Earnings Date", [])
+            dates = raw if isinstance(raw, list) else [raw]
+        elif isinstance(cal, pd.DataFrame) and not cal.empty:
+            col_name = "Earnings Date" if "Earnings Date" in cal.columns else None
+            dates = cal[col_name].dropna().tolist() if col_name else cal.iloc[0].dropna().tolist()
+
+        norm    = [pd.Timestamp(d).normalize() for d in dates if d is not None]
+        flagged = any(cutoff <= d <= today for d in norm)
+        future  = [d for d in norm if d >= today]
+        if future:
+            next_date = min(future).strftime("%Y-%m-%d")
+    except Exception:
+        pass
+
+    # Politeness throttle. Lives inside the cached function on purpose, so it
+    # is paid only on a genuine network call, never on a cache hit.
+    time.sleep(0.35)
+
+    return {
+        "mcap":            cap,
+        "consensus":       {"median": target_t, "n_analysts": n_analysts},
+        "recent_earnings": flagged,
+        "next_earnings":   next_date,
+    }
+
+
+def load_ticker_metadata(tickers):
+    """
+    Fan-out over _fetch_ticker_meta. Deliberately NOT cached: the per-ticker
+    function holds the cache, so this stays a cheap assembly step and adding a
+    ticker only misses on that one ticker.
+    """
+    mcap, consensus, recent_earnings, next_earnings = {}, {}, {}, {}
+    failed = []
+
+    with st.spinner("Fetching ticker metadata (market cap, consensus, earnings)…"):
+        for ticker in tickers:
+            try:
+                meta = _fetch_ticker_meta(ticker)
+            except TickerMetaError:
+                failed.append(ticker)
+                mcap[ticker]            = None
+                consensus[ticker]       = {"median": None, "n_analysts": None}
+                recent_earnings[ticker] = False
+                next_earnings[ticker]   = "N/A"
+                continue
+            mcap[ticker]            = meta["mcap"]
+            consensus[ticker]       = meta["consensus"]
+            recent_earnings[ticker] = meta["recent_earnings"]
+            next_earnings[ticker]   = meta["next_earnings"]
+
+    if failed:
+        st.sidebar.error(
+            f"⚠️ **Metadata pull failed for: {', '.join(failed)}.** "
+            "Consensus targets and earnings dates are unavailable for these names, "
+            "and their price-target defaults have fallen back to the last close. "
+            "This failure was **not** cached, so a refresh will retry."
+        )
 
     mcap_series = pd.Series(mcap)
     missing     = mcap_series[mcap_series.isna()].index.tolist()
@@ -524,12 +557,11 @@ def load_ticker_metadata(tickers):
     # If any tickers failed all three API layers, fill with the median of known values
     # so they receive a roughly "average" cap weight rather than distorting the allocation.
     if missing:
-        median_cap = mcap_series.median()
+        median_cap  = mcap_series.median()
         mcap_series = mcap_series.fillna(median_cap)
         st.sidebar.warning(
             f"⚠️ Could not fetch market cap for: **{', '.join(missing)}**. "
-            "Filled with median of available caps - cap-weight strategy may be slightly off. "
-            "Yahoo Finance likely rate-limited the pull; will retry on next cache refresh (24h)."
+            "Filled with median of available caps - cap-weight strategy may be slightly off."
         )
 
     weights = mcap_series / mcap_series.sum()
@@ -722,6 +754,9 @@ def bl_msr_longonly(sigma, mu, riskfree_rate, min_weight=0.0, max_weight=1.0):
 
     Parameters
     ----------
+    mu : pd.Series
+        TOTAL expected returns, not excess. The objective subtracts
+        riskfree_rate itself, so pass mu_bl + RF at the call site.
     min_weight : float
         Floor on any single position (e.g. 0.02 = 2%).
         Set to 0 to allow zero-weight (unconstrained floor).
@@ -1266,10 +1301,15 @@ def _set_all_confidence(tickers, level: float):
         st.session_state[f"conf_{t}"] = float(level)
 
 
-def _reset_confidence(tickers):
-    """Restore each slider to its calibrated BASE_CONFIDENCE value."""
-    for t in tickers:
-        st.session_state[f"conf_{t}"] = float(BASE_CONFIDENCE.get(t, 0.20))
+def _reset_confidence(defaults):
+    """
+    Restore each slider to its seeded default. Takes an explicit dict rather
+    than reading BASE_CONFIDENCE, so tickers with no view (no DCF, no curated
+    target, no analyst coverage) reset to 0.00 instead of picking up a
+    confidence they never earned.
+    """
+    for t, level in defaults.items():
+        st.session_state[f"conf_{t}"] = float(level)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1368,11 +1408,24 @@ with st.sidebar:
     user_targets    = {}
     user_confidence = {}
 
+    # Work out, per ticker, whether we actually hold a view worth feeding to BL.
+    # A ticker with no DCF, no curated target and no analyst coverage has no
+    # view at all, so its confidence is seeded to 0.00 rather than letting a
+    # placeholder target act like a real opinion.
+    _has_view, _conf_defaults = {}, {}
+    for _t in active_tickers:
+        _has_view[_t] = (
+            _t in DCF_OVERRIDES
+            or _t in BASE_TARGETS
+            or (consensus_data.get(_t) or {}).get("median") is not None
+        )
+        _conf_defaults[_t] = float(BASE_CONFIDENCE.get(_t, 0.20)) if _has_view[_t] else 0.0
+
     # Seed each slider's default exactly once. After this the conf_* keys are
     # the single source of truth for confidence, which is what lets the
     # bulk-set buttons below write to them without fighting a `value=` default.
     for _t in active_tickers:
-        st.session_state.setdefault(f"conf_{_t}", float(BASE_CONFIDENCE.get(_t, 0.20)))
+        st.session_state.setdefault(f"conf_{_t}", _conf_defaults[_t])
 
     for i in range(0, len(active_tickers), 2):
         col_a, col_b = st.columns(2)
@@ -1399,16 +1452,28 @@ with st.sidebar:
                 else:
                     st.caption("Consensus: N/A")
 
-                # Default target: consensus first (live Yahoo Finance), then BASE_TARGETS as fallback,then a generic placeholder.
+                # Default target: DCF override, then live consensus, then the
+                # curated BASE_TARGETS, then the last close.
+                #
+                # The last-close fallback replaces a hardcoded $100.0, which was
+                # a phantom view: $100 on a $40 stock is a +150% opinion the
+                # user never expressed. Last close is a 0% price view, and the
+                # confidence seeded above is 0.00, so it stays inert until the
+                # user types a real number.
                 _cons_default = float(target_t) if target_t else None
-                if _is_dcf: 
-                    _target_default =  float(BASE_TARGETS.get (ticker, 100.0))
+                if _is_dcf:
+                    _target_default = float(BASE_TARGETS.get(ticker, 100.0))
+                elif _cons_default is not None:
+                    _target_default = _cons_default
+                elif ticker in BASE_TARGETS:
+                    _target_default = float(BASE_TARGETS[ticker])
                 else:
-                    _target_default = (
-                        _cons_default
-                        if _cons_default is not None
-                        else float(BASE_TARGETS.get(ticker, 100.0))
-                    )
+                    try:
+                        _target_default = float(price_data[ticker].dropna().iloc[-1])
+                    except Exception:
+                        _target_default = 100.0
+                    st.caption("⚠️ No view. Defaulted to last close, confidence 0.00.")
+
                 user_targets[ticker] = st.number_input(
                     "Price target ($)",
                     min_value=0.01,
@@ -1437,28 +1502,34 @@ with st.sidebar:
     _c0, _c50, _c100, _creset = st.columns([1, 1, 1, 1.3])
 
     _c0.button(
-        "0.0", key="conf_all_0", width="stretch",
+        "0.00", key="conf_all_0", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 0.00),
         help=("Views carry almost no weight (omega is ~99x the prior variance). "
               "The posterior collapses onto the market prior pi, so BL weights "
               "approach cap weights, clipped by your max-position setting."),
     )
     _c50.button(
-        "0.5", key="conf_all_50", width="stretch",
+        "0.50", key="conf_all_50", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 0.50),
         help=("The (1 - c) / c ratio equals exactly 1, so omega = tau * sigma^2. "
               "This reproduces the standard He-Litterman proportional prior."),
     )
     _c100.button(
-        "1.0", key="conf_all_100", width="stretch",
+        "1.00", key="conf_all_100", width="stretch",
         on_click=_set_all_confidence, args=(active_tickers, 1.00),
         help=("Views dominate (omega is ~1/99th of the prior variance). The "
               "posterior tracks your price targets and largely ignores pi."),
     )
     _creset.button(
         "Reset", key="conf_all_reset", width="stretch",
-        on_click=_reset_confidence, args=(active_tickers,),
-        help="Restore every ticker to its calibrated BASE_CONFIDENCE value.",
+        on_click=_reset_confidence, args=(_conf_defaults,),
+        help="Restore every ticker to its seeded default (0.00 for names with no view).",
+    )
+
+    st.caption(
+        "Idzorek clamps confidence to [0.01, 0.99], so neither extreme is degenerate. "
+        "At 0.00 the largest caps will pin at your max-position ceiling rather than "
+        "reproducing cap weights exactly."
     )
 
     st.divider()
@@ -1624,7 +1695,10 @@ with st.spinner("Running Black-Litterman optimisation…"):
         tau              = tau,
         rf               = RF,
     )
-    bl_w = bl_msr_longonly(sigma=sigma_bl, mu=mu_bl, riskfree_rate=RF, min_weight=min_weight, max_weight=max_weight)
+    # mu_bl is an EXCESS return vector (pi is a risk premium, Q = views - rf),
+    # but bl_msr_longonly subtracts rf itself. Add RF back so it receives total
+    # returns, otherwise rf gets deducted twice.
+    bl_w = bl_msr_longonly(sigma=sigma_bl, mu=mu_bl + RF, riskfree_rate=RF, min_weight=min_weight, max_weight=max_weight)
     bl_w_series = bl_w   # pd.Series indexed by ticker
 
 # ─────────────────────────────────────────────────────────────────────────────
