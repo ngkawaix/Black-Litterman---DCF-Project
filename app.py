@@ -2644,7 +2644,7 @@ with tab4:
     # ── Section 1: Correlated GBM Simulation ───────────────────────────────────────────────
     st.markdown("#### 1. Correlated GBM Simulation")
     col1, col2 = st.columns(2)
-    n_scenarios = col1.slider("Scenarios", min_value=500, max_value=10000, value=2000, step=500)
+    n_scenarios = col1.slider("Scenarios", min_value=500, max_value=30000, value=10000, step=500)
     seed        = col2.number_input("Random seed (for reproducibility)", value=42, step=1)
 
     np.random.seed(int(seed))
