@@ -3228,7 +3228,7 @@ with tab5:
         )
         _col_mdd.slider(
             "Max Drawdown Floor (%)",
-            min_value=5.0, max_value=40.0, value=15.0, step=1.0, 
+            min_value=5.0, max_value=50.0, value=15.0, step=1.0, 
             key="mdd_cppi_pct",
             help=(
                 "Maximum tolerated drawdown from the portfolio's all-time high. "
